@@ -2,3 +2,6 @@
 *.o
 *.so
 build/*
+*.egg-info/*
+.vscode/*
+*.lock

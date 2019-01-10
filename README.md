@@ -9,7 +9,10 @@ Implementation of point cloud **reg**istration algorithms using **prob**ablistic
 
 ## Install
 
+Install from source.
+
 ```
+git clone https://github.com/neka-nat/probreg.git
 cd probreg
 pipenv install
 pipenv shell
