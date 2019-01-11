@@ -10,7 +10,6 @@ struct ClusteringResult
     Float max_cluster_radius_;
     VectorXi cluster_index_;
     Matrix cluster_centers_;
-    VectorXi num_points_;
     Vector cluster_radii_;
 };
 

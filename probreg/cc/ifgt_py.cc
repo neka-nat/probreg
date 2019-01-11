@@ -10,6 +10,12 @@ PYBIND11_MODULE(_ifgt, m) {
         .def(py::init<Matrix, Float, Float>())
         .def("compute", &Ifgt::compute);
 
+    m.def("_kcenter_clustering",
+          [](const Matrix& data, Integer num_clusters) {
+              auto res = computeKCenterClustering(data, num_clusters, 1.0e-4);
+              return res.cluster_index_;
+          });
+
 #ifdef VERSION_INFO
     m.attr("__version__") = VERSION_INFO;
 #else

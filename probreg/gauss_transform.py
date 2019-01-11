@@ -16,9 +16,3 @@ class GaussTransform(object):
             return np.r_[[self._impl.compute(target, w) for w in weights]]
         else:
             raise ValueError("weights.ndim must be 1 or 2.")
-
-if __name__ == "__main__":
-    import numpy as np
-    x = np.random.rand(5, 3)
-    gt = GaussTransform(x, 1.0)
-    print(gt.compute(x, np.random.rand(5)))

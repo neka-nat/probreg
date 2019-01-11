@@ -38,7 +38,7 @@ chooseTruncationNumber(Integer num_dims, Float h, Float r, Float eps,
     Integer p = 0;
     while ((error > eps) && (p <= p_limit)) {
         ++p;
-        const Float b = std::min((rx + std::sqrt(rx2 + 2 * Float(p) * h2)) / 2.0, rx + r);
+        const Float b = std::min(Float(rx + std::sqrt(rx2 + 2.0 * Float(p) * h2) * 0.5), rx + r);
         const Float c = rx - b;
         temp *= 2 * rx * b / h2 / Float(p);
         error = temp * std::exp(-(c * c) / h2);
@@ -56,7 +56,7 @@ chooseIfgtParameters(Integer num_dims, Float h, Float eps,
 
     for (Integer i = 0; i < num_max_clusters; ++i) {
         const Float rx = std::pow(Float(i + 1), -1.0 / Float(num_dims));
-        const Float n = std::min(Float(i + 1), std::pow(r / rx, (num_dims)));
+        const Float n = std::min(Float(i + 1), Float(std::pow(r / rx, num_dims)));
         const Integer p = chooseTruncationNumber(num_dims, h, r, eps, rx, p_limit);
         Float complexity = i + 1 + std::log(Float(i + 1)) + (n + 1) * nchoosek(p - 1 + num_dims, num_dims);
         if (complexity < complexity_min) {
@@ -131,7 +131,7 @@ Ifgt::compute(const Matrix& target, const Vector& weights) const {
         dx /= h_;
         auto monomials = computeMonomials(source_.cols(), dx, p_, p_max_total_);
         Float f = weights[i] * std::exp(-distance / h2);
-        cmat.row(cluster_.cluster_index_[i]) = f * monomials;
+        cmat.row(cluster_.cluster_index_[i]) += f * monomials;
     }
 
     cmat.array().rowwise() *= constant_series_.transpose().array(); 
@@ -144,7 +144,7 @@ Ifgt::compute(const Matrix& target, const Vector& weights) const {
             dy /= h_;
             auto monomials = computeMonomials(source_.cols(), dy, p_, p_max_total_);
             const Float g = std::exp(-distance / h2);
-            gvec[i] = cmat.row(j) * g * monomials;
+            gvec[i] += cmat.row(j) * g * monomials;
         }
     }
     return gvec;

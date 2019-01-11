@@ -16,5 +16,4 @@ git clone https://github.com/neka-nat/probreg.git
 cd probreg
 pipenv install
 pipenv shell
-python setup.py build
 ```

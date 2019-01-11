@@ -69,6 +69,17 @@ ext_modules = [
         ],
         language='c++'
     ),
+    Extension(
+        'probreg._math',
+        ['probreg/cc/math_utils_py.cc', 'probreg/cc/math_utils.cc'],
+        include_dirs=[
+            # Path to pybind11 headers
+            get_pybind_include(),
+            get_pybind_include(user=True),
+            find_eigen(['third_party/eigen'])
+        ],
+        language='c++'
+    ),
 ]
 
 

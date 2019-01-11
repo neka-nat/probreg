@@ -9,7 +9,7 @@ target = copy.deepcopy(source)
 ans = trans.euler_matrix(*np.deg2rad([0.0, 0.0, 90.0]))
 target.transform(ans)
 
-res = cpd.registration_cpd(source, target, max_iteration=1)
+res = cpd.registration_cpd(source, target, max_iteration=10)
 print("result: ", res)
 result = copy.deepcopy(source)
 
