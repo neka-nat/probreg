@@ -7,6 +7,7 @@ name = "pypi"
 "open3d-python" = "*"
 "pybind11" = "*"
 six = "*"
+transformations = "*"
 "e1839a8" = {path = ".", editable = true}
 
 [dev-packages]

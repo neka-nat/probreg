@@ -1,7 +1,7 @@
 from __future__ import print_function
 from __future__ import division
 import numpy as np
-import _ifgt
+from . import _ifgt
 
 class GaussTransform(object):
     def __init__(self, source, h, eps=1.0e-4):
