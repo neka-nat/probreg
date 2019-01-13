@@ -40,7 +40,7 @@ chooseTruncationNumber(Integer num_dims, Float h, Float r, Float eps,
         ++p;
         const Float b = std::min(Float(rx + std::sqrt(rx2 + 2.0 * Float(p) * h2) * 0.5), rx + r);
         const Float c = rx - b;
-        temp *= 2 * rx * b / h2 / Float(p);
+        temp *= 2.0 * rx * b / h2 / Float(p);
         error = temp * std::exp(-(c * c) / h2);
     }
     return p;
@@ -130,7 +130,7 @@ Ifgt::compute(const Matrix& target, const Vector& weights) const {
         const Float distance = dx.array().pow(2).sum();
         dx /= h_;
         auto monomials = computeMonomials(source_.cols(), dx, p_, p_max_total_);
-        Float f = weights[i] * std::exp(-distance / h2);
+        const Float f = weights[i] * std::exp(-distance / h2);
         cmat.row(cluster_.cluster_index_[i]) += f * monomials;
     }
 

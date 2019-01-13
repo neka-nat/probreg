@@ -5,13 +5,15 @@ import transformations as trans
 from probreg import cpd
 
 source = o3.read_point_cloud("bunny.pcd")
+source = o3.voxel_down_sample(source, voxel_size=0.01)
 target = copy.deepcopy(source)
-ans = trans.euler_matrix(*np.deg2rad([0.0, 0.0, 90.0]))
+ans = trans.euler_matrix(*np.deg2rad([0.0, 0.0, 30.0]))
 target.transform(ans)
 
-res = cpd.registration_cpd(source, target, max_iteration=10)
-print("result: ", res)
+params = cpd.registration_cpd(source, target)
+print("result: ", params)
 result = copy.deepcopy(source)
+result.points = cpd.RigidCPD.transform(result.points, params)
 
 source.paint_uniform_color([1, 0, 0])
 target.paint_uniform_color([0, 1, 0])
