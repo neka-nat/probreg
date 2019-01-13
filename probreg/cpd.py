@@ -103,10 +103,57 @@ class RigidCPD(CoherentPointDrift):
         q = (tr_xp1x - 2.0 * scale * tr_atr + (scale ** 2) * tr_yp1y) / (2.0 * sigma2) + ndim * n_p * 0.5 * np.log(sigma2)
         return RigidResult(rot, t, scale, sigma2, q)
 
+
+class AffineCPD(CoherentPointDrift):
+    def __init__(self):
+        super(AffineCPD, self).__init__()
+        self._result_type = AffineResult
+
+    @staticmethod
+    def _transform(points, params):
+        affine, t, _, _ = params
+        return np.dot(points, affine.T) + t
+
+    def maximization_step(self, source, target, estep_res):
+        pt1, p1, px, n_p = estep_res
+        ndim = source.shape[1]
+        mu_x = np.sum(px, axis=0) / n_p
+        mu_y = np.dot(source.T, p1) / n_p
+        target_hat = target - mu_x
+        source_hat = source - mu_y
+        a = np.dot(px.T, source_hat) - np.outer(mu_x, np.dot(p1.T, source_hat))
+        yp1y = np.dot(source_hat.T * p1, source_hat)
+        affine = np.linalg.solve(yp1y.T, a.T).T
+        t = mu_x - np.dot(affine, mu_y)
+        tr_xp1x = np.trace(np.dot(target_hat.T * pt1, target_hat))
+        tr_xpyb = np.trace(np.dot(a, affine.T))
+        sigma2 = (tr_xp1x - tr_xpyb) / (n_p * ndim)
+        tr_ab = np.trace(np.dot(a, affine.T))
+        q = (tr_xp1x - 2 * tr_ab + tr_xpyb) / (2.0 * sigma2) + ndim * n_p * 0.5 * np.log(sigma2)
+        return AffineResult(affine, t, sigma2, q)
+
+
+class NonRigidCPD(CoherentPointDrift):
+    def __init__(self):
+        super(NonRigidCPD, self).__init__()
+        self._result_type = NonRigidResult
+
+    @staticmethod
+    def _transform(points, params):
+        pass
+
+    def maximization_step(self, source, target, estep_res):
+        pass
+
+
 def registration_cpd(source, target, transform_type='rigid',
                      w=0.0, max_iteration=100, tolerance=0.001):
     if transform_type == 'rigid':
         cpd = RigidCPD()
+    elif transform_type == 'affine':
+        cpd = AffineCPD()
+    elif transform_type == 'nonrigid':
+        cpd = NonRigidCPD()
     else:
         raise ValueError('Unknown transform_type %s' % transform_type)
     return cpd.registration(np.asarray(source.points), np.asarray(target.points),
