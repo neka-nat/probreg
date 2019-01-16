@@ -18,9 +18,14 @@ class GaussTransformTest(unittest.TestCase):
         x = np.random.rand(5, 3)
         y = np.random.rand(5, 3)
         w = np.random.rand(5)
-        ans = gt._gauss_transform_direct(x, y, w, 1.0)
-        trans = gt.GaussTransform(x, 1.0)
-        self.assertTrue(np.allclose(ans, trans.compute(y, w), rtol=1.0e-4))
+        h = 1.0
+        ans = gt._gauss_transform_direct(x, y, w, h)
+        trans = gt.GaussTransform(x, h)
+        self.assertTrue(np.allclose(ans, trans.compute(y, w), atol=1.0e-4, rtol=1.0e-4))
+        h = 0.1
+        ans = gt._gauss_transform_direct(x, y, w, h)
+        trans = gt.GaussTransform(x, h)
+        self.assertTrue(np.allclose(ans, trans.compute(y, w), atol=1.0e-4, rtol=1.0e-4))
 
 if __name__ == "__main__":
     unittest.main()

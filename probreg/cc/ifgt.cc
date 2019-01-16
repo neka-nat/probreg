@@ -29,7 +29,7 @@ nchoosek(Integer n, Integer k)
 
 Integer
 chooseTruncationNumber(Integer num_dims, Float h, Float r, Float eps,
-                       Float max_cluster_radius, Integer p_limit=300) {
+                       Float max_cluster_radius, Integer p_limit=200) {
     const Float h2 = h * h;
     const Float& rx = max_cluster_radius;
     const Float rx2 = rx * rx;
@@ -47,24 +47,26 @@ chooseTruncationNumber(Integer num_dims, Float h, Float r, Float eps,
 }
 
 IfgtParameters
-chooseIfgtParameters(Integer num_dims, Float h, Float eps,
+chooseIfgtParameters(Integer num_dims, Float h, Float eps, Float max_range,
                      Integer num_max_clusters, Integer p_limit=200)
 {
-    const Float r = std::min(std::sqrt(num_dims), h * std::sqrt(std::log(1.0 / eps)));
+    const Float r = std::min(max_range * std::sqrt(num_dims), h * std::sqrt(std::log(1.0 / eps)));
     Float complexity_min = std::numeric_limits<Float>::max();
     Integer num_clusters = 0;
+    Integer p_max = p_limit;
 
     for (Integer i = 0; i < num_max_clusters; ++i) {
-        const Float rx = std::pow(Float(i + 1), -1.0 / Float(num_dims));
+        const Float rx = max_range * std::pow(Float(i + 1), -1.0 / Float(num_dims));
         const Float n = std::min(Float(i + 1), Float(std::pow(r / rx, num_dims)));
         const Integer p = chooseTruncationNumber(num_dims, h, r, eps, rx, p_limit);
         Float complexity = i + 1 + std::log(Float(i + 1)) + (n + 1) * nchoosek(p - 1 + num_dims, num_dims);
         if (complexity < complexity_min) {
             complexity_min = complexity;
             num_clusters = i + 1;
+            p_max = p;
         }
     }
-    return {num_clusters, r};
+    return {num_clusters, r, p_max};
 }
 
 Vector
@@ -106,14 +108,15 @@ computeConstantSeries(Integer num_dims, Integer p, Integer p_max_total) {
 }
 
 Ifgt::Ifgt(const Matrix& source, Float h, Float eps) :source_(source), h_(h) {
-    const Integer num_max_clusters = Integer(std::round(0.2 * 100 / h_));
-    params_ = chooseIfgtParameters(source_.cols(), h_, eps, num_max_clusters);
+    const Integer num_max_clusters = source_.rows();
+    Float max_range = (source_.colwise().maxCoeff() - source_.colwise().minCoeff()).maxCoeff();
+    params_ = chooseIfgtParameters(source_.cols(), h_, eps, max_range, num_max_clusters);
     if (params_.num_clusters_ == 0) {
         throw std::runtime_error("Result of K center clustering is 0.");
     }
     cluster_ = computeKCenterClustering(source_, params_.num_clusters_, eps);
-    const Float r = std::min(std::sqrt(source_.cols()), h_ * std::sqrt(std::log(1.0 / eps)));
-    p_ = chooseTruncationNumber(source_.cols(), h_, r, eps, cluster_.max_cluster_radius_);
+    const Float r = std::min(max_range * std::sqrt(source_.cols()), h_ * std::sqrt(std::log(1.0 / eps)));
+    p_ = chooseTruncationNumber(source_.cols(), h_, r, eps, cluster_.max_cluster_radius_, params_.p_max_);
     p_max_total_ = nchoosek(p_ - 1 + source_.cols(), source_.cols());
     constant_series_ = computeConstantSeries(source_.cols(), p_, p_max_total_);
     ry2_ = (params_.cutoff_radius_ * Vector::Ones(params_.num_clusters_) + cluster_.cluster_radii_).array().pow(2).matrix();

@@ -8,6 +8,7 @@ namespace probreg
 struct IfgtParameters {
     Integer num_clusters_;
     Float cutoff_radius_;
+    Integer p_max_;
 };
 
 class Ifgt

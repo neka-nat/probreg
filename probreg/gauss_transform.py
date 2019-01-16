@@ -17,13 +17,11 @@ class Direct(object):
         return _gauss_transform_direct(self._source, target, weights, self._h)
 
 class GaussTransform(object):
-    def __init__(self, source, h, method='ifgt', eps=1.0e-4):
-        if method == 'direct':
+    def __init__(self, source, h, eps=1.0e-4, sw_h=0.05):
+        if h < sw_h:
             self._impl = Direct(source, h)
-        elif method == 'ifgt':
-            self._impl = _ifgt.Ifgt(source, h, eps)
         else:
-            raise ValueError("unknown method type %s" % method)
+            self._impl = _ifgt.Ifgt(source, h, eps)
 
     def compute(self, target, weights=None):
         if weights is None:
