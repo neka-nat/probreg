@@ -7,6 +7,8 @@ using namespace probreg;
 
 PYBIND11_MODULE(_math, m) {
     m.def("mean_square_norm", &meanSquareNorm);
+    m.def("gaussian_kernel", &gaussianKernel);
+
 #ifdef VERSION_INFO
     m.attr("__version__") = VERSION_INFO;
 #else

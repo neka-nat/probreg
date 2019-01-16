@@ -11,7 +11,7 @@ from . import math_utils as mu
 EstepResult = namedtuple('EstepResult', ['pt1', 'p1', 'px', 'n_p'])
 RigidResult = namedtuple('RigidResult', ['rot', 't', 'scale', 'sigma2', 'q'])
 AffineResult = namedtuple('AffineResult', ['affine', 't', 'sigma2', 'q'])
-NonRigidResult = namedtuple('NonRigidResult', ['kernel', 'coeff', 'sigma2', 'q'])
+NonRigidResult = namedtuple('NonRigidResult', ['g', 'w', 'sigma2', 'q'])
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -134,13 +134,18 @@ class AffineCPD(CoherentPointDrift):
 
 
 class NonRigidCPD(CoherentPointDrift):
-    def __init__(self):
+    def __init__(self, source=None):
         super(NonRigidCPD, self).__init__()
         self._result_type = NonRigidResult
+        self._source = source
+
+    def set_source(source):
+        self._source = source
 
     @staticmethod
     def _transform(points, params):
-        pass
+        g, w, _, _ = params
+        return points + np.dot(g, w)
 
     def maximization_step(self, source, target, estep_res):
         pass
