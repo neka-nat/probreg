@@ -9,34 +9,46 @@ probreg::computeKCenterClustering(const Matrix& data, Integer num_clusters,
 {
     auto idxs = (num_clusters * Vector::Random(num_clusters)).array().abs().cast<Integer>();
     Matrix cluster_centers = data(idxs, Eigen::all);
-    auto num_rows = data.rows();
-    auto num_cols = data.cols();
-    Matrix temp_centers(num_clusters, num_cols);
+    Matrix temp_centers(num_clusters, data.cols());
     VectorXi counts(num_clusters);
-    VectorXi labels(num_rows);
-    Float err = 0.0;
+    VectorXi labels(data.rows());
     Float p_err = 0.0;
 
     for (Integer n = 0; n < num_max_iteration; ++n) {
-        p_err = err;
-        err = 0.0;
         counts.setZero();
         temp_centers.setZero();
-
-        for (Integer i = 0; i < num_rows; ++i) {
-            Float min_distance = (cluster_centers.rowwise() - data.row(i)).rowwise().squaredNorm().minCoeff(&labels[i]);
-            temp_centers.row(labels[i]) += data.row(i);
-            ++counts[labels[i]];
-            err += min_distance;
-        }
-        cluster_centers = (temp_centers.array() / (counts.replicate(1, num_cols).array() == 0).select(1, counts).array().cast<Float>()).matrix();
+        const Float err = updateClustering(data, cluster_centers, labels, counts, temp_centers);
+        cluster_centers = (temp_centers.array() / (counts.replicate(1, data.cols()).array() == 0).select(1, counts).array().cast<Float>()).matrix();
         if (std::abs(err - p_err) < eps) break;
+        p_err = err;
     }
 
-    Vector distances = (data - cluster_centers(labels.array(), Eigen::all)).rowwise().norm();
+    auto radii = calcRadii(data, cluster_centers, labels, num_clusters);
+    return {radii.maxCoeff(), labels, cluster_centers, radii};
+}
+
+Float
+updateClustering(const Matrix& data, const Matrix& cluster_centers,
+                 VectorXi& labels, VectorXi& counts, Matrix& sum_members)
+{
+    Float err = 0.0;
+    for (Integer i = 0; i < data.rows(); ++i) {
+        Float min_distance = (cluster_centers.rowwise() - data.row(i)).rowwise().squaredNorm().minCoeff(&labels[i]);
+        sum_members.row(labels[i]) += data.row(i);
+        ++counts[labels[i]];
+        err += min_distance;
+    }
+    return err;
+}
+
+Vector
+calcRadii(const Matrix& data, const Matrix& cluster_centers,
+          const VectorXi& labels, Integer num_clusters)
+{
+    const Vector distances = (data - cluster_centers(labels.array(), Eigen::all)).rowwise().norm();
     Vector radii = Vector::Zero(num_clusters);
-    for (Integer i = 0; i < num_rows; ++i) {
+    for (Integer i = 0; i < data.rows(); ++i) {
         radii[labels[i]] = std::max(radii[labels[i]], distances[i]);
     }
-    return {radii.maxCoeff(), labels, cluster_centers, radii};
+    return radii;
 }

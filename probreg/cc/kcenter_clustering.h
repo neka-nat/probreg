@@ -18,6 +18,14 @@ ClusteringResult
 computeKCenterClustering(const Matrix& data, Integer num_clusters,
                          Float eps, Integer num_max_iteration=100);
 
+Float
+updateClustering(const Matrix& data, const Matrix& cluster_centers,
+                 VectorXi& labels, VectorXi& counts, Matrix& sum_menbers);
+
+Vector
+calcRadii(const Matrix& data, const Matrix& cluster_centers,
+          const VectorXi& labels, Integer num_clusters);
+
 }
 
 #endif
