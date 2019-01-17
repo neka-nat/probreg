@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __probreg_types_h__
+#define __probreg_types_h__
 
 #include <Eigen/Core>
 //#define USE_DOUBLE
@@ -19,3 +20,5 @@ typedef Eigen::VectorXf Vector;
 typedef Eigen::VectorXi VectorXi;
 #endif
 }
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __probreg_kcenter_clustering_h__
+#define __probreg_kcenter_clustering_h__
 
 #include "types.h"
 
@@ -18,3 +19,5 @@ computeKCenterClustering(const Matrix& data, Integer num_clusters,
                          Float eps, Integer num_max_iteration=100);
 
 }
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __probreg_ifgt_h__
+#define __probreg_ifgt_h__
 
 #include "kcenter_clustering.h"
 
@@ -29,3 +30,5 @@ class Ifgt
 };
 
 }
+
+#endif
