@@ -56,7 +56,7 @@ class CoherentPointDrift():
         return EstepResult(pt1, p1, px, np.sum(p1))
 
     @abc.abstractclassmethod
-    def maximization_step(self, target, estep_res):
+    def maximization_step(self, target, estep_res, sigma2_p=None):
         return None
 
     def registration(self, target, w=0.0,
@@ -69,7 +69,7 @@ class CoherentPointDrift():
         for _ in range(max_iteration):
             t_source = self.transform(self._source, res)
             estep_res = self.expectation_step(t_source, target, res.sigma2, w)
-            res = self.maximization_step(target, estep_res)
+            res = self.maximization_step(target, estep_res, res.sigma2)
             if abs(res.q - q) < tolerance:
                 break
             q = res.q
@@ -85,7 +85,7 @@ class RigidCPD(CoherentPointDrift):
         rot, t, scale, _, _ = params
         return scale * np.dot(points, rot.T) + t
 
-    def maximization_step(self, target, estep_res):
+    def maximization_step(self, target, estep_res, sigma2_p=None):
         pt1, p1, px, n_p = estep_res
         ndim = self._source.shape[1]
         mu_x = np.sum(px, axis=0) / n_p
@@ -117,7 +117,7 @@ class AffineCPD(CoherentPointDrift):
         affine, t, _, _ = params
         return np.dot(points, affine.T) + t
 
-    def maximization_step(self, target, estep_res):
+    def maximization_step(self, target, estep_res, sigma2_p=None):
         pt1, p1, px, n_p = estep_res
         ndim = self._source.shape[1]
         mu_x = np.sum(px, axis=0) / n_p
@@ -137,36 +137,46 @@ class AffineCPD(CoherentPointDrift):
 
 
 class NonRigidCPD(CoherentPointDrift):
-    def __init__(self, source=None, beta=2.0):
+    def __init__(self, source=None, beta=2.0, lmd=2.0):
         super(NonRigidCPD, self).__init__()
         self._result_type = NonRigidResult
         self._source = source
         self._beta = beta
+        self._lmd = lmd
+        self._g = None
         if not self._source is None:
             self._g = mu.gaussian_kernel(self._source, self._beta)
 
     def set_source(self, source):
         self._source = source
-        if not self._source is None:
-            self._g = mu.gaussian_kernel(self._source, self._beta)
+        self._g = mu.gaussian_kernel(self._source, self._beta)
 
     @staticmethod
     def _transform(points, params):
         g, w, _, _ = params
         return points + np.dot(g, w)
 
-    def maximization_step(self, target, estep_res):
-        pass
-
+    def maximization_step(self, target, estep_res, sigma2_p=None):
+        pt1, p1, px, n_p = estep_res
+        ndim = self._source.shape[1]
+        dp1_inv = np.diag(1.0 / p1)
+        w = np.solve(self._g + self._lmd * sigma2_p * dp1_inv, dp1_inv * px - self._source)
+        t = self._source + np.dot(self._g, w)
+        tr_xp1x = np.trace(np.dot(target.T * pt1, target))
+        tr_pxtt = np.trace(np.dot(px.T, t))
+        tr_ttp1t = np.trace(np.dot(t.T * p1, t))
+        sigma2 = (tr_xp1x - 2.0 * tr_pxtt + tr_ttp1t) / (n_p * ndim)
+        return NonRigidResult(self._g, w, sigma2, sigma2)
 
 def registration_cpd(source, target, transform_type='rigid',
-                     w=0.0, max_iteration=100, tolerance=0.001):
+                     w=0.0, max_iteration=100,
+                     tolerance=0.001, **kargs):
     if transform_type == 'rigid':
-        cpd = RigidCPD(np.asarray(source.points))
+        cpd = RigidCPD(np.asarray(source.points), **kargs)
     elif transform_type == 'affine':
-        cpd = AffineCPD(np.asarray(source.points))
+        cpd = AffineCPD(np.asarray(source.points), **kargs)
     elif transform_type == 'nonrigid':
-        cpd = NonRigidCPD(np.asarray(source.points))
+        cpd = NonRigidCPD(np.asarray(source.points), **kargs)
     else:
         raise ValueError('Unknown transform_type %s' % transform_type)
     return cpd.registration(np.asarray(target.points),

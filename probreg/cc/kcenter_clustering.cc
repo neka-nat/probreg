@@ -28,8 +28,8 @@ probreg::computeKCenterClustering(const Matrix& data, Integer num_clusters,
 }
 
 Float
-updateClustering(const Matrix& data, const Matrix& cluster_centers,
-                 VectorXi& labels, VectorXi& counts, Matrix& sum_members)
+probreg::updateClustering(const Matrix& data, const Matrix& cluster_centers,
+                          VectorXi& labels, VectorXi& counts, Matrix& sum_members)
 {
     Float err = 0.0;
     for (Integer i = 0; i < data.rows(); ++i) {
@@ -42,8 +42,8 @@ updateClustering(const Matrix& data, const Matrix& cluster_centers,
 }
 
 Vector
-calcRadii(const Matrix& data, const Matrix& cluster_centers,
-          const VectorXi& labels, Integer num_clusters)
+probreg::calcRadii(const Matrix& data, const Matrix& cluster_centers,
+                   const VectorXi& labels, Integer num_clusters)
 {
     const Vector distances = (data - cluster_centers(labels.array(), Eigen::all)).rowwise().norm();
     Vector radii = Vector::Zero(num_clusters);
