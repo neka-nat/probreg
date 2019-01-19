@@ -3,7 +3,7 @@
 using namespace probreg;
 
 Float
-probreg::meanSquareNorm(const Matrix& a, const Matrix& b) {
+probreg::meanSquareNormAllCombination(const Matrix& a, const Matrix& b) {
     Float ans = 0.0;
     for (Integer i = 0; i < b.rows(); ++i)
         ans += (a.rowwise() - b.row(i)).rowwise().squaredNorm().sum();

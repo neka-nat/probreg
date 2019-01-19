@@ -6,7 +6,7 @@ namespace py = pybind11;
 using namespace probreg;
 
 PYBIND11_MODULE(_math, m) {
-    m.def("mean_square_norm", &meanSquareNorm);
+    m.def("msn_all_combination", &meanSquareNormAllCombination);
     m.def("gaussian_kernel", &gaussianKernel);
 
 #ifdef VERSION_INFO

@@ -16,6 +16,13 @@ NonRigidResult = namedtuple('NonRigidResult', ['g', 'w', 'sigma2', 'q'])
 
 @six.add_metaclass(abc.ABCMeta)
 class CoherentPointDrift():
+    """Coherent Point Drigt algorithm.
+    This is a abstract class.
+    Based on this class, it is inherited by rigid, affine, nonrigid classes
+    according to the type of transformation.
+    In this class, Estimation step in EM algorithm is implemented and
+    Maximazation step is implemented in the inherited classes.
+    """
     def __init__(self, source=None):
         self._gt = gt
         self._result_type = None
@@ -67,7 +74,7 @@ class CoherentPointDrift():
                      max_iteration=50, tolerance=0.001):
         assert not self._result_type is None, "result type of computing registration is None."
         ndim = self._source.shape[1]
-        sigma2 = mu.mean_square_norm(self._source, target)
+        sigma2 = mu.msn_all_combination(self._source, target)
         q = -tolerance + 1.0 - target.shape[0] * ndim * 0.5 * np.log(sigma2)
         res = self._result_type(np.identity(ndim), np.zeros(3), 1.0, sigma2, q)
         for _ in range(max_iteration):
