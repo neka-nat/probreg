@@ -55,8 +55,12 @@ class CoherentPointDrift():
         px = gtrans.compute(t_source, np.tile(a, (ndim, 1)) * target.T).T
         return EstepResult(pt1, p1, px, np.sum(p1))
 
-    @abc.abstractclassmethod
     def maximization_step(self, target, estep_res, sigma2_p=None):
+        return self._maximization_step(self._source, target, estep_res, sigma2_p)
+
+    @staticmethod
+    @abc.abstractclassmethod
+    def _maximization_step(source, target, estep_res, sigma2_p=None):
         return None
 
     def registration(self, target, w=0.0,
@@ -85,13 +89,14 @@ class RigidCPD(CoherentPointDrift):
         rot, t, scale, _, _ = params
         return scale * np.dot(points, rot.T) + t
 
-    def maximization_step(self, target, estep_res, sigma2_p=None):
+    @staticmethod
+    def _maximization_step(source, target, estep_res, sigma2_p=None):
         pt1, p1, px, n_p = estep_res
-        ndim = self._source.shape[1]
+        ndim = source.shape[1]
         mu_x = np.sum(px, axis=0) / n_p
-        mu_y = np.dot(self._source.T, p1) / n_p
+        mu_y = np.dot(source.T, p1) / n_p
         target_hat = target - mu_x
-        source_hat = self._source - mu_y
+        source_hat = source - mu_y
         a = np.dot(px.T, source_hat) - np.outer(mu_x, np.dot(p1.T, source_hat))
         u, _, vh = np.linalg.svd(a, full_matrices=True)
         c = np.ones(ndim)
@@ -117,13 +122,14 @@ class AffineCPD(CoherentPointDrift):
         affine, t, _, _ = params
         return np.dot(points, affine.T) + t
 
-    def maximization_step(self, target, estep_res, sigma2_p=None):
+    @staticmethod
+    def _maximization_step(source, target, estep_res, sigma2_p=None):
         pt1, p1, px, n_p = estep_res
-        ndim = self._source.shape[1]
+        ndim = source.shape[1]
         mu_x = np.sum(px, axis=0) / n_p
-        mu_y = np.dot(self._source.T, p1) / n_p
+        mu_y = np.dot(source.T, p1) / n_p
         target_hat = target - mu_x
-        source_hat = self._source - mu_y
+        source_hat = source - mu_y
         a = np.dot(px.T, source_hat) - np.outer(mu_x, np.dot(p1.T, source_hat))
         yp1y = np.dot(source_hat.T * p1, source_hat)
         affine = np.linalg.solve(yp1y.T, a.T).T
@@ -157,16 +163,20 @@ class NonRigidCPD(CoherentPointDrift):
         return points + np.dot(g, w)
 
     def maximization_step(self, target, estep_res, sigma2_p=None):
+        return self._maximization_step(self._source, target, estep_res, sigma2_p, self._g, self._lmd)
+
+    @staticmethod
+    def _maximization_step(source, target, estep_res, sigma2_p, g, lmd):
         pt1, p1, px, n_p = estep_res
-        ndim = self._source.shape[1]
+        ndim = source.shape[1]
         dp1_inv = np.diag(1.0 / p1)
-        w = np.solve(self._g + self._lmd * sigma2_p * dp1_inv, dp1_inv * px - self._source)
-        t = self._source + np.dot(self._g, w)
+        w = np.linalg.solve(g + lmd * sigma2_p * dp1_inv, dp1_inv * px - source)
+        t = source + np.dot(g, w)
         tr_xp1x = np.trace(np.dot(target.T * pt1, target))
         tr_pxtt = np.trace(np.dot(px.T, t))
         tr_ttp1t = np.trace(np.dot(t.T * p1, t))
         sigma2 = (tr_xp1x - 2.0 * tr_pxtt + tr_ttp1t) / (n_p * ndim)
-        return NonRigidResult(self._g, w, sigma2, sigma2)
+        return NonRigidResult(g, w, sigma2, sigma2)
 
 def registration_cpd(source, target, transform_type='rigid',
                      w=0.0, max_iteration=100,
