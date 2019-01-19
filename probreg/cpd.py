@@ -5,13 +5,12 @@ from collections import namedtuple
 import six
 import numpy as np
 import open3d as o3
+from . import transformation as tf
 from . import gauss_transform as gt
 from . import math_utils as mu
 
 EstepResult = namedtuple('EstepResult', ['pt1', 'p1', 'px', 'n_p'])
-RigidResult = namedtuple('RigidResult', ['rot', 't', 'scale', 'sigma2', 'q'])
-AffineResult = namedtuple('AffineResult', ['affine', 't', 'sigma2', 'q'])
-NonRigidResult = namedtuple('NonRigidResult', ['g', 'w', 'sigma2', 'q'])
+MstepResult = namedtuple('MstepResult', ['transformation', 'sigma2', 'q'])
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -24,24 +23,16 @@ class CoherentPointDrift():
     Maximazation step is implemented in the inherited classes.
     """
     def __init__(self, source=None):
-        self._gt = gt
-        self._result_type = None
         self._source = source
+        self._gt = gt
+        self._tf_type = None
 
     def set_source(self, source):
         self._source = source
 
-    @classmethod
-    def transform(cls, points, params,
-                  array_type=o3.Vector3dVector):
-        if isinstance(points, array_type):
-            return array_type(cls._transform(np.asarray(points), params))
-        return cls._transform(points, params)
-
-    @staticmethod
     @abc.abstractmethod
-    def _transform(points, params):
-        return points
+    def _initialize(self, target, tolerance):
+        return MstepResult(None, None, None)
 
     def expectation_step(self, t_source, target, sigma2, w=0.0):
         """
@@ -65,20 +56,17 @@ class CoherentPointDrift():
     def maximization_step(self, target, estep_res, sigma2_p=None):
         return self._maximization_step(self._source, target, estep_res, sigma2_p)
 
-    @staticmethod
-    @abc.abstractclassmethod
+    @abc.abstractstaticmethod
     def _maximization_step(source, target, estep_res, sigma2_p=None):
         return None
 
     def registration(self, target, w=0.0,
                      max_iteration=50, tolerance=0.001):
-        assert not self._result_type is None, "result type of computing registration is None."
-        ndim = self._source.shape[1]
-        sigma2 = mu.msn_all_combination(self._source, target)
-        q = -tolerance + 1.0 - target.shape[0] * ndim * 0.5 * np.log(sigma2)
-        res = self._result_type(np.identity(ndim), np.zeros(3), 1.0, sigma2, q)
+        assert not self._tf_type is None, "transformation type is None."
+        res = self._initialize(target, tolerance)
+        q = res.q
         for _ in range(max_iteration):
-            t_source = self.transform(self._source, res)
+            t_source = res.transformation.transform(self._source)
             estep_res = self.expectation_step(t_source, target, res.sigma2, w)
             res = self.maximization_step(target, estep_res, res.sigma2)
             if abs(res.q - q) < tolerance:
@@ -89,12 +77,13 @@ class CoherentPointDrift():
 class RigidCPD(CoherentPointDrift):
     def __init__(self, source=None):
         super(RigidCPD, self).__init__(source)
-        self._result_type = RigidResult
+        self._tf_type = tf.RigidTransformation
 
-    @staticmethod
-    def _transform(points, params):
-        rot, t, scale, _, _ = params
-        return scale * np.dot(points, rot.T) + t
+    def _initialize(self, target, tolerance):
+        ndim = self._source.shape[1]
+        sigma2 = mu.msn_all_combination(self._source, target)
+        q = -tolerance + 1.0 - target.shape[0] * ndim * 0.5 * np.log(sigma2)
+        return MstepResult(self._tf_type(np.identity(ndim), np.zeros(ndim)), sigma2, q)
 
     @staticmethod
     def _maximization_step(source, target, estep_res, sigma2_p=None):
@@ -116,18 +105,19 @@ class RigidCPD(CoherentPointDrift):
         tr_xp1x = np.trace(np.dot(target_hat.T * pt1, target_hat))
         sigma2 = (tr_xp1x - scale * tr_atr) / (n_p * ndim)
         q = (tr_xp1x - 2.0 * scale * tr_atr + (scale ** 2) * tr_yp1y) / (2.0 * sigma2) + ndim * n_p * 0.5 * np.log(sigma2)
-        return RigidResult(rot, t, scale, sigma2, q)
+        return MstepResult(tf.RigidTransformation(rot, t, scale), sigma2, q)
 
 
 class AffineCPD(CoherentPointDrift):
     def __init__(self, source=None):
         super(AffineCPD, self).__init__(source)
-        self._result_type = AffineResult
+        self._tf_type = tf.AffineTransformation
 
-    @staticmethod
-    def _transform(points, params):
-        affine, t, _, _ = params
-        return np.dot(points, affine.T) + t
+    def _initialize(self, target, tolerance):
+        ndim = self._source.shape[1]
+        sigma2 = mu.msn_all_combination(self._source, target)
+        q = -tolerance + 1.0 - target.shape[0] * ndim * 0.5 * np.log(sigma2)
+        return MstepResult(self._tf_type(np.identity(ndim), np.zeros(ndim)), sigma2, q)
 
     @staticmethod
     def _maximization_step(source, target, estep_res, sigma2_p=None):
@@ -139,21 +129,20 @@ class AffineCPD(CoherentPointDrift):
         source_hat = source - mu_y
         a = np.dot(px.T, source_hat) - np.outer(mu_x, np.dot(p1.T, source_hat))
         yp1y = np.dot(source_hat.T * p1, source_hat)
-        affine = np.linalg.solve(yp1y.T, a.T).T
-        t = mu_x - np.dot(affine, mu_y)
+        b = np.linalg.solve(yp1y.T, a.T).T
+        t = mu_x - np.dot(b, mu_y)
         tr_xp1x = np.trace(np.dot(target_hat.T * pt1, target_hat))
-        tr_xpyb = np.trace(np.dot(a, affine.T))
+        tr_xpyb = np.trace(np.dot(a, b.T))
         sigma2 = (tr_xp1x - tr_xpyb) / (n_p * ndim)
-        tr_ab = np.trace(np.dot(a, affine.T))
+        tr_ab = np.trace(np.dot(a, b.T))
         q = (tr_xp1x - 2 * tr_ab + tr_xpyb) / (2.0 * sigma2) + ndim * n_p * 0.5 * np.log(sigma2)
-        return AffineResult(affine, t, sigma2, q)
+        return MstepResult(tf.AffineTransformation(b, t), sigma2, q)
 
 
 class NonRigidCPD(CoherentPointDrift):
     def __init__(self, source=None, beta=2.0, lmd=2.0):
-        super(NonRigidCPD, self).__init__()
-        self._result_type = NonRigidResult
-        self._source = source
+        super(NonRigidCPD, self).__init__(source)
+        self._tf_type = tf.NonRigidTransformation
         self._beta = beta
         self._lmd = lmd
         self._g = None
@@ -164,13 +153,15 @@ class NonRigidCPD(CoherentPointDrift):
         self._source = source
         self._g = mu.gaussian_kernel(self._source, self._beta)
 
-    @staticmethod
-    def _transform(points, params):
-        g, w, _, _ = params
-        return points + np.dot(g, w)
-
     def maximization_step(self, target, estep_res, sigma2_p=None):
         return self._maximization_step(self._source, target, estep_res, sigma2_p, self._g, self._lmd)
+
+    def _initialize(self, target, tolerance):
+        ndim = self._source.shape[1]
+        sigma2 = mu.msn_all_combination(self._source, target)
+        q = -tolerance + 1.0 - target.shape[0] * ndim * 0.5 * np.log(sigma2)
+        return MstepResult(self._tf_type(self._g, np.zeros(self._source.shape[0])),
+                           sigma2, q)
 
     @staticmethod
     def _maximization_step(source, target, estep_res, sigma2_p, g, lmd):
@@ -183,7 +174,7 @@ class NonRigidCPD(CoherentPointDrift):
         tr_pxtt = np.trace(np.dot(px.T, t))
         tr_ttp1t = np.trace(np.dot(t.T * p1, t))
         sigma2 = (tr_xp1x - 2.0 * tr_pxtt + tr_ttp1t) / (n_p * ndim)
-        return NonRigidResult(g, w, sigma2, sigma2)
+        return MstepResult(tf.NonRigidTransformation(g, w), sigma2, sigma2)
 
 def registration_cpd(source, target, transform_type='rigid',
                      w=0.0, max_iteration=100,

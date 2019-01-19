@@ -13,13 +13,13 @@ target.points = o3.Vector3dVector(tp + 0.001 * np.random.randn(*tp.shape))
 ans = trans.euler_matrix(*np.deg2rad([0.0, 0.0, 30.0]))
 target.transform(ans)
 
-params = cpd.registration_cpd(source, target)
+tf_param, _, _ = cpd.registration_cpd(source, target)
 rot = trans.identity_matrix()
-rot[:3, :3] = params.rot
+rot[:3, :3] = tf_param.rot
 print("result: ", np.rad2deg(trans.euler_from_matrix(rot)),
-      params.scale, params.t)
+      tf_param.scale, tf_param.t)
 result = copy.deepcopy(source)
-result.points = cpd.RigidCPD.transform(result.points, params)
+result.points = tf_param.transform(result.points)
 
 source.paint_uniform_color([1, 0, 0])
 target.paint_uniform_color([0, 1, 0])
