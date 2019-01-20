@@ -24,7 +24,6 @@ class CoherentPointDrift():
     """
     def __init__(self, source=None):
         self._source = source
-        self._gt = gt
         self._tf_type = None
 
     def set_source(self, source):
@@ -43,12 +42,12 @@ class CoherentPointDrift():
         h = np.sqrt(2.0 * sigma2)
         c = (2.0 * np.pi * sigma2) ** (ndim * 0.5)
         c *= w / (1.0 - w) * t_source.shape[0] / target.shape[0]
-        gtrans = self._gt.GaussTransform(t_source, h)
+        gtrans = gt.GaussTransform(t_source, h)
         kt1 = gtrans.compute(target)
         kt1[kt1==0] = np.finfo(float).eps
         a = 1.0 / (kt1 + c)
         pt1 = 1.0 - c * a
-        gtrans = self._gt.GaussTransform(target, h)
+        gtrans = gt.GaussTransform(target, h)
         p1 = gtrans.compute(t_source, a)
         px = gtrans.compute(t_source, np.tile(a, (ndim, 1)) * target.T).T
         return EstepResult(pt1, p1, px, np.sum(p1))
