@@ -6,6 +6,7 @@ Implementation of point cloud **reg**istration algorithms using **prob**ablistic
 
 * [Coherent Point Drift](https://arxiv.org/pdf/0905.2635.pdf)
 * [Support Vector Registration](https://arxiv.org/pdf/1511.04240.pdf)
+* [GMMTree](https://arxiv.org/pdf/1807.02587.pdf)
 
 ## Install
 

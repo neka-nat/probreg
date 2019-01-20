@@ -8,6 +8,7 @@ name = "pypi"
 "pybind11" = "*"
 six = "*"
 transformations = "*"
+scipy = "*"
 scikit-learn = "*"
 "e1839a8" = {path = ".", editable = true}
 
