@@ -30,7 +30,7 @@ class CoherentPointDrift():
         self._source = source
 
     @abc.abstractmethod
-    def _initialize(self, target, tolerance):
+    def _initialize(self, target):
         return MstepResult(None, None, None)
 
     def expectation_step(self, t_source, target, sigma2, w=0.0):
@@ -44,7 +44,7 @@ class CoherentPointDrift():
         c *= w / (1.0 - w) * t_source.shape[0] / target.shape[0]
         gtrans = gt.GaussTransform(t_source, h)
         kt1 = gtrans.compute(target)
-        kt1[kt1==0] = np.finfo(float).eps
+        kt1[kt1==0] = np.finfo(np.float32).eps
         a = 1.0 / (kt1 + c)
         pt1 = 1.0 - c * a
         gtrans = gt.GaussTransform(target, h)
@@ -60,15 +60,15 @@ class CoherentPointDrift():
         return None
 
     def registration(self, target, w=0.0,
-                     max_iteration=50, tolerance=0.001):
+                     max_iteration=50, tol=0.001):
         assert not self._tf_type is None, "transformation type is None."
-        res = self._initialize(target, tolerance)
+        res = self._initialize(target)
         q = res.q
         for _ in range(max_iteration):
             t_source = res.transformation.transform(self._source)
             estep_res = self.expectation_step(t_source, target, res.sigma2, w)
             res = self.maximization_step(target, estep_res, res.sigma2)
-            if abs(res.q - q) < tolerance:
+            if abs(res.q - q) < tol:
                 break
             q = res.q
         return res
@@ -78,7 +78,7 @@ class RigidCPD(CoherentPointDrift):
         super(RigidCPD, self).__init__(source)
         self._tf_type = tf.RigidTransformation
 
-    def _initialize(self, target, tolerance):
+    def _initialize(self, target):
         ndim = self._source.shape[1]
         sigma2 = mu.msn_all_combination(self._source, target)
         q = 1.0 + target.shape[0] * ndim * 0.5 * np.log(sigma2)
@@ -112,7 +112,7 @@ class AffineCPD(CoherentPointDrift):
         super(AffineCPD, self).__init__(source)
         self._tf_type = tf.AffineTransformation
 
-    def _initialize(self, target, tolerance):
+    def _initialize(self, target):
         ndim = self._source.shape[1]
         sigma2 = mu.msn_all_combination(self._source, target)
         q = 1.0 + target.shape[0] * ndim * 0.5 * np.log(sigma2)
@@ -155,7 +155,7 @@ class NonRigidCPD(CoherentPointDrift):
     def maximization_step(self, target, estep_res, sigma2_p=None):
         return self._maximization_step(self._source, target, estep_res, sigma2_p, self._g, self._lmd)
 
-    def _initialize(self, target, tolerance):
+    def _initialize(self, target):
         ndim = self._source.shape[1]
         sigma2 = mu.msn_all_combination(self._source, target)
         q = 1.0 + target.shape[0] * ndim * 0.5 * np.log(sigma2)
