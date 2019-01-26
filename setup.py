@@ -80,6 +80,18 @@ ext_modules = [
         ],
         language='c++'
     ),
+    Extension(
+        'probreg._permutohedral_lattice',
+        ['probreg/cc/permutohedral_lattice_py.cc'],
+        include_dirs=[
+            # Path to pybind11 headers
+            get_pybind_include(),
+            get_pybind_include(user=True),
+            find_eigen(['third_party/eigen']),
+            'third_party/permutohedral'
+        ],
+        language='c++'
+    ),
 ]
 
 

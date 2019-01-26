@@ -8,6 +8,7 @@ Implementation of point cloud **reg**istration algorithms using **prob**ablistic
 * [GMMReg](https://github.com/bing-jian/gmmreg)
 * [Support Vector Registration](https://arxiv.org/pdf/1511.04240.pdf)
 * [GMMTree](https://arxiv.org/pdf/1807.02587.pdf)
+* [FilterReg](https://arxiv.org/pdf/1811.10136.pdf)
 
 ## Install
 
