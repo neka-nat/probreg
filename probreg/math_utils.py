@@ -12,6 +12,20 @@ def msn_all_combination(a, b):
 def gaussian_kernel(x, beta):
     return _math.gaussian_kernel(x, beta)
 
+def skew(x):
+    return np.array([[0.0, -x[2], x[1]],
+                     [x[2], 0.0, -x[0]],
+                     [-x[1], x[0], 0.0]])
+
+def twist_trans(tw):
+    return np.array([[1.0, -tw[2], tw[1]],
+                     [tw[2], 1.0, -tw[0]],
+                     [-tw[1], tw[0], 1.0]]), np.array(tw[3:])
+
+def twist_mul(tw, rot, t):
+    tr, tt = twist_trans(tw)
+    return np.dot(tr, rot), np.dot(t, tr.T) + tt
+
 def diff_rot_from_quaternion(q):
     rot = trans.quaternion_matrix(q)[:3, :3]
     q2 = np.square(q)

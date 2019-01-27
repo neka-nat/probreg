@@ -20,7 +20,8 @@ class Transformation():
         return points
 
 class RigidTransformation(Transformation):
-    def __init__(self, rot, t, scale=1.0):
+    def __init__(self, rot=np.identity(3),
+                 t=np.zeros(3), scale=1.0):
         super(RigidTransformation, self).__init__()
         self.rot = rot
         self.t = t
@@ -30,7 +31,8 @@ class RigidTransformation(Transformation):
         return self.scale * np.dot(points, self.rot.T) + self.t
 
 class AffineTransformation(Transformation):
-    def __init__(self, b, t):
+    def __init__(self, b=np.identity(3),
+                 t=np.zeros(3)):
         super(AffineTransformation, self).__init__()
         self.b = b
         self.t = t

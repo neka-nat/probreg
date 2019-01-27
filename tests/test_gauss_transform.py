@@ -14,7 +14,7 @@ class GaussTransformTest(unittest.TestCase):
         idxs = _ifgt._kcenter_clustering(x, 2)
         self.assertTrue((idxs[:n] != idxs[n:]).all())
 
-    def test_gaussian_transform(self):
+    def test_gauss_transform(self):
         x = np.random.rand(5, 3)
         y = np.random.rand(5, 3)
         w = np.random.rand(5)
