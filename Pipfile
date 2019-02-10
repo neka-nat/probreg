@@ -11,6 +11,7 @@ transformations = "*"
 scipy = "*"
 scikit-learn = "*"
 "e1839a8" = {path = ".", editable = true}
+sphinx = "*"
 
 [dev-packages]
 
