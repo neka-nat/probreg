@@ -13,7 +13,7 @@ target.points = o3.Vector3dVector(tp + 0.001 * np.random.randn(*tp.shape))
 ans = trans.euler_matrix(*np.deg2rad([0.0, 0.0, 30.0]))
 target.transform(ans)
 
-tf_param, _, _ = filterreg.registration_filterreg(source, target, sigma2=1.0)
+tf_param, _, _ = filterreg.registration_filterreg(source, target, sigma2=0.01)
 rot = trans.identity_matrix()
 rot[:3, :3] = tf_param.rot
 print("result: ", np.rad2deg(trans.euler_from_matrix(rot)),

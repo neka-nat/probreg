@@ -4,8 +4,11 @@ import numpy as np
 from . import _ifgt
 
 def _gauss_transform_direct(source, target, weights, h):
+    """
+    \sum_{j} weights[j] * \exp{ - \frac{||target[i] - source[j]||^2}{h^2} }
+    """
     h2 = h * h
-    fn = lambda t: np.dot(weights, np.exp(-np.sum(np.square(source - t), axis=1) / h2))
+    fn = lambda t: np.dot(weights, np.exp(-np.sum(np.square(t - source), axis=1) / h2))
     return np.apply_along_axis(fn, 1, target)
 
 class Direct(object):

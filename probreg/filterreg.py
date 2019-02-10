@@ -58,9 +58,9 @@ class FilterReg():
             estep_res = self.expectation_step(t_source, target, self._sigma2)
             res = self.maximization_step(t_source, target, estep_res, w=w)
             self._tf_result = res.transformation
-            #if abs(res.q - q) < tol:
-            #    break
-            #q = res.q
+            if not q is None and abs(res.q - q) < tol:
+                break
+            q = res.q
         return res
 
 
@@ -85,17 +85,18 @@ class RigidFilterReg(FilterReg):
         for _ in range(max_iteration):
             x = tf.RigidTransformation(*mu.twist_trans(tw)).transform(t_source)
             rx = drxdx * (x - m1m0)
-            dxdz = np.apply_along_axis(lambda x: np.c_[mu.skew(x), np.identity(ndim)],
+            dxdz = np.apply_along_axis(lambda x: np.c_[mu.skew(x).T, np.identity(ndim)],
                                        1, x)
             drxdth = np.einsum('ij,ijl->ijl', drxdx, dxdz)
-            a = np.einsum('ijk, ijl->kl', drxdth, drxdth)
-            b = np.einsum('ijk, ij->k', drxdth, rx)
+            a = np.einsum('ijk,ijl->kl', drxdth, drxdth)
+            b = np.einsum('ijk,ij->k', drxdth, rx)
             dtw = np.linalg.solve(a, b)
             tw -= dtw
             if np.linalg.norm(dtw) < tol:
                 break
         rot, t = mu.twist_mul(tw, trans_p.rot, trans_p.t)
-        return MstepResult(tf.RigidTransformation(rot, t), sigma2, None)
+        q = np.einsum('ij,ij', rx, rx)
+        return MstepResult(tf.RigidTransformation(rot, t), sigma2, q)
 
 
 def registration_filterreg(source, target, sigma2=None):

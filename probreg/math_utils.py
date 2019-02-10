@@ -18,9 +18,7 @@ def skew(x):
                      [-x[1], x[0], 0.0]])
 
 def twist_trans(tw):
-    return np.array([[1.0, -tw[2], tw[1]],
-                     [tw[2], 1.0, -tw[0]],
-                     [-tw[1], tw[0], 1.0]]), np.array(tw[3:])
+    return np.identity(3) + skew(tw[:3]), tw[3:]
 
 def twist_mul(tw, rot, t):
     tr, tt = twist_trans(tw)
