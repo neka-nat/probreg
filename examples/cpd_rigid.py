@@ -3,15 +3,9 @@ import numpy as np
 import open3d as o3
 import transformations as trans
 from probreg import cpd
+import utils
 
-source = o3.read_point_cloud("bunny.pcd")
-source = o3.voxel_down_sample(source, voxel_size=0.005)
-print(source)
-target = copy.deepcopy(source)
-tp = np.asarray(target.points)
-target.points = o3.Vector3dVector(tp + 0.001 * np.random.randn(*tp.shape))
-ans = trans.euler_matrix(*np.deg2rad([0.0, 0.0, 30.0]))
-target.transform(ans)
+source, target = utils.create_source_and_target('bunny.pcd')
 
 tf_param, _, _ = cpd.registration_cpd(source, target)
 rot = trans.identity_matrix()
