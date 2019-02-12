@@ -13,6 +13,10 @@ def gaussian_kernel(x, beta):
     return _math.gaussian_kernel(x, beta)
 
 def skew(x):
+    """
+    skew-symmetric matrix, that represent
+    cross products as matrix multiplications.
+    """
     return np.array([[0.0, -x[2], x[1]],
                      [x[2], 0.0, -x[0]],
                      [-x[1], x[0], 0.0]])

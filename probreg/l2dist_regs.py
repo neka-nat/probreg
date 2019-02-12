@@ -16,33 +16,25 @@ from . import math_utils as mu
 
 @six.add_metaclass(abc.ABCMeta)
 class L2DistRegistration():
-    def __init__(self, source, sigma=1.0,
-                 delta=0.9, use_estimated_sigma=True):
+    def __init__(self, source, feature_gen,
+                 sigma=1.0, delta=0.9, use_estimated_sigma=True):
         self._source = source
+        self._feature_gen = feature_gen
+        self._feature_gen.init()
         self._tf_type = tf.RigidTransformation
         self._sigma = sigma
         self._delta = delta
         self._use_estimated_sigma = use_estimated_sigma
         if not self._source is None and self._use_estimated_sigma:
             self._estimate_sigma(self._source)
-        self._clf = self._create_classification()
         if not self._source is None:
-            self._mu_source, self._phi_source = self._compute_classification(self._source)
+            self._mu_source, self._phi_source = self._feature_gen.compute(self._source)
 
     def set_source(self, source):
         self._source = source
         if self._use_estimated_sigma:
             self._estimate_sigma(self._source)
-            self._clf = self._create_classification()
-        self._mu_source, self._phi_source = self._compute_classification(self._source)
-
-    @abc.abstractmethod
-    def _create_classification(self):
-        return None
-
-    @abc.abstractmethod
-    def _compute_classification(self, data):
-        return None, None
+        self._mu_source, self._phi_source = self._feature_gen.compute(self._source)
 
     def _estimate_sigma(self, data):
         ndata, ndim = data.shape
@@ -71,7 +63,7 @@ class L2DistRegistration():
         self._sigma *= self._delta
 
     def registration(self, target):
-        mu_target, phi_target = self._compute_classification(target)
+        mu_target, phi_target = self._feature_gen.compute(target)
         x0 = np.zeros(7)
         x0[0] = 1.0
         res = minimize(self.obj_func, x0,
@@ -82,41 +74,55 @@ class L2DistRegistration():
         return self._to_transformation(res.x)
 
 
+class GMM(object):
+    def __init__(self, n_gmm_components=800):
+        self._n_gmm_components = n_gmm_components
+
+    def init(self):
+        self._clf = mixture.GaussianMixture(n_components=self._n_gmm_components,
+                                            covariance_type='spherical')
+
+    def compute(self, data):
+        self._clf.fit(data)
+        return self._clf.means_, self._clf.weights_
+
+
+class OneClassSVM(object):
+    def __init__(self, ndim, sigma, gamma=0.5):
+        self._ndim = ndim
+        self._sigma = sigma
+        self._gamma = gamma
+
+    def init(self):
+        self._clf = svm.OneClassSVM(nu=0.1, kernel="rbf", gamma=self._gamma)
+
+    def compute(self, data):
+        self._clf.fit(data)
+        z = np.power(2.0 * np.pi * self._sigma**2, self._ndim * 0.5)
+        return self._clf.support_vectors_, self._clf.dual_coef_[0] * z
+
+
 class GMMReg(L2DistRegistration):
     def __init__(self, source, sigma=1.0, delta=0.9,
                  n_gmm_components=800, use_estimated_sigma=True):
-        self._n_gmm_components = n_gmm_components
-        super(GMMReg, self).__init__(source, sigma, delta,
+        super(GMMReg, self).__init__(source, GMM(n_gmm_components),
+                                     sigma, delta,
                                      use_estimated_sigma)
-
-    def _create_classification(self):
-        return mixture.GaussianMixture(n_components=self._n_gmm_components,
-                                       covariance_type='spherical')
-
-    def _compute_classification(self, data):
-        self._clf.fit(data)
-        return self._clf.means_, self._clf.weights_
 
 
 class SupportVectorRegistration(L2DistRegistration):
     def __init__(self, source, sigma=1.0, delta=0.9,
                  gamma=0.5, use_estimated_sigma=True):
-        self._gamma = gamma
         super(SupportVectorRegistration, self).__init__(source,
+                                                        OneClassSVM(source.shape[1],
+                                                                    sigma, gamma),
                                                         sigma, delta,
                                                         use_estimated_sigma)
 
     def _estimate_sigma(self, data):
         super(SupportVectorRegistration, self)._estimate_sigma(data)
-        self._gamma = 1.0 / (2.0 * np.square(self._sigma))
-
-    def _create_classification(self):
-        return svm.OneClassSVM(nu=0.1, kernel="rbf", gamma=self._gamma)
-
-    def _compute_classification(self, data):
-        self._clf.fit(data)
-        z = np.power(2.0 * np.pi * self._sigma**2, self._source.shape[1] * 0.5)
-        return self._clf.support_vectors_, self._clf.dual_coef_[0] * z
+        self._feature_gen._gamma = 1.0 / (2.0 * np.square(self._sigma))
+        self._feature_gen.init()
 
 
 def registration_gmmreg(source, target):
