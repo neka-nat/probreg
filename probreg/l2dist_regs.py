@@ -5,12 +5,11 @@ from collections import namedtuple
 import six
 import numpy as np
 from scipy.optimize import minimize
-from sklearn import mixture
-from sklearn import svm
 import open3d as o3
 import transformations as trans
 from . import transformation as tf
 from . import gauss_transform as gt
+from . import features as ft
 from . import math_utils as mu
 
 
@@ -74,38 +73,10 @@ class L2DistRegistration():
         return self._to_transformation(res.x)
 
 
-class GMM(object):
-    def __init__(self, n_gmm_components=800):
-        self._n_gmm_components = n_gmm_components
-
-    def init(self):
-        self._clf = mixture.GaussianMixture(n_components=self._n_gmm_components,
-                                            covariance_type='spherical')
-
-    def compute(self, data):
-        self._clf.fit(data)
-        return self._clf.means_, self._clf.weights_
-
-
-class OneClassSVM(object):
-    def __init__(self, ndim, sigma, gamma=0.5):
-        self._ndim = ndim
-        self._sigma = sigma
-        self._gamma = gamma
-
-    def init(self):
-        self._clf = svm.OneClassSVM(nu=0.1, kernel="rbf", gamma=self._gamma)
-
-    def compute(self, data):
-        self._clf.fit(data)
-        z = np.power(2.0 * np.pi * self._sigma**2, self._ndim * 0.5)
-        return self._clf.support_vectors_, self._clf.dual_coef_[0] * z
-
-
 class GMMReg(L2DistRegistration):
     def __init__(self, source, sigma=1.0, delta=0.9,
                  n_gmm_components=800, use_estimated_sigma=True):
-        super(GMMReg, self).__init__(source, GMM(n_gmm_components),
+        super(GMMReg, self).__init__(source, ft.GMM(n_gmm_components),
                                      sigma, delta,
                                      use_estimated_sigma)
 
@@ -114,8 +85,8 @@ class SupportVectorRegistration(L2DistRegistration):
     def __init__(self, source, sigma=1.0, delta=0.9,
                  gamma=0.5, use_estimated_sigma=True):
         super(SupportVectorRegistration, self).__init__(source,
-                                                        OneClassSVM(source.shape[1],
-                                                                    sigma, gamma),
+                                                        ft.OneClassSVM(source.shape[1],
+                                                                       sigma, gamma),
                                                         sigma, delta,
                                                         use_estimated_sigma)
 
