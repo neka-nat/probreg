@@ -19,3 +19,23 @@ probreg::gaussianKernel(const Matrix& x, Float beta) {
     }
     return g.selfadjointView<Eigen::Upper>();
 }
+
+Matrix
+probreg::tpsKernel2d(const Matrix& x, const Matrix& y) {
+    Matrix k = Matrix::Zero(x.rows(), y.rows());
+    for (Integer i = 0; i < y.rows(); ++i) {
+        auto diff = (x.rowwise() - y.row(i)).rowwise().norm();
+        k(Eigen::all, i) = diff.array().pow(2) * diff.array().log();
+    }
+    return k.selfadjointView<Eigen::Upper>();
+}
+
+Matrix
+probreg::tpsKernel3d(const Matrix& x, const Matrix& y) {
+    Matrix k = Matrix::Zero(x.rows(), y.rows());
+    for (Integer i = 0; i < y.rows(); ++i) {
+        auto diff = (x.rowwise() - y.row(i)).rowwise().norm();
+        k(Eigen::all, i) = -diff;
+    }
+    return k.selfadjointView<Eigen::Upper>();
+}

@@ -48,3 +48,13 @@ class NonRigidTransformation(Transformation):
 
     def _transform(self, points):
         return points + np.dot(self.g, self.w)
+
+class ThinPlateSplineTransformation(Transformation):
+    def __init__(self, a, un, v):
+        super(ThinPlateSplineTransformation, self).__init__()
+        self.a = a
+        self.un = un
+        self.v = v
+
+    def _transform(self, points):
+        return np.dot(np.c_[np.ones((points.shape[0], 1)), points], self.a.T) + np.dot(self.un, self.v)
