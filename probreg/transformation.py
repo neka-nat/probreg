@@ -2,6 +2,7 @@ import abc
 import six
 import numpy as np
 import open3d as o3
+from . import math_utils as mu
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -49,12 +50,25 @@ class NonRigidTransformation(Transformation):
     def _transform(self, points):
         return points + np.dot(self.g, self.w)
 
-class ThinPlateSplineTransformation(Transformation):
-    def __init__(self, a, un, v):
-        super(ThinPlateSplineTransformation, self).__init__()
+class TPSTransformation(Transformation):
+    def __init__(self, a, v):
+        super(TPSTransformation, self).__init__()
         self.a = a
-        self.un = un
         self.v = v
 
-    def _transform(self, points):
-        return np.dot(np.c_[np.ones((points.shape[0], 1)), points], self.a.T) + np.dot(self.un, self.v)
+    @staticmethod
+    def prepare(landmarks, control_pts):
+        m, d = landmarks.shape
+        n, _ = control_pts.shape
+        pm = np.c_[np.ones((m, 1)), landmarks]
+        pn = np.c_[np.ones((n, 1)), control_pts]
+        u, _, _ = np.linalg.svd(pn)
+        pp = u[:, d + 1:]
+        kk = mu.tps_kernel(control_pts, control_pts)
+        uu = mu.tps_kernel(landmarks, control_pts)
+        basis = np.c_[pm, np.dot(uu, pp)]
+        kernel = np.dot(pp.T, np.dot(kk, pp))
+        return basis, kernel
+
+    def _transform(self, basis):
+        return np.dot(basis, np.r_[self.a, self.v])

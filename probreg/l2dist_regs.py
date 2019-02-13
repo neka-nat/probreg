@@ -48,9 +48,11 @@ class L2DistRegistration():
 
     def registration(self, target):
         mu_target, phi_target = self._feature_gen.compute(target)
-        res = minimize(self._obj_func, self._cost_fn.initial(),
-                       args=(self._mu_source, self._phi_source,
-                             mu_target, phi_target, self._sigma),
+        args = (self._mu_source, self._phi_source,
+                mu_target, phi_target, self._sigma)
+        res = minimize(self._obj_func,
+                       self._cost_fn.initial(*args),
+                       args=args,
                        method='BFGS', jac=True,
                        callback=self._optimization_cb)
         return self._cost_fn.to_transformation(res.x)
@@ -63,6 +65,15 @@ class RigidGMMReg(L2DistRegistration):
                                           cf.RigidCostFunction(),
                                           sigma, delta,
                                           use_estimated_sigma)
+
+
+class TPSGMMReg(L2DistRegistration):
+    def __init__(self, source, sigma=1.0, delta=0.9,
+                 n_gmm_components=800, use_estimated_sigma=True):
+        super(TPSGMMReg, self).__init__(source, ft.GMM(n_gmm_components),
+                                        cf.TPSCostFunction(source.shape[1]),
+                                        sigma, delta,
+                                        use_estimated_sigma)
 
 
 class RigidSupportVectorRegistration(L2DistRegistration):
@@ -82,9 +93,28 @@ class RigidSupportVectorRegistration(L2DistRegistration):
         self._feature_gen.init()
 
 
+class TPSSupportVectorRegistration(L2DistRegistration):
+    def __init__(self, source, sigma=1.0, delta=0.9,
+                 gamma=0.5, use_estimated_sigma=True):
+        super(TPSSupportVectorRegistration, self).__init__(source,
+                                                           ft.OneClassSVM(source.shape[1],
+                                                                          sigma, gamma),
+                                                           cf.TPSCostFunction(source.shape[1]),
+                                                           sigma, delta,
+                                                           use_estimated_sigma)
+
+    def _estimate_sigma(self, data):
+        super(TPSSupportVectorRegistration, self)._estimate_sigma(data)
+        self._feature_gen._sigma = self._sigma
+        self._feature_gen._gamma = 1.0 / (2.0 * np.square(self._sigma))
+        self._feature_gen.init()
+
+
 def registration_gmmreg(source, target, tf_type_name='rigid'):
     if tf_type_name == 'rigid':
         gmmreg = RigidGMMReg(np.asarray(source.points))
+    elif tf_type_name == 'nonrigid':
+        gmmreg = TPSGMMReg(np.asarray(source.points))
     else:
         raise ValueError('Unknown transform type %s' % tf_type_name)
     return gmmreg.registration(np.asarray(target.points))
@@ -92,6 +122,8 @@ def registration_gmmreg(source, target, tf_type_name='rigid'):
 def registration_svr(source, target, tf_type_name='rigid'):
     if tf_type_name == 'rigid':
         svr = RigidSupportVectorRegistration(np.asarray(source.points))
+    elif tf_type_name == 'norigid':
+        svr = TPSSupportVectorRegistration(np.asarray(source.points))
     else:
         raise ValueError('Unknown transform type %s' % tf_type_name)
     return svr.registration(np.asarray(target.points))
