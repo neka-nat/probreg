@@ -6,21 +6,19 @@ import six
 import numpy as np
 from scipy.optimize import minimize
 import open3d as o3
-import transformations as trans
-from . import transformation as tf
-from . import gauss_transform as gt
 from . import features as ft
-from . import math_utils as mu
+from . import cost_functions as cf
 
 
 @six.add_metaclass(abc.ABCMeta)
 class L2DistRegistration():
-    def __init__(self, source, feature_gen,
-                 sigma=1.0, delta=0.9, use_estimated_sigma=True):
+    def __init__(self, source, feature_gen, cost_fn,
+                 sigma=1.0, delta=0.9,
+                 use_estimated_sigma=True):
         self._source = source
         self._feature_gen = feature_gen
         self._feature_gen.init()
-        self._tf_type = tf.RigidTransformation
+        self._cost_fn = cost_fn
         self._sigma = sigma
         self._delta = delta
         self._use_estimated_sigma = use_estimated_sigma
@@ -40,67 +38,60 @@ class L2DistRegistration():
         data_hat = data - np.mean(data, axis=0)
         self._sigma = np.power(np.linalg.det(np.dot(data_hat.T, data_hat) / (ndata - 1)), 1.0 / (2.0 * ndim))
 
-    def _to_transformation(self, theta):
-        rot = trans.quaternion_matrix(theta[:4])[:3, :3]
-        return self._tf_type(rot, theta[4:7])
-
-    def obj_func(self, theta, *args):
+    def _obj_func(self, theta, *args):
         mu_source, phi_source, mu_target, phi_target, sigma = args
-        z = np.power(2.0 * np.pi * sigma**2, mu_source.shape[1] * 0.5)
-        tf_obj = self._to_transformation(theta)
-        t_mu_source = tf_obj.transform(mu_source)
-        gtrans = gt.GaussTransform(mu_target, np.sqrt(2.0) * sigma)
-        phi_j_e = gtrans.compute(t_mu_source, phi_target / z)
-        phi_mu_j_e = gtrans.compute(t_mu_source, phi_target * mu_target.T / z).T
-        g = (phi_source * phi_j_e * t_mu_source.T - phi_source * phi_mu_j_e.T).T / (2.0 * sigma**2)
-        d_rot = mu.diff_rot_from_quaternion(theta[:4])
-        gtm0 = np.dot(g.T, mu_source)
-        grad = np.concatenate([(gtm0 * d_rot).sum(axis=(1, 2)), g.sum(axis=0)])
-        return -np.dot(phi_source, phi_j_e), grad
+        return self._cost_fn(theta, mu_source, phi_source,
+                             mu_target, phi_target, sigma)
 
     def _optimization_cb(self, x):
         self._sigma *= self._delta
 
     def registration(self, target):
         mu_target, phi_target = self._feature_gen.compute(target)
-        x0 = np.zeros(7)
-        x0[0] = 1.0
-        res = minimize(self.obj_func, x0,
+        res = minimize(self._obj_func, self._cost_fn.initial(),
                        args=(self._mu_source, self._phi_source,
                              mu_target, phi_target, self._sigma),
                        method='BFGS', jac=True,
                        callback=self._optimization_cb)
-        return self._to_transformation(res.x)
+        return self._cost_fn.to_transformation(res.x)
 
 
-class GMMReg(L2DistRegistration):
+class RigidGMMReg(L2DistRegistration):
     def __init__(self, source, sigma=1.0, delta=0.9,
                  n_gmm_components=800, use_estimated_sigma=True):
-        super(GMMReg, self).__init__(source, ft.GMM(n_gmm_components),
-                                     sigma, delta,
-                                     use_estimated_sigma)
+        super(RigidGMMReg, self).__init__(source, ft.GMM(n_gmm_components),
+                                          cf.RigidCostFunction(),
+                                          sigma, delta,
+                                          use_estimated_sigma)
 
 
-class SupportVectorRegistration(L2DistRegistration):
+class RigidSupportVectorRegistration(L2DistRegistration):
     def __init__(self, source, sigma=1.0, delta=0.9,
                  gamma=0.5, use_estimated_sigma=True):
-        super(SupportVectorRegistration, self).__init__(source,
-                                                        ft.OneClassSVM(source.shape[1],
-                                                                       sigma, gamma),
-                                                        sigma, delta,
-                                                        use_estimated_sigma)
+        super(RigidSupportVectorRegistration, self).__init__(source,
+                                                             ft.OneClassSVM(source.shape[1],
+                                                                            sigma, gamma),
+                                                             cf.RigidCostFunction(),
+                                                             sigma, delta,
+                                                             use_estimated_sigma)
 
     def _estimate_sigma(self, data):
-        super(SupportVectorRegistration, self)._estimate_sigma(data)
+        super(RigidSupportVectorRegistration, self)._estimate_sigma(data)
         self._feature_gen._sigma = self._sigma
         self._feature_gen._gamma = 1.0 / (2.0 * np.square(self._sigma))
         self._feature_gen.init()
 
 
-def registration_gmmreg(source, target):
-    gmmreg = GMMReg(np.asarray(source.points))
+def registration_gmmreg(source, target, tf_type_name='rigid'):
+    if tf_type_name == 'rigid':
+        gmmreg = RigidGMMReg(np.asarray(source.points))
+    else:
+        raise ValueError('Unknown transform type %s' % tf_type_name)
     return gmmreg.registration(np.asarray(target.points))
 
-def registration_svr(source, target):
-    svr = SupportVectorRegistration(np.asarray(source.points))
+def registration_svr(source, target, tf_type_name='rigid'):
+    if tf_type_name == 'rigid':
+        svr = RigidSupportVectorRegistration(np.asarray(source.points))
+    else:
+        raise ValueError('Unknown transform type %s' % tf_type_name)
     return svr.registration(np.asarray(target.points))

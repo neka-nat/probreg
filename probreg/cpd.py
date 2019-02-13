@@ -181,15 +181,15 @@ class NonRigidCPD(CoherentPointDrift):
         return MstepResult(tf.NonRigidTransformation(g, w), sigma2, sigma2)
 
 
-def registration_cpd(source, target, transform_type='rigid',
+def registration_cpd(source, target, tf_type_name='rigid',
                      w=0.0, max_iteration=100, tol=0.001, **kargs):
-    if transform_type == 'rigid':
+    if tf_type_name == 'rigid':
         cpd = RigidCPD(np.asarray(source.points), **kargs)
-    elif transform_type == 'affine':
+    elif tf_type_name == 'affine':
         cpd = AffineCPD(np.asarray(source.points), **kargs)
-    elif transform_type == 'nonrigid':
+    elif tf_type_name == 'nonrigid':
         cpd = NonRigidCPD(np.asarray(source.points), **kargs)
     else:
-        raise ValueError('Unknown transform_type %s' % transform_type)
+        raise ValueError('Unknown transform type %s' % tf_type_name)
     return cpd.registration(np.asarray(target.points),
                             w, max_iteration, tol)
