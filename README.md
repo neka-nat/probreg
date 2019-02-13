@@ -5,7 +5,7 @@ Implementation of point cloud **reg**istration algorithms using **prob**ablistic
 ## Algorithms
 
 * [Coherent Point Drift](https://arxiv.org/pdf/0905.2635.pdf)
-* [GMMReg](https://github.com/bing-jian/gmmreg)
+* [GMMReg](https://ieeexplore.ieee.org/document/5674050)
 * [Support Vector Registration](https://arxiv.org/pdf/1511.04240.pdf)
 * [GMMTree](https://arxiv.org/pdf/1807.02587.pdf)
 * [FilterReg](https://arxiv.org/pdf/1811.10136.pdf)
