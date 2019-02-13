@@ -92,6 +92,7 @@ class SupportVectorRegistration(L2DistRegistration):
 
     def _estimate_sigma(self, data):
         super(SupportVectorRegistration, self)._estimate_sigma(data)
+        self._feature_gen._sigma = self._sigma
         self._feature_gen._gamma = 1.0 / (2.0 * np.square(self._sigma))
         self._feature_gen.init()
 
