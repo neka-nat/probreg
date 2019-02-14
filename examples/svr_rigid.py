@@ -5,7 +5,7 @@ import transformations as trans
 from probreg import l2dist_regs
 import utils
 
-source, target = utils.create_source_and_target('bunny.pcd')
+source, target = utils.prepare_source_and_target_rigid_3d('bunny.pcd')
 
 tf_param = l2dist_regs.registration_svr(source, target)
 rot = trans.identity_matrix()

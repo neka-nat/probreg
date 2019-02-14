@@ -5,7 +5,7 @@ import transformations as trans
 from probreg import filterreg
 import utils
 
-source, target = utils.create_source_and_target('bunny.pcd')
+source, target = utils.prepare_source_and_target_rigid_3d('bunny.pcd')
 
 tf_param, _, _ = filterreg.registration_filterreg(source, target, sigma2=0.01)
 rot = trans.identity_matrix()

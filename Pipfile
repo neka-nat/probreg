@@ -12,6 +12,7 @@ scipy = "*"
 scikit-learn = "*"
 "e1839a8" = {path = ".", editable = true}
 sphinx = "*"
+matplotlib = "*"
 
 [dev-packages]
 

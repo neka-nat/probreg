@@ -5,7 +5,7 @@ import transformations as trans
 from probreg import cpd
 import utils
 
-source, target = utils.create_source_and_target('bunny.pcd')
+source, target = utils.prepare_source_and_target_rigid_3d('bunny.pcd')
 
 tf_param, _, _ = cpd.registration_cpd(source, target)
 rot = trans.identity_matrix()
