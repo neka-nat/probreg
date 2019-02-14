@@ -164,20 +164,20 @@ class NonRigidCPD(CoherentPointDrift):
         ndim = self._source.shape[1]
         sigma2 = mu.msn_all_combination(self._source, target)
         q = 1.0 + target.shape[0] * ndim * 0.5 * np.log(sigma2)
-        return MstepResult(self._tf_type(self._g, np.zeros(self._source.shape[0])),
+        return MstepResult(self._tf_type(self._g, np.zeros_like(self._source)),
                            sigma2, q)
 
     @staticmethod
     def _maximization_step(source, target, estep_res, sigma2_p, g, lmd):
         pt1, p1, px, n_p = estep_res
         ndim = source.shape[1]
-        dp1_inv = np.diag(1.0 / p1)
-        w = np.linalg.solve(g + lmd * sigma2_p * dp1_inv, dp1_inv * px - source)
+        w = np.linalg.solve(p1 * g + lmd * sigma2_p * np.identity(source.shape[0]),
+                            px - (source.T * p1).T)
         t = source + np.dot(g, w)
         tr_xp1x = np.trace(np.dot(target.T * pt1, target))
-        tr_pxtt = np.trace(np.dot(px.T, t))
-        tr_ttp1t = np.trace(np.dot(t.T * p1, t))
-        sigma2 = (tr_xp1x - 2.0 * tr_pxtt + tr_ttp1t) / (n_p * ndim)
+        tr_pxt = np.trace(np.dot(px.T, t))
+        tr_tpt = np.trace(np.dot(t.T * p1, t))
+        sigma2 = (tr_xp1x - 2.0 * tr_pxt + tr_tpt) / (n_p * ndim)
         return MstepResult(tf.NonRigidTransformation(g, w), sigma2, sigma2)
 
 

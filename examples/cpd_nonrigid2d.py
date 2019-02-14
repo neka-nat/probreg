@@ -1,11 +1,11 @@
 import numpy as np
-from probreg import l2dist_regs
+from probreg import cpd
 import matplotlib.pyplot as plt
 import utils
 
 source, target = utils.prepare_source_and_target_nonrigid_2d('fish_source.txt',
                                                              'fish_target.txt')
-tf_param = l2dist_regs.registration_svr(source, target, 'nonrigid')
+tf_param, _, _ = cpd.registration_cpd(source, target, 'nonrigid')
 result = tf_param.transform(source)
 
 plt.plot(source[:, 0], source[:, 1], 'ro', label='source')
