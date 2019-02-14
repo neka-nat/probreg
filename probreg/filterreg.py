@@ -102,5 +102,6 @@ class RigidFilterReg(FilterReg):
 
 
 def registration_filterreg(source, target, sigma2=None):
-    frg = RigidFilterReg(np.asarray(source.points), sigma2)
-    return frg.registration(np.asarray(target.points))
+    cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
+    frg = RigidFilterReg(cv(source), sigma2)
+    return frg.registration(cv(target))

@@ -22,12 +22,13 @@ probreg::gaussianKernel(const Matrix& x, Float beta) {
 
 Matrix
 probreg::tpsKernel2d(const Matrix& x, const Matrix& y) {
+    static const Float eps = 1.0e-9;
     Matrix k = Matrix::Zero(x.rows(), y.rows());
     for (Integer i = 0; i < y.rows(); ++i) {
         auto diff = (x.rowwise() - y.row(i)).rowwise().norm();
-        k(Eigen::all, i) = diff.array().pow(2) * diff.array().log();
+        k(Eigen::all, i) = (diff.array() > eps).select(diff.array().pow(2) * diff.array().log(), 0.0);
     }
-    return k.selfadjointView<Eigen::Upper>();
+    return k;
 }
 
 Matrix
@@ -37,5 +38,5 @@ probreg::tpsKernel3d(const Matrix& x, const Matrix& y) {
         auto diff = (x.rowwise() - y.row(i)).rowwise().norm();
         k(Eigen::all, i) = -diff;
     }
-    return k.selfadjointView<Eigen::Upper>();
+    return k;
 }

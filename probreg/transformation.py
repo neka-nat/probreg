@@ -51,13 +51,15 @@ class NonRigidTransformation(Transformation):
         return points + np.dot(self.g, self.w)
 
 class TPSTransformation(Transformation):
-    def __init__(self, a, v):
+    def __init__(self, a, v, control_pts=None):
         super(TPSTransformation, self).__init__()
         self.a = a
         self.v = v
+        self.control_pts = control_pts
 
-    @staticmethod
-    def prepare(landmarks, control_pts):
+    def prepare(self, landmarks, control_pts=None):
+        if control_pts is None:
+            control_pts = self.control_pts
         m, d = landmarks.shape
         n, _ = control_pts.shape
         pm = np.c_[np.ones((m, 1)), landmarks]
@@ -70,5 +72,9 @@ class TPSTransformation(Transformation):
         kernel = np.dot(pp.T, np.dot(kk, pp))
         return basis, kernel
 
-    def _transform(self, basis):
+    def transform_basis(self, basis):
         return np.dot(basis, np.r_[self.a, self.v])
+
+    def _transform(self, points):
+        basis, _ = self.prepare(points)
+        return self.transform_basis(basis)

@@ -38,11 +38,6 @@ class L2DistRegistration():
         data_hat = data - np.mean(data, axis=0)
         self._sigma = np.power(np.linalg.det(np.dot(data_hat.T, data_hat) / (ndata - 1)), 1.0 / (2.0 * ndim))
 
-    def _obj_func(self, theta, *args):
-        mu_source, phi_source, mu_target, phi_target, sigma = args
-        return self._cost_fn(theta, mu_source, phi_source,
-                             mu_target, phi_target, sigma)
-
     def _optimization_cb(self, x):
         self._sigma *= self._delta
 
@@ -50,12 +45,12 @@ class L2DistRegistration():
         mu_target, phi_target = self._feature_gen.compute(target)
         args = (self._mu_source, self._phi_source,
                 mu_target, phi_target, self._sigma)
-        res = minimize(self._obj_func,
+        res = minimize(self._cost_fn,
                        self._cost_fn.initial(*args),
                        args=args,
                        method='BFGS', jac=True,
                        callback=self._optimization_cb)
-        return self._cost_fn.to_transformation(res.x)
+        return self._cost_fn.to_transformation(res.x, *args)
 
 
 class RigidGMMReg(L2DistRegistration):
@@ -111,19 +106,21 @@ class TPSSupportVectorRegistration(L2DistRegistration):
 
 
 def registration_gmmreg(source, target, tf_type_name='rigid'):
+    cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     if tf_type_name == 'rigid':
-        gmmreg = RigidGMMReg(np.asarray(source.points))
+        gmmreg = RigidGMMReg(cv(source))
     elif tf_type_name == 'nonrigid':
-        gmmreg = TPSGMMReg(np.asarray(source.points))
+        gmmreg = TPSGMMReg(cv(source))
     else:
         raise ValueError('Unknown transform type %s' % tf_type_name)
-    return gmmreg.registration(np.asarray(target.points))
+    return gmmreg.registration(cv(target))
 
 def registration_svr(source, target, tf_type_name='rigid'):
+    cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     if tf_type_name == 'rigid':
-        svr = RigidSupportVectorRegistration(np.asarray(source.points))
-    elif tf_type_name == 'norigid':
-        svr = TPSSupportVectorRegistration(np.asarray(source.points))
+        svr = RigidSupportVectorRegistration(cv(source))
+    elif tf_type_name == 'nonrigid':
+        svr = TPSSupportVectorRegistration(cv(source))
     else:
         raise ValueError('Unknown transform type %s' % tf_type_name)
-    return svr.registration(np.asarray(target.points))
+    return svr.registration(cv(target))

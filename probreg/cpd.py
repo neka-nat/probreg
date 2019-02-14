@@ -183,13 +183,14 @@ class NonRigidCPD(CoherentPointDrift):
 
 def registration_cpd(source, target, tf_type_name='rigid',
                      w=0.0, max_iteration=100, tol=0.001, **kargs):
+    cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     if tf_type_name == 'rigid':
-        cpd = RigidCPD(np.asarray(source.points), **kargs)
+        cpd = RigidCPD(cv(source), **kargs)
     elif tf_type_name == 'affine':
-        cpd = AffineCPD(np.asarray(source.points), **kargs)
+        cpd = AffineCPD(cv(source), **kargs)
     elif tf_type_name == 'nonrigid':
-        cpd = NonRigidCPD(np.asarray(source.points), **kargs)
+        cpd = NonRigidCPD(cv(source), **kargs)
     else:
         raise ValueError('Unknown transform type %s' % tf_type_name)
-    return cpd.registration(np.asarray(target.points),
+    return cpd.registration(cv(target),
                             w, max_iteration, tol)
