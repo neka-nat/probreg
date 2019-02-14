@@ -18,7 +18,8 @@ probreg::computeKCenterClustering(const Matrix& data, Integer num_clusters,
         counts.setZero();
         temp_centers.setZero();
         const Float err = updateClustering(data, cluster_centers, labels, counts, temp_centers);
-        cluster_centers = (temp_centers.array() / (counts.replicate(1, data.cols()).array() == 0).select(1, counts).array().cast<Float>()).matrix();
+        auto den = (counts.replicate(1, data.cols()).array() == 0).select(1, counts).array().cast<Float>();
+        cluster_centers = (temp_centers.array() / den).matrix();
         if (std::abs(err - p_err) < eps) break;
         p_err = err;
     }
