@@ -17,8 +17,7 @@ Install from source.
 ```
 git clone https://github.com/neka-nat/probreg.git --recursive
 cd probreg
-pipenv install
-pipenv shell
+pip install -e .
 ```
 
 ## Quick start
