@@ -26,3 +26,7 @@ pipenv shell
 ### Regid CPD
 
 ![rigid_cpd](images/cpd_rigid.gif)
+
+### Non rigid CPD
+
+![nonrigid_cpd](images/cpd_nonrigid.gif)

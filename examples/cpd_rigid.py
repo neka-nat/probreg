@@ -2,11 +2,12 @@ import numpy as np
 import open3d as o3
 import transformations as trans
 from probreg import cpd
+from probreg import callbacks
 import utils
 
 source, target = utils.prepare_source_and_target_rigid_3d('bunny.pcd')
 
-callbacks = [utils.Open3dVisualizerCallback(source, target)]
+callbacks = [callbacks.Open3dVisualizerCallback(source, target)]
 tf_param, _, _ = cpd.registration_cpd(source, target,
                                       callbacks=callbacks)
 rot = trans.identity_matrix()
