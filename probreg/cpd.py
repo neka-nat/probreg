@@ -26,9 +26,13 @@ class CoherentPointDrift():
     def __init__(self, source=None):
         self._source = source
         self._tf_type = None
+        self._callbacks = []
 
     def set_source(self, source):
         self._source = source
+
+    def set_callbacks(self, callbacks):
+        self._callbacks.extend(callbacks)
 
     @abc.abstractmethod
     def _initialize(self, target):
@@ -69,6 +73,8 @@ class CoherentPointDrift():
             t_source = res.transformation.transform(self._source)
             estep_res = self.expectation_step(t_source, target, res.sigma2, w)
             res = self.maximization_step(target, estep_res, res.sigma2)
+            for c in self._callbacks:
+                c(res)
             if abs(res.q - q) < tol:
                 break
             q = res.q
@@ -182,7 +188,8 @@ class NonRigidCPD(CoherentPointDrift):
 
 
 def registration_cpd(source, target, tf_type_name='rigid',
-                     w=0.0, max_iteration=100, tol=0.001, **kargs):
+                     w=0.0, max_iteration=100, tol=0.001,
+                     callbacks=[], **kargs):
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     if tf_type_name == 'rigid':
         cpd = RigidCPD(cv(source), **kargs)
@@ -192,5 +199,6 @@ def registration_cpd(source, target, tf_type_name='rigid',
         cpd = NonRigidCPD(cv(source), **kargs)
     else:
         raise ValueError('Unknown transform type %s' % tf_type_name)
+    cpd.set_callbacks(callbacks)
     return cpd.registration(cv(target),
                             w, max_iteration, tol)

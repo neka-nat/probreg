@@ -25,4 +25,4 @@ pipenv shell
 
 ### Regid CPD
 
-![rigid_cpd](images/rigid_cpd.png)
+![rigid_cpd](images/cpd_rigid.gif)
