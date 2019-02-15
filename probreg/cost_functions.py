@@ -63,7 +63,7 @@ class RigidCostFunction(CostFunction):
 
 
 class TPSCostFunction(CostFunction):
-    def __init__(self, ndim, alpha=1.0, beta=0.2):
+    def __init__(self, ndim, alpha=1.0, beta=0.1):
         self._tf_type = tf.TPSTransformation
         self._ndim = ndim
         self._alpha = alpha
@@ -86,7 +86,7 @@ class TPSCostFunction(CostFunction):
     def __call__(self, theta, *args):
         mu_source, phi_source, mu_target, phi_target, sigma = args
         tf_obj = self.to_transformation(theta, *args)
-        basis, kernel = tf_obj.prepare(mu_source, mu_source)
+        basis, kernel = tf_obj.prepare(mu_source)
         t_mu_source = tf_obj.transform_basis(basis)
         bending = np.trace(np.dot(tf_obj.v.T, np.dot(kernel, tf_obj.v)))
         f1, g1 = compute_l2_dist(t_mu_source, phi_source,

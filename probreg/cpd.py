@@ -171,7 +171,7 @@ class NonRigidCPD(CoherentPointDrift):
     def _maximization_step(source, target, estep_res, sigma2_p, g, lmd):
         pt1, p1, px, n_p = estep_res
         ndim = source.shape[1]
-        w = np.linalg.solve(p1 * g + lmd * sigma2_p * np.identity(source.shape[0]),
+        w = np.linalg.solve((p1 * g).T + lmd * sigma2_p * np.identity(source.shape[0]),
                             px - (source.T * p1).T)
         t = source + np.dot(g, w)
         tr_xp1x = np.trace(np.dot(target.T * pt1, target))

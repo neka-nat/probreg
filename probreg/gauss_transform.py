@@ -20,7 +20,7 @@ class Direct(object):
         return _gauss_transform_direct(self._source, target, weights, self._h)
 
 class GaussTransform(object):
-    def __init__(self, source, h, eps=1.0e-4, sw_h=0.05):
+    def __init__(self, source, h, eps=1.0e-4, sw_h=0.3):
         if h < sw_h:
             self._impl = Direct(source, h)
         else:
