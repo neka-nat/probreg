@@ -2,12 +2,14 @@
 
 using namespace probreg;
 
-Float
-probreg::meanSquareNormAllCombination(const Matrix& a, const Matrix& b) {
-    Float ans = 0.0;
-    for (Integer i = 0; i < b.rows(); ++i)
-        ans += (a.rowwise() - b.row(i)).rowwise().squaredNorm().sum();
-    return ans / (a.rows() * a.cols() * b.rows());
+Matrix
+probreg::kernelBase(const Matrix& x, const Matrix& y, const func_type& fn) {
+    Matrix k = Matrix::Zero(x.rows(), y.rows());
+    for (Integer i = 0; i < y.rows(); ++i) {
+        auto diff2 = (x.rowwise() - y.row(i)).rowwise().squaredNorm();
+        k(Eigen::all, i) = fn(diff2);
+    }
+    return k;
 }
 
 Matrix
@@ -21,22 +23,18 @@ probreg::gaussianKernel(const Matrix& x, Float beta) {
 }
 
 Matrix
+probreg::squaredKernel(const Matrix& x, const Matrix& y) {
+    return kernelBase(x, y);
+}
+
+Matrix
 probreg::tpsKernel2d(const Matrix& x, const Matrix& y) {
     static const Float eps = 1.0e-9;
-    Matrix k = Matrix::Zero(x.rows(), y.rows());
-    for (Integer i = 0; i < y.rows(); ++i) {
-        auto diff = (x.rowwise() - y.row(i)).rowwise().norm();
-        k(Eigen::all, i) = (diff.array() > eps).select(diff.array().pow(2) * diff.array().log(), 0.0);
-    }
-    return k;
+    return kernelBase(x, y,
+      [] (const Vector& diff2) {return (diff2.array() > eps).select(diff2.array() * diff2.array().sqrt().log(), 0.0);});
 }
 
 Matrix
 probreg::tpsKernel3d(const Matrix& x, const Matrix& y) {
-    Matrix k = Matrix::Zero(x.rows(), y.rows());
-    for (Integer i = 0; i < y.rows(); ++i) {
-        auto diff = (x.rowwise() - y.row(i)).rowwise().norm();
-        k(Eigen::all, i) = -diff;
-    }
-    return k;
+   return kernelBase(x, y, [] (const Vector& diff2) {return -diff2.array().sqrt();});
 }

@@ -81,7 +81,7 @@ class RigidCPD(CoherentPointDrift):
 
     def _initialize(self, target):
         ndim = self._source.shape[1]
-        sigma2 = mu.msn_all_combination(self._source, target)
+        sigma2 = mu.squared_kernel_sum(self._source, target)
         q = 1.0 + target.shape[0] * ndim * 0.5 * np.log(sigma2)
         return MstepResult(self._tf_type(np.identity(ndim), np.zeros(ndim)), sigma2, q)
 
@@ -116,7 +116,7 @@ class AffineCPD(CoherentPointDrift):
 
     def _initialize(self, target):
         ndim = self._source.shape[1]
-        sigma2 = mu.msn_all_combination(self._source, target)
+        sigma2 = mu.squared_kernel_sum(self._source, target)
         q = 1.0 + target.shape[0] * ndim * 0.5 * np.log(sigma2)
         return MstepResult(self._tf_type(np.identity(ndim), np.zeros(ndim)),
                            sigma2, q)
@@ -162,7 +162,7 @@ class NonRigidCPD(CoherentPointDrift):
 
     def _initialize(self, target):
         ndim = self._source.shape[1]
-        sigma2 = mu.msn_all_combination(self._source, target)
+        sigma2 = mu.squared_kernel_sum(self._source, target)
         q = 1.0 + target.shape[0] * ndim * 0.5 * np.log(sigma2)
         return MstepResult(self._tf_type(self._g, np.zeros_like(self._source)),
                            sigma2, q)
