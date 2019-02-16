@@ -21,9 +21,13 @@ class FilterReg():
         self._sigma2 = sigma2
         self._tf_type = None
         self._tf_result = None
+        self._callbacks = []
 
     def set_source(self, source):
         self._source = source
+
+    def set_callbacks(self, callbacks):
+        self._callbacks = callbacks
 
     def expectation_step(self, t_source, target, sigma2):
         """
@@ -60,6 +64,8 @@ class FilterReg():
             estep_res = self.expectation_step(t_source, target, self._sigma2)
             res = self.maximization_step(t_source, target, estep_res, w=w)
             self._tf_result = res.transformation
+            for c in self._callbacks:
+                c(self._tf_result)
             if not q is None and abs(res.q - q) < tol:
                 break
             q = res.q
@@ -101,7 +107,9 @@ class RigidFilterReg(FilterReg):
         return MstepResult(tf.RigidTransformation(rot, t), sigma2, q)
 
 
-def registration_filterreg(source, target, sigma2=None):
+def registration_filterreg(source, target, sigma2=None,
+                           callbacks=[]):
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     frg = RigidFilterReg(cv(source), sigma2)
+    frg.set_callbacks(callbacks)
     return frg.registration(cv(target))
