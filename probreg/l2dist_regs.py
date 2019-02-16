@@ -22,6 +22,7 @@ class L2DistRegistration():
         self._sigma = sigma
         self._delta = delta
         self._use_estimated_sigma = use_estimated_sigma
+        self._callbacks = []
         if not self._source is None and self._use_estimated_sigma:
             self._estimate_sigma(self._source)
         if not self._source is None:
@@ -33,6 +34,9 @@ class L2DistRegistration():
             self._estimate_sigma(self._source)
         self._mu_source, self._phi_source = self._feature_gen.compute(self._source)
 
+    def set_callbacks(self, callbacks):
+        self._callbacks.extend(callbacks)
+
     def _estimate_sigma(self, data):
         ndata, ndim = data.shape
         data_hat = data - np.mean(data, axis=0)
@@ -40,6 +44,8 @@ class L2DistRegistration():
 
     def _optimization_cb(self, x):
         self._sigma *= self._delta
+        for c in self._callbacks:
+            c(self._cost_fn.to_transformation(x))
 
     def registration(self, target):
         mu_target, phi_target = self._feature_gen.compute(target)
@@ -105,7 +111,8 @@ class TPSSupportVectorRegistration(L2DistRegistration):
         self._feature_gen.init()
 
 
-def registration_gmmreg(source, target, tf_type_name='rigid'):
+def registration_gmmreg(source, target, tf_type_name='rigid',
+                        callbacks=[]):
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     if tf_type_name == 'rigid':
         gmmreg = RigidGMMReg(cv(source))
@@ -113,9 +120,11 @@ def registration_gmmreg(source, target, tf_type_name='rigid'):
         gmmreg = TPSGMMReg(cv(source))
     else:
         raise ValueError('Unknown transform type %s' % tf_type_name)
+    gmmreg.set_callbacks(callbacks)
     return gmmreg.registration(cv(target))
 
-def registration_svr(source, target, tf_type_name='rigid'):
+def registration_svr(source, target, tf_type_name='rigid',
+                     callbacks=[]):
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     if tf_type_name == 'rigid':
         svr = RigidSupportVectorRegistration(cv(source))
@@ -123,4 +132,5 @@ def registration_svr(source, target, tf_type_name='rigid'):
         svr = TPSSupportVectorRegistration(cv(source))
     else:
         raise ValueError('Unknown transform type %s' % tf_type_name)
+    svr.set_callbacks(callbacks)
     return svr.registration(cv(target))

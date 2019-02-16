@@ -74,7 +74,7 @@ class CoherentPointDrift():
             estep_res = self.expectation_step(t_source, target, res.sigma2, w)
             res = self.maximization_step(target, estep_res, res.sigma2)
             for c in self._callbacks:
-                c(res)
+                c(res.transformation)
             if abs(res.q - q) < tol:
                 break
             q = res.q

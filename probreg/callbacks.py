@@ -17,8 +17,8 @@ class Plot2DCallback(object):
         plt.legend()
         plt.draw()
 
-    def __call__(self, res):
-        self._result = res.transformation.transform(self._source)
+    def __call__(self, transformation):
+        self._result = transformation.transform(self._source)
         plt.cla()
         plt.axis('equal')
         plt.plot(self._source[:, 0], self._source[:, 1], 'ro', label='source')
@@ -50,8 +50,8 @@ class Open3dVisualizerCallback(object):
     def __del__(self):
         self._vis.destroy_window()
 
-    def __call__(self, res):
-        self._result.points = res.transformation.transform(self._source.points)
+    def __call__(self, transformation):
+        self._result.points = transformation.transform(self._source.points)
         self._vis.update_geometry()
         self._vis.poll_events()
         self._vis.update_renderer()
