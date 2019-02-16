@@ -82,7 +82,7 @@ ext_modules = [
     ),
     Extension(
         'probreg._permutohedral_lattice',
-        ['probreg/cc/permutohedral_lattice_py.cc'],
+        ['probreg/cc/permutohedral_lattice_py.cc', 'third_party/permutohedral/permutohedral.cpp'],
         include_dirs=[
             # Path to pybind11 headers
             get_pybind_include(),

@@ -4,4 +4,4 @@ import numpy as np
 from . import _permutohedral_lattice
 
 def filter(p, v):
-    return _permutohedral_lattice.filter(p, v)
+    return _permutohedral_lattice.filter(p.T, v.T).T

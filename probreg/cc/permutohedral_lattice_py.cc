@@ -8,12 +8,12 @@ using namespace probreg;
 
 PYBIND11_MODULE(_permutohedral_lattice, m) {
     m.def("filter",
-          [](const Matrix& p, const Matrix& v) {
-              assert(p.rows == v.rows());
-              Matrix out = Matrix::Zero(p.rows(), v.cols());
-              PermutohedralLattice::filter(p.data(), p.cols(),
-                                           v.data(), v.cols(),
-                                           p.rows(), out.data());
+          [](const probreg::Matrix& p, const probreg::Matrix& v) {
+              assert(p.cols() == v.cols());
+              probreg::Matrix out = probreg::Matrix::Zero(v.rows(), p.cols());
+              Permutohedral ph;
+              ph.init(p);
+              ph.compute(out, v);
               return out;
           });
 
