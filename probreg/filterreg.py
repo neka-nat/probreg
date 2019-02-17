@@ -88,7 +88,7 @@ class RigidFilterReg(FilterReg):
         tw = np.zeros(ndim * 2)
         c = w / (1.0 - w) * n / m
         m0[m0==0] = np.finfo(np.float32).eps
-        m1m0 = m1 / np.tile(m0, (ndim, 1)).T
+        m1m0 = np.divide(m1.T, m0).T
         drxdx = np.tile(np.sqrt(m0 / (m0 + c) * 1.0 / sigma2), (ndim, 1)).T
         for _ in range(max_iteration):
             x = tf.RigidTransformation(*so.twist_trans(tw)).transform(t_source)
