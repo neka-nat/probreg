@@ -15,10 +15,10 @@ class Normalizer(object):
         return self._scale * x + self._centroid
 
 
-def squared_kernel_sum(a, b):
+def squared_kernel_sum(x, y):
     """
     """
-    return _math.squared_kernel(a, b).sum() / (a.shape[0] * a.shape[1] * b.shape[0])
+    return _math.squared_kernel(x, y).sum() / (x.shape[0] * x.shape[1] * y.shape[0])
 
 def gaussian_kernel(x, beta):
     return _math.gaussian_kernel(x, beta)

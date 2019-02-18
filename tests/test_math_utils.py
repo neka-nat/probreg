@@ -8,7 +8,7 @@ class MathUtilsTest(unittest.TestCase):
         dim = 3
         x = np.arange(n * dim).reshape((n, dim))
         ans = np.sum([np.sum((x[i] - x)**2) for i in range(n)]) / (n * n * dim)
-        self.assertAlmostEqual(mu.mean_square_norm(x, x), ans)
+        self.assertAlmostEqual(mu.squared_kernel_sum(x, x), ans)
 
     def test_gaussian_kernel(self):
         x = np.random.rand(5, 3)
