@@ -6,8 +6,8 @@ import utils
 
 source, target = utils.prepare_source_and_target_rigid_3d('bunny.pcd')
 
-callbacks = [callbacks.Open3dVisualizerCallback(source, target)]
-tf_param = l2dist_regs.registration_svr(source, target, callbacks=callbacks)
+cbs = [callbacks.Open3dVisualizerCallback(source, target)]
+tf_param = l2dist_regs.registration_svr(source, target, callbacks=cbs)
 rot = trans.identity_matrix()
 rot[:3, :3] = tf_param.rot
 print("result: ", np.rad2deg(trans.euler_from_matrix(rot)),
