@@ -89,13 +89,13 @@ class RigidFilterReg(FilterReg):
         c = w / (1.0 - w) * n / m
         m0[m0==0] = np.finfo(np.float32).eps
         m1m0 = np.divide(m1.T, m0).T
-        drxdx = np.tile(np.sqrt(m0 / (m0 + c) * 1.0 / sigma2), (ndim, 1)).T
+        drxdx = np.sqrt(m0 / (m0 + c) * 1.0 / sigma2)
         for _ in range(max_iteration):
             x = tf.RigidTransformation(*so.twist_trans(tw)).transform(t_source)
-            rx = drxdx * (x - m1m0)
+            rx = np.multiply(drxdx, (x - m1m0).T).T
             dxdz = np.apply_along_axis(lambda x: np.c_[so.skew(x).T, np.identity(ndim)],
                                        1, x)
-            drxdth = np.einsum('ij,ijl->ijl', drxdx, dxdz)
+            drxdth = np.einsum('i,ijl->ijl', drxdx, dxdz)
             a = np.einsum('ijk,ijl->kl', drxdth, drxdth)
             b = np.einsum('ijk,ij->k', drxdth, rx)
             dtw = np.linalg.solve(a, b)
@@ -103,7 +103,7 @@ class RigidFilterReg(FilterReg):
             if np.linalg.norm(dtw) < tol:
                 break
         rot, t = so.twist_mul(tw, trans_p.rot, trans_p.t)
-        q = np.einsum('ij,ij', rx, rx)
+        q = np.dot(rx.T, rx).sum()
         return MstepResult(tf.RigidTransformation(rot, t), sigma2, q)
 
 
