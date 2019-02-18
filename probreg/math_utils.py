@@ -4,7 +4,7 @@ from . import _math
 
 
 class Normalizer(object):
-    def __init__(self, scale, centroid):
+    def __init__(self, scale=1.0, centroid=0.0):
         self._scale = scale
         self._centroid = centroid
 
