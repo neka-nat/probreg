@@ -20,7 +20,8 @@ class Direct(object):
         return _gauss_transform_direct(self._source, target, weights, self._h)
 
 class GaussTransform(object):
-    def __init__(self, source, h, eps=1.0e-4, sw_h=0.3):
+    def __init__(self, source, h, eps=1.0e-4, sw_h=0.1):
+        self._m = source.shape[0]
         if h < sw_h:
             self._impl = Direct(source, h)
         else:
@@ -28,7 +29,7 @@ class GaussTransform(object):
 
     def compute(self, target, weights=None):
         if weights is None:
-            weights = np.ones(target.shape[0])
+            weights = np.ones(self._m)
         if weights.ndim == 1:
             return self._impl.compute(target, weights)
         elif weights.ndim == 2:

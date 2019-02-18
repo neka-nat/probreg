@@ -45,7 +45,7 @@ class L2DistRegistration():
     def _optimization_cb(self, x):
         self._sigma *= self._delta
         for c in self._callbacks:
-            c(self._cost_fn.to_transformation(x))
+            c(self._cost_fn.to_transformation(x, (self._mu_source)))
 
     def registration(self, target):
         mu_target, phi_target = self._feature_gen.compute(target)

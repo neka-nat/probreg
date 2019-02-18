@@ -15,16 +15,16 @@ class GaussTransformTest(unittest.TestCase):
         self.assertTrue((idxs[:n] != idxs[n:]).all())
 
     def test_gauss_transform(self):
-        x = np.random.rand(5, 3)
+        x = np.random.rand(10, 3)
         y = np.random.rand(5, 3)
-        w = np.random.rand(5)
+        w = np.random.rand(10)
         h = 1.0
         ans = gt._gauss_transform_direct(x, y, w, h)
-        trans = gt.GaussTransform(x, h)
+        trans = gt.GaussTransform(x, h, sw_h=0.0)
         self.assertTrue(np.allclose(ans, trans.compute(y, w), atol=1.0e-4, rtol=1.0e-4))
-        h = 0.1
+        h = 0.5
         ans = gt._gauss_transform_direct(x, y, w, h)
-        trans = gt.GaussTransform(x, h)
+        trans = gt.GaussTransform(x, h, sw_h=0.0)
         self.assertTrue(np.allclose(ans, trans.compute(y, w), atol=1.0e-4, rtol=1.0e-4))
 
 if __name__ == "__main__":

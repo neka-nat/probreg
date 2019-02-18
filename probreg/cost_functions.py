@@ -79,7 +79,7 @@ class TPSCostFunction(CostFunction):
 
     def initial(self, *args):
         mu_source = args[0]
-        a = np.r_[np.zeros((self._ndim, self._ndim)), np.ones((1, self._ndim))]
+        a = np.r_[np.zeros((1, self._ndim)), np.identity(self._ndim)]
         v = np.zeros((mu_source.shape[0] - self._ndim - 1, self._ndim))
         return np.r_[a, v].flatten()
 
