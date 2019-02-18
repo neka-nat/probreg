@@ -22,7 +22,8 @@ pip install -e .
 
 ## Quick start
 
-You can easily execute registrations using [Open3D](http://www.open3d.org/).
+This is a sample code that reads a PCD file and calls CPD registration.
+You can easily execute registrations using [Open3D](http://www.open3d.org/) and draw the results.
 
 ```py
 import copy
@@ -65,3 +66,6 @@ o3.draw_geometries([source, target, result])
 
 #### CPD
 ![nonrigid_cpd](images/cpd_nonrigid.gif)
+
+#### SVR
+![nonrigid_svr](images/svr_nonrigid.gif)
