@@ -77,35 +77,35 @@ class TPSGMMReg(L2DistRegistration):
                                         use_estimated_sigma)
 
 
-class RigidSupportVectorRegistration(L2DistRegistration):
+class RigidSVR(L2DistRegistration):
     def __init__(self, source, sigma=1.0, delta=0.9,
                  gamma=0.5, use_estimated_sigma=True):
-        super(RigidSupportVectorRegistration, self).__init__(source,
-                                                             ft.OneClassSVM(source.shape[1],
-                                                                            sigma, gamma),
-                                                             cf.RigidCostFunction(),
-                                                             sigma, delta,
-                                                             use_estimated_sigma)
+        super(RigidSVR, self).__init__(source,
+                                       ft.OneClassSVM(source.shape[1],
+                                                      sigma, gamma),
+                                       cf.RigidCostFunction(),
+                                       sigma, delta,
+                                       use_estimated_sigma)
 
     def _estimate_sigma(self, data):
-        super(RigidSupportVectorRegistration, self)._estimate_sigma(data)
+        super(RigidSVR, self)._estimate_sigma(data)
         self._feature_gen._sigma = self._sigma
         self._feature_gen._gamma = 1.0 / (2.0 * np.square(self._sigma))
         self._feature_gen.init()
 
 
-class TPSSupportVectorRegistration(L2DistRegistration):
+class TPSSVR(L2DistRegistration):
     def __init__(self, source, sigma=1.0, delta=0.9,
                  gamma=0.5, use_estimated_sigma=True):
-        super(TPSSupportVectorRegistration, self).__init__(source,
-                                                           ft.OneClassSVM(source.shape[1],
-                                                                          sigma, gamma),
-                                                           cf.TPSCostFunction(source.shape[1]),
-                                                           sigma, delta,
-                                                           use_estimated_sigma)
+        super(TPSSVR, self).__init__(source,
+                                     ft.OneClassSVM(source.shape[1],
+                                                    sigma, gamma),
+                                     cf.TPSCostFunction(source.shape[1]),
+                                     sigma, delta,
+                                     use_estimated_sigma)
 
     def _estimate_sigma(self, data):
-        super(TPSSupportVectorRegistration, self)._estimate_sigma(data)
+        super(TPSSVR, self)._estimate_sigma(data)
         self._feature_gen._sigma = self._sigma
         self._feature_gen._gamma = 1.0 / (2.0 * np.square(self._sigma))
         self._feature_gen.init()
@@ -127,9 +127,9 @@ def registration_svr(source, target, tf_type_name='rigid',
                      callbacks=[]):
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     if tf_type_name == 'rigid':
-        svr = RigidSupportVectorRegistration(cv(source))
+        svr = RigidSVR(cv(source))
     elif tf_type_name == 'nonrigid':
-        svr = TPSSupportVectorRegistration(cv(source))
+        svr = TPSSVR(cv(source))
     else:
         raise ValueError('Unknown transform type %s' % tf_type_name)
     svr.set_callbacks(callbacks)
