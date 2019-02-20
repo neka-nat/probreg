@@ -20,6 +20,7 @@ class Transformation():
     def _transform(self, points):
         return points
 
+
 class RigidTransformation(Transformation):
     def __init__(self, rot=np.identity(3),
                  t=np.zeros(3), scale=1.0):
@@ -31,6 +32,7 @@ class RigidTransformation(Transformation):
     def _transform(self, points):
         return self.scale * np.dot(points, self.rot.T) + self.t
 
+
 class AffineTransformation(Transformation):
     def __init__(self, b=np.identity(3),
                  t=np.zeros(3)):
@@ -41,6 +43,7 @@ class AffineTransformation(Transformation):
     def _transform(self, points):
         return np.dot(points, self.b.T) + self.t
 
+
 class NonRigidTransformation(Transformation):
     def __init__(self, g, w):
         super(NonRigidTransformation, self).__init__()
@@ -49,6 +52,7 @@ class NonRigidTransformation(Transformation):
 
     def _transform(self, points):
         return points + np.dot(self.g, self.w)
+
 
 class TPSTransformation(Transformation):
     def __init__(self, a, v, control_pts=None):

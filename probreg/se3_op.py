@@ -3,6 +3,7 @@ from __future__ import division
 import numpy as np
 import transformations as trans
 
+
 def skew(x):
     """
     skew-symmetric matrix, that represent
@@ -12,12 +13,15 @@ def skew(x):
                      [x[2], 0.0, -x[0]],
                      [-x[1], x[0], 0.0]])
 
+
 def twist_trans(tw):
     return np.identity(3) + skew(tw[:3]), tw[3:]
+
 
 def twist_mul(tw, rot, t):
     tr, tt = twist_trans(tw)
     return np.dot(tr, rot), np.dot(t, tr.T) + tt
+
 
 def diff_rot_from_quaternion(q):
     rot = trans.quaternion_matrix(q)[:3, :3]

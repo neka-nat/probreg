@@ -62,6 +62,7 @@ class L2DistRegistration():
 class RigidGMMReg(L2DistRegistration):
     def __init__(self, source, sigma=1.0, delta=0.9,
                  n_gmm_components=800, use_estimated_sigma=True):
+        n_gmm_components = min(n_gmm_components, int(source.shape[0] * 0.8))
         super(RigidGMMReg, self).__init__(source, ft.GMM(n_gmm_components),
                                           cf.RigidCostFunction(),
                                           sigma, delta,
@@ -70,19 +71,22 @@ class RigidGMMReg(L2DistRegistration):
 
 class TPSGMMReg(L2DistRegistration):
     def __init__(self, source, sigma=1.0, delta=0.9,
-                 n_gmm_components=800, use_estimated_sigma=True):
+                 n_gmm_components=800, alpha=1.0, beta=0.1,
+                 use_estimated_sigma=True):
+        n_gmm_components = min(n_gmm_components, int(source.shape[0] * 0.8))
         super(TPSGMMReg, self).__init__(source, ft.GMM(n_gmm_components),
-                                        cf.TPSCostFunction(source.shape[1]),
+                                        cf.TPSCostFunction(source.shape[1],
+                                                           alpha, beta),
                                         sigma, delta,
                                         use_estimated_sigma)
 
 
 class RigidSVR(L2DistRegistration):
     def __init__(self, source, sigma=1.0, delta=0.9,
-                 gamma=0.5, use_estimated_sigma=True):
+                 gamma=0.5, nu=0.1, use_estimated_sigma=True):
         super(RigidSVR, self).__init__(source,
                                        ft.OneClassSVM(source.shape[1],
-                                                      sigma, gamma),
+                                                      sigma, gamma, nu),
                                        cf.RigidCostFunction(),
                                        sigma, delta,
                                        use_estimated_sigma)
@@ -96,11 +100,13 @@ class RigidSVR(L2DistRegistration):
 
 class TPSSVR(L2DistRegistration):
     def __init__(self, source, sigma=1.0, delta=0.9,
-                 gamma=0.5, use_estimated_sigma=True):
+                 gamma=0.5, nu=0.1, alpha=1.0, beta=0.1,
+                 use_estimated_sigma=True):
         super(TPSSVR, self).__init__(source,
                                      ft.OneClassSVM(source.shape[1],
-                                                    sigma, gamma),
-                                     cf.TPSCostFunction(source.shape[1]),
+                                                    sigma, gamma, nu),
+                                     cf.TPSCostFunction(source.shape[1],
+                                                        alpha, beta),
                                      sigma, delta,
                                      use_estimated_sigma)
 
@@ -112,24 +118,25 @@ class TPSSVR(L2DistRegistration):
 
 
 def registration_gmmreg(source, target, tf_type_name='rigid',
-                        callbacks=[]):
+                        callbacks=[], **kargs):
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     if tf_type_name == 'rigid':
-        gmmreg = RigidGMMReg(cv(source))
+        gmmreg = RigidGMMReg(cv(source), **kargs)
     elif tf_type_name == 'nonrigid':
-        gmmreg = TPSGMMReg(cv(source))
+        gmmreg = TPSGMMReg(cv(source), **kargs)
     else:
         raise ValueError('Unknown transform type %s' % tf_type_name)
     gmmreg.set_callbacks(callbacks)
     return gmmreg.registration(cv(target))
 
+
 def registration_svr(source, target, tf_type_name='rigid',
-                     callbacks=[]):
+                     callbacks=[], **kargs):
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     if tf_type_name == 'rigid':
-        svr = RigidSVR(cv(source))
+        svr = RigidSVR(cv(source), **kargs)
     elif tf_type_name == 'nonrigid':
-        svr = TPSSVR(cv(source))
+        svr = TPSSVR(cv(source), **kargs)
     else:
         raise ValueError('Unknown transform type %s' % tf_type_name)
     svr.set_callbacks(callbacks)

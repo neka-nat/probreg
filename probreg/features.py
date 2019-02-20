@@ -19,13 +19,14 @@ class GMM(object):
 
 
 class OneClassSVM(object):
-    def __init__(self, ndim, sigma, gamma=0.5):
+    def __init__(self, ndim, sigma, gamma=0.5, nu=0.1):
         self._ndim = ndim
         self._sigma = sigma
         self._gamma = gamma
+        self._nu = nu
 
     def init(self):
-        self._clf = svm.OneClassSVM(nu=0.1, kernel="rbf", gamma=self._gamma)
+        self._clf = svm.OneClassSVM(nu=self._nu, kernel="rbf", gamma=self._gamma)
 
     def compute(self, data):
         self._clf.fit(data)
