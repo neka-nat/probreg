@@ -82,9 +82,10 @@ class CoherentPointDrift():
 
 
 class RigidCPD(CoherentPointDrift):
-    def __init__(self, source=None):
+    def __init__(self, source=None, update_scale=True):
         super(RigidCPD, self).__init__(source)
         self._tf_type = tf.RigidTransformation
+        self._update_scale = update_scale
 
     def _initialize(self, target):
         ndim = self._source.shape[1]
@@ -92,8 +93,13 @@ class RigidCPD(CoherentPointDrift):
         q = 1.0 + target.shape[0] * ndim * 0.5 * np.log(sigma2)
         return MstepResult(self._tf_type(np.identity(ndim), np.zeros(ndim)), sigma2, q)
 
+    def maximization_step(self, target, estep_res, sigma2_p=None):
+        return self._maximization_step(self._source, target, estep_res,
+                                       sigma2_p, self._update_scale)
+
     @staticmethod
-    def _maximization_step(source, target, estep_res, sigma2_p=None):
+    def _maximization_step(source, target, estep_res,
+                           sigma2_p=None, update_scale=True):
         pt1, p1, px, n_p = estep_res
         ndim = source.shape[1]
         mu_x = np.sum(px, axis=0) / n_p
@@ -107,10 +113,13 @@ class RigidCPD(CoherentPointDrift):
         rot = np.dot(u * c, vh)
         tr_atr = np.trace(np.dot(a.T, rot))
         tr_yp1y = np.trace(np.dot(source_hat.T * p1, source_hat))
-        scale = tr_atr / tr_yp1y
+        scale = tr_atr / tr_yp1y if update_scale else 1.0
         t = mu_x - scale * np.dot(rot, mu_y)
         tr_xp1x = np.trace(np.dot(target_hat.T * pt1, target_hat))
-        sigma2 = (tr_xp1x - scale * tr_atr) / (n_p * ndim)
+        if update_scale:
+            sigma2 = (tr_xp1x - scale * tr_atr) / (n_p * ndim)
+        else:
+            sigma2 = (tr_xp1x + tr_yp1y - scale * tr_atr) / (n_p * ndim)
         q = (tr_xp1x - 2.0 * scale * tr_atr + (scale ** 2) * tr_yp1y) / (2.0 * sigma2)
         q += ndim * n_p * 0.5 * np.log(sigma2)
         return MstepResult(tf.RigidTransformation(rot, t, scale), sigma2, q)
