@@ -62,6 +62,9 @@ o3.draw_geometries([source, target, result])
 #### SVR
 ![rigid_svr](images/svr_rigid.gif)
 
+#### FilterReg
+![rigid_filterreg](images/filterreg_rigid.gif)
+
 ### Non rigid registration
 
 #### CPD
