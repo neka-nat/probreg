@@ -32,6 +32,9 @@ class RigidTransformation(Transformation):
     def _transform(self, points):
         return self.scale * np.dot(points, self.rot.T) + self.t
 
+    def inverse(self):
+        return RigidTransformation(self.rot.T, -np.dot(self.rot.T, self.t),
+                                   1.0 / self.scale)
 
 class AffineTransformation(Transformation):
     def __init__(self, b=np.identity(3),

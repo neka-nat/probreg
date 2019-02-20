@@ -81,6 +81,17 @@ ext_modules = [
         language='c++'
     ),
     Extension(
+        'probreg._gmmtree',
+        ['probreg/cc/gmmtree_py.cc', 'probreg/cc/gmmtree.cc'],
+        include_dirs=[
+            # Path to pybind11 headers
+            get_pybind_include(),
+            get_pybind_include(user=True),
+            find_eigen(['third_party/eigen'])
+        ],
+        language='c++'
+    ),
+    Extension(
         'probreg._permutohedral_lattice',
         ['probreg/cc/permutohedral_lattice_py.cc', 'third_party/permutohedral/permutohedral.cpp'],
         include_dirs=[
