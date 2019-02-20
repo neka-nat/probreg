@@ -1,8 +1,6 @@
 from __future__ import print_function
 from __future__ import division
-import abc
 from collections import namedtuple
-import six
 import numpy as np
 from scipy.optimize import minimize
 import open3d as o3
@@ -10,7 +8,6 @@ from . import features as ft
 from . import cost_functions as cf
 
 
-@six.add_metaclass(abc.ABCMeta)
 class L2DistRegistration():
     def __init__(self, source, feature_gen, cost_fn,
                  sigma=1.0, delta=0.9,
