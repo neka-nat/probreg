@@ -65,11 +65,11 @@ class CoherentPointDrift():
         return None
 
     def registration(self, target, w=0.0,
-                     max_iteration=50, tol=0.001):
+                     maxiter=50, tol=0.001):
         assert not self._tf_type is None, "transformation type is None."
         res = self._initialize(target)
         q = res.q
-        for _ in range(max_iteration):
+        for _ in range(maxiter):
             t_source = res.transformation.transform(self._source)
             estep_res = self.expectation_step(t_source, target, res.sigma2, w)
             res = self.maximization_step(target, estep_res, res.sigma2)
@@ -79,6 +79,7 @@ class CoherentPointDrift():
                 break
             q = res.q
         return res
+
 
 class RigidCPD(CoherentPointDrift):
     def __init__(self, source=None):
@@ -188,7 +189,7 @@ class NonRigidCPD(CoherentPointDrift):
 
 
 def registration_cpd(source, target, tf_type_name='rigid',
-                     w=0.0, max_iteration=100, tol=0.001,
+                     w=0.0, maxiter=50, tol=0.001,
                      callbacks=[], **kargs):
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     if tf_type_name == 'rigid':
@@ -201,4 +202,4 @@ def registration_cpd(source, target, tf_type_name='rigid',
         raise ValueError('Unknown transform type %s' % tf_type_name)
     cpd.set_callbacks(callbacks)
     return cpd.registration(cv(target),
-                            w, max_iteration, tol)
+                            w, maxiter, tol)

@@ -56,10 +56,10 @@ class FilterReg():
         return None
 
     def registration(self, target, w=0.0,
-                     max_iteration=50, tol=0.001):
+                     maxiter=50, tol=0.001):
         assert not self._tf_type is None, "transformation type is None."
         q = None
-        for _ in range(max_iteration):
+        for _ in range(maxiter):
             t_source = self._tf_result.transform(self._source)
             estep_res = self.expectation_step(t_source, target, self._sigma2)
             res = self.maximization_step(t_source, target, estep_res, w=w)
