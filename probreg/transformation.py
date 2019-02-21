@@ -55,15 +55,14 @@ class NonRigidTransformation(Transformation):
 
 
 class TPSTransformation(Transformation):
-    def __init__(self, a, v, control_pts=None):
+    def __init__(self, a, v, control_pts):
         super(TPSTransformation, self).__init__()
         self.a = a
         self.v = v
         self.control_pts = control_pts
 
-    def prepare(self, landmarks, control_pts=None):
-        if control_pts is None:
-            control_pts = self.control_pts
+    def prepare(self, landmarks):
+        control_pts = self.control_pts
         m, d = landmarks.shape
         n, _ = control_pts.shape
         pm = np.c_[np.ones((m, 1)), landmarks]
