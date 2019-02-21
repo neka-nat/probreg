@@ -6,6 +6,11 @@ from sklearn import svm
 
 
 class GMM(object):
+    """Gaussian mixture model feature
+
+    Args:
+        n_gmm_components (int): The number of mixture components.
+    """
     def __init__(self, n_gmm_components=800):
         self._n_gmm_components = n_gmm_components
 
@@ -19,6 +24,15 @@ class GMM(object):
 
 
 class OneClassSVM(object):
+    """One class SVM feature
+
+    Args:
+        ndim (int): The dimension of samples.
+        sigma (float): Veriance of the gaussian distribution made from parameters of SVM.
+        gamma (float, optional): Coefficient for RBF kernel.
+        nu (float, optional): An upper bound on the fraction of training errors
+            and a lower bound of the fraction of support vectors.
+    """
     def __init__(self, ndim, sigma, gamma=0.5, nu=0.1):
         self._ndim = ndim
         self._sigma = sigma

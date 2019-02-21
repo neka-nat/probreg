@@ -39,8 +39,7 @@ class CoherentPointDrift():
         return MstepResult(None, None, None)
 
     def expectation_step(self, t_source, target, sigma2, w=0.0):
-        """
-        Expectation step
+        """Expectation step for CPD
         """
         assert t_source.ndim == 2 and target.ndim == 2, "source and target must have 2 dimensions."
         ndim = t_source.shape[1]
@@ -200,6 +199,8 @@ class NonRigidCPD(CoherentPointDrift):
 def registration_cpd(source, target, tf_type_name='rigid',
                      w=0.0, maxiter=50, tol=0.001,
                      callbacks=[], **kargs):
+    """CPD Registraion
+    """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     if tf_type_name == 'rigid':
         cpd = RigidCPD(cv(source), **kargs)

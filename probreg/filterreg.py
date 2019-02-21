@@ -17,6 +17,17 @@ MstepResult = namedtuple('MstepResult', ['transformation', 'sigma2', 'q'])
 
 @six.add_metaclass(abc.ABCMeta)
 class FilterReg():
+    """FilterReg
+    FilterReg is similar to CPD, and the speed performance is improved.
+    In this algorithm, not only point-to-point alignment but also
+    point-to-plane alignment are implemented.
+
+    Args:
+        source (numpy.ndarray, optional): Source point cloud data.
+        target_normals (numpy.ndarray, optional): Normals of target points.
+        sigma2 (Float, optional): Variance parameter. If this variable is None,
+            the variance is updated in Mstep.
+    """
     def __init__(self, source=None, target_normals=None,
                  sigma2=None):
         self._source = source
@@ -38,8 +49,7 @@ class FilterReg():
 
     def expectation_step(self, t_source, target, sigma2,
                          objective_type='pt2pt'):
-        """
-        Expectation step
+        """Expectation step
         """
         assert t_source.ndim == 2 and target.ndim == 2, "source and target must have 2 dimensions."
         m, ndim = t_source.shape
