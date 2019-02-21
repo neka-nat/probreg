@@ -158,7 +158,9 @@ setup(
     description='Probablistic point cloud resitration algorithms',
     long_description='',
     ext_modules=ext_modules,
-    install_requires=['pybind11>=2.2'],
+    install_requires=['pybind11>=2.2', 'open3d-python',
+                      'six', 'transformations', 'scipy',
+                      'scikit-learn', 'matplotlib'],
     cmdclass={'build_ext': BuildExt},
     zip_safe=False,
 )
