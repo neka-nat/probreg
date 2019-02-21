@@ -14,10 +14,10 @@ kernelBase(const Matrix& x, const Matrix& y,
            const func_type& fn = [] (const Vector& diff2) {return diff2;});
 
 Matrix
-gaussianKernel(const Matrix& x, Float beta);
+squaredKernel(const Matrix& x, const Matrix& y);
 
 Matrix
-squaredKernel(const Matrix& x, const Matrix& y);
+rbfKernel(const Matrix& x, const Matrix& y, Float beta);
 
 Matrix
 tpsKernel2d(const Matrix& x, const Matrix& y);

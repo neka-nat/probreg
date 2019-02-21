@@ -13,18 +13,13 @@ probreg::kernelBase(const Matrix& x, const Matrix& y, const func_type& fn) {
 }
 
 Matrix
-probreg::gaussianKernel(const Matrix& x, Float beta) {
-    Matrix g = Matrix::Zero(x.rows(), x.rows());
-    for (Integer i = 0; i < x.rows(); ++i) {
-        auto diff2 = (x(Eigen::seq(0, i), Eigen::all).rowwise() - x.row(i)).rowwise().squaredNorm();
-        g(Eigen::seq(0, i), i) = (-diff2 / (2.0 * beta)).array().exp();
-    }
-    return g.selfadjointView<Eigen::Upper>();
+probreg::squaredKernel(const Matrix& x, const Matrix& y) {
+    return kernelBase(x, y);
 }
 
 Matrix
-probreg::squaredKernel(const Matrix& x, const Matrix& y) {
-    return kernelBase(x, y);
+probreg::rbfKernel(const Matrix& x, const Matrix& y, Float beta) {
+    return kernelBase(x, y, [&beta] (const Vector& diff2) {return (-diff2 / (2.0 * beta)).array().exp();});
 }
 
 Matrix

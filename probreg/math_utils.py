@@ -20,8 +20,8 @@ def squared_kernel_sum(x, y):
     """
     return _math.squared_kernel(x, y).sum() / (x.shape[0] * x.shape[1] * y.shape[0])
 
-def gaussian_kernel(x, beta):
-    return _math.gaussian_kernel(x, beta)
+def rbf_kernel(x, y, beta):
+    return _math.rbf_kernel(x, y, beta)
 
 def tps_kernel(x, y):
     assert x.shape[1] == y.shape[1], "x and y must have same dimensions."

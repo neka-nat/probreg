@@ -7,7 +7,7 @@ using namespace probreg;
 
 PYBIND11_MODULE(_math, m) {
     m.def("squared_kernel", &squaredKernel);
-    m.def("gaussian_kernel", &gaussianKernel);
+    m.def("rbf_kernel", &rbfKernel);
     m.def("tps_kernel_2d", &tpsKernel2d);
     m.def("tps_kernel_3d", &tpsKernel3d);
 

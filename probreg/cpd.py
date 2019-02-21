@@ -166,11 +166,11 @@ class NonRigidCPD(CoherentPointDrift):
         self._lmd = lmd
         self._g = None
         if not self._source is None:
-            self._g = mu.gaussian_kernel(self._source, self._beta)
+            self._g = mu.rbf_kernel(self._source, self._source, self._beta)
 
     def set_source(self, source):
         self._source = source
-        self._g = mu.gaussian_kernel(self._source, self._beta)
+        self._g = mu.rbf_kernel(self._source, self._source, self._beta)
 
     def maximization_step(self, target, estep_res, sigma2_p=None):
         return self._maximization_step(self._source, target, estep_res,
