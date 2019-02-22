@@ -6,7 +6,7 @@ from sklearn import svm
 
 
 class GMM(object):
-    """Gaussian mixture model feature
+    """Feature points extraction using Gaussian mixture model
 
     Args:
         n_gmm_components (int): The number of mixture components.
@@ -24,7 +24,7 @@ class GMM(object):
 
 
 class OneClassSVM(object):
-    """One class SVM feature
+    """Feature points extraction using One class SVM
 
     Args:
         ndim (int): The dimension of samples.
