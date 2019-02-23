@@ -9,6 +9,8 @@ from . import cost_functions as cf
 
 
 class L2DistRegistration():
+    """L2 distance registration class
+    """
     def __init__(self, source, feature_gen, cost_fn,
                  sigma=1.0, delta=0.9,
                  use_estimated_sigma=True):

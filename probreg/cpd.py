@@ -17,7 +17,7 @@ MstepResult = namedtuple('MstepResult', ['transformation', 'sigma2', 'q'])
 @six.add_metaclass(abc.ABCMeta)
 class CoherentPointDrift():
     """Coherent Point Drigt algorithm.
-    This is a abstract class.
+    This is an abstract class.
     Based on this class, it is inherited by rigid, affine, nonrigid classes
     according to the type of transformation.
     In this class, Estimation step in EM algorithm is implemented and

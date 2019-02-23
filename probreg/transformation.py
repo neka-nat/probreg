@@ -55,11 +55,13 @@ class NonRigidTransformation(Transformation):
 
 
 class TPSTransformation(Transformation):
-    def __init__(self, a, v, control_pts):
+    def __init__(self, a, v, control_pts,
+                 kernel=mu.tps_kernel):
         super(TPSTransformation, self).__init__()
         self.a = a
         self.v = v
         self.control_pts = control_pts
+        self._kernel = kernel
 
     def prepare(self, landmarks):
         control_pts = self.control_pts
@@ -69,8 +71,8 @@ class TPSTransformation(Transformation):
         pn = np.c_[np.ones((n, 1)), control_pts]
         u, _, _ = np.linalg.svd(pn)
         pp = u[:, d + 1:]
-        kk = mu.tps_kernel(control_pts, control_pts)
-        uu = mu.tps_kernel(landmarks, control_pts)
+        kk = self._kernel(control_pts, control_pts)
+        uu = self._kernel(landmarks, control_pts)
         basis = np.c_[pm, np.dot(uu, pp)]
         kernel = np.dot(pp.T, np.dot(kk, pp))
         return basis, kernel
