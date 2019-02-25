@@ -12,7 +12,7 @@ class MathUtilsTest(unittest.TestCase):
 
     def test_gaussian_kernel(self):
         x = np.random.rand(5, 3)
-        g = mu.gaussian_kernel(x, 1.0)
+        g = mu.rbf_kernel(x, x, 1.0)
         self.assertTrue(np.allclose(g, g.T))
 
 if __name__ == "__main__":
