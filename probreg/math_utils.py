@@ -12,7 +12,7 @@ class Normalizer(object):
         return (x - self._centroid) / self._scale
 
     def denormalize(self, x):
-        return self._scale * x + self._centroid
+        return x * self._scale + self._centroid
 
 
 def squared_kernel_sum(x, y):
