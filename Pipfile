@@ -13,6 +13,7 @@ scikit-learn = "*"
 "e1839a8" = {path = ".", editable = true}
 sphinx = "*"
 matplotlib = "*"
+pycodestyle = "*"
 
 [dev-packages]
 

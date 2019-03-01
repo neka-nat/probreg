@@ -1,6 +1,6 @@
 # ![logo](images/logo.png)
 
-Implementation of point cloud **reg**istration algorithms using **prob**ablistic model.
+Implementation of point cloud **reg**istration algorithms with **prob**ablistic model.
 
 ## Algorithms
 
