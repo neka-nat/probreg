@@ -4,8 +4,7 @@
 #include <Eigen/Core>
 //#define USE_DOUBLE
 
-namespace probreg
-{
+namespace probreg {
 #ifdef USE_DOUBLE
 typedef double Float;
 typedef int Integer;
@@ -24,6 +23,6 @@ typedef Eigen::Matrix3f Matrix3;
 typedef Eigen::Vector3f Vector3;
 #endif
 typedef Eigen::Matrix<Float, 3, Eigen::Dynamic> Matrix3X;
-}
+}  // namespace probreg
 
 #endif

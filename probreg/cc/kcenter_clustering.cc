@@ -1,12 +1,12 @@
-#include <limits>
 #include "kcenter_clustering.h"
+#include <limits>
 
 using namespace probreg;
 
-ClusteringResult
-probreg::computeKCenterClustering(const Matrix& data, Integer num_clusters,
-                                  Float eps, Integer num_max_iteration)
-{
+ClusteringResult probreg::computeKCenterClustering(const Matrix& data,
+                                                   Integer num_clusters,
+                                                   Float eps,
+                                                   Integer num_max_iteration) {
     auto idxs = (num_clusters * Vector::Random(num_clusters)).array().abs().cast<Integer>();
     Matrix cluster_centers = data(idxs, Eigen::all);
     Matrix temp_centers(num_clusters, data.cols());
@@ -28,13 +28,15 @@ probreg::computeKCenterClustering(const Matrix& data, Integer num_clusters,
     return {radii.maxCoeff(), labels, cluster_centers, radii};
 }
 
-Float
-probreg::updateClustering(const Matrix& data, const Matrix& cluster_centers,
-                          VectorXi& labels, VectorXi& counts, Matrix& sum_members)
-{
+Float probreg::updateClustering(const Matrix& data,
+                                const Matrix& cluster_centers,
+                                VectorXi& labels,
+                                VectorXi& counts,
+                                Matrix& sum_members) {
     Float err = 0.0;
     for (Integer i = 0; i < data.rows(); ++i) {
-        Float min_distance = (cluster_centers.rowwise() - data.row(i)).rowwise().squaredNorm().minCoeff(&labels[i]);
+        Float min_distance =
+            (cluster_centers.rowwise() - data.row(i)).rowwise().squaredNorm().minCoeff(&labels[i]);
         sum_members.row(labels[i]) += data.row(i);
         ++counts[labels[i]];
         err += min_distance;
@@ -42,10 +44,10 @@ probreg::updateClustering(const Matrix& data, const Matrix& cluster_centers,
     return err;
 }
 
-Vector
-probreg::calcRadii(const Matrix& data, const Matrix& cluster_centers,
-                   const VectorXi& labels, Integer num_clusters)
-{
+Vector probreg::calcRadii(const Matrix& data,
+                          const Matrix& cluster_centers,
+                          const VectorXi& labels,
+                          Integer num_clusters) {
     const Vector distances = (data - cluster_centers(labels.array(), Eigen::all)).rowwise().norm();
     Vector radii = Vector::Zero(num_clusters);
     for (Integer i = 0; i < data.rows(); ++i) {

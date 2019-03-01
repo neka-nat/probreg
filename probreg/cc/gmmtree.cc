@@ -1,15 +1,13 @@
-#include <cmath>
-#include <Eigen/Eigenvalues>
 #include "gmmtree.h"
+#include <Eigen/Eigenvalues>
+#include <cmath>
 
 using namespace probreg;
 
-namespace
-{
+namespace {
 static const Float eps = 1.0e-15;
 
-Float
-gaussianPdf(const Vector3& x, const Vector3& mu, const Matrix3& cov) {
+Float gaussianPdf(const Vector3& x, const Vector3& mu, const Matrix3& cov) {
     static const Float min_thres = -80.0;
     const Vector3 d = x - mu;
     const Float det = cov.determinant();
@@ -19,15 +17,14 @@ gaussianPdf(const Vector3& x, const Vector3& mu, const Matrix3& cov) {
     return (ep > min_thres) ? c * std::exp(ep) : 0.0;
 }
 
-
-Float
-logLiklihood(const NodeParamArray& nodes, const Matrix3X& points, Integer j0, Integer jn) {
+Float logLiklihood(const NodeParamArray& nodes, const Matrix3X& points, Integer j0, Integer jn) {
     Float q = 0.0;
     for (Integer i = 0; i < points.cols(); ++i) {
         Float tmp = 0.0;
         for (Integer j = j0; j < jn; ++j) {
             if (std::get<0>(nodes[j]) < eps) continue;
-            tmp += std::get<0>(nodes[j]) * gaussianPdf(points.col(i), std::get<1>(nodes[j]), std::get<2>(nodes[j]));
+            tmp += std::get<0>(nodes[j]) *
+                   gaussianPdf(points.col(i), std::get<1>(nodes[j]), std::get<2>(nodes[j]));
         }
         if (tmp < eps) continue;
         q += std::log(tmp);
@@ -35,28 +32,18 @@ logLiklihood(const NodeParamArray& nodes, const Matrix3X& points, Integer j0, In
     return q;
 }
 
-
-Float
-complexity(const Matrix3& cov) {
+Float complexity(const Matrix3& cov) {
     Eigen::SelfAdjointEigenSolver<Matrix3> es(cov);
     auto lmds = es.eigenvalues();
-    std::sort(lmds.data(), lmds.data() + lmds.size(), std::greater<Float>()); 
+    std::sort(lmds.data(), lmds.data() + lmds.size(), std::greater<Float>());
     return lmds[2] / lmds.sum();
 }
 
-Integer
-child(Integer j) {
-    return (j + 1) * N_NODE;
-}
+Integer child(Integer j) { return (j + 1) * N_NODE; }
 
-Integer
-level(Integer l) {
-    return N_NODE * (std::pow(N_NODE, l) - 1) / (N_NODE - 1);
-}
+Integer level(Integer l) { return N_NODE * (std::pow(N_NODE, l) - 1) / (N_NODE - 1); }
 
-void
-accumulate(NodeParam& moments,
-           Float gamma, const Vector& z) {
+void accumulate(NodeParam& moments, Float gamma, const Vector& z) {
     static const Float eps = 1.0e-15;
     if (gamma < eps) return;
     std::get<0>(moments) += gamma;
@@ -64,8 +51,7 @@ accumulate(NodeParam& moments,
     std::get<2>(moments) += gamma * z * z.transpose();
 }
 
-NodeParam
-mlEstimator(const NodeParam& moments, Integer n_points, Float lambda_d) {
+NodeParam mlEstimator(const NodeParam& moments, Integer n_points, Float lambda_d) {
     NodeParam node;
     std::get<0>(node) = std::get<0>(moments) / n_points;
     if (std::get<0>(moments) < lambda_d) {
@@ -74,16 +60,18 @@ mlEstimator(const NodeParam& moments, Integer n_points, Float lambda_d) {
         std::get<2>(node) = Matrix3::Identity();
     } else {
         std::get<1>(node) = std::get<1>(moments) / std::get<0>(moments);
-        std::get<2>(node) = std::get<2>(moments) / std::get<0>(moments) - std::get<1>(node) * std::get<1>(node).transpose();
+        std::get<2>(node) =
+            std::get<2>(moments) / std::get<0>(moments) - std::get<1>(node) * std::get<1>(node).transpose();
     }
     return node;
 }
 
-}
+}  // namespace
 
-NodeParamArray
-probreg::buildGmmTree(const Matrix3X& points, Integer max_tree_level,
-                      Float lambda_s, Float lambda_d) {
+NodeParamArray probreg::buildGmmTree(const Matrix3X& points,
+                                     Integer max_tree_level,
+                                     Float lambda_s,
+                                     Float lambda_d) {
     const Integer n_total = N_NODE * (1 - std::pow(N_NODE, max_tree_level)) / (1 - N_NODE);
     NodeParamArray nodes(n_total);
     auto idxs = (n_total * Vector::Random(n_total)).array().abs().cast<Integer>();
@@ -103,8 +91,8 @@ probreg::buildGmmTree(const Matrix3X& points, Integer max_tree_level,
     for (Integer l = 0; l < max_tree_level; ++l) {
         Float prev_q = 0.0;
         while (true) {
-            const NodeParamArray params = gmmTreeEstep(points, nodes, parent_idx,
-                                                       current_idx, max_tree_level);
+            const NodeParamArray params =
+                gmmTreeEstep(points, nodes, parent_idx, current_idx, max_tree_level);
             gmmTreeMstep(params, l, nodes, points.cols(), lambda_d);
             const Float q = logLiklihood(nodes, points, level(l), level(l + 1));
             if (std::abs(q - prev_q) < lambda_s) {
@@ -117,11 +105,11 @@ probreg::buildGmmTree(const Matrix3X& points, Integer max_tree_level,
     return nodes;
 }
 
-NodeParamArray
-probreg::gmmTreeEstep(const Matrix3X& points, const NodeParamArray& nodes,
-                      const VectorXi& parent_idx, VectorXi& current_idx,
-                      Integer max_tree_level)
-{
+NodeParamArray probreg::gmmTreeEstep(const Matrix3X& points,
+                                     const NodeParamArray& nodes,
+                                     const VectorXi& parent_idx,
+                                     VectorXi& current_idx,
+                                     Integer max_tree_level) {
     const Integer n_total = N_NODE * (1 - std::pow(N_NODE, max_tree_level)) / (1 - N_NODE);
     Vector gamma = Vector::Zero(n_total);
     NodeParamArray moments(n_total);
@@ -134,9 +122,8 @@ probreg::gmmTreeEstep(const Matrix3X& points, const NodeParamArray& nodes,
     for (Integer i = 0; i < points.cols(); ++i) {
         const Integer j0 = child(parent_idx[i]);
         for (Integer j = j0; j < j0 + N_NODE; ++j) {
-            gamma[j] = std::get<0>(nodes[j]) * gaussianPdf(points.col(i),
-                                                           std::get<1>(nodes[j]),
-                                                           std::get<2>(nodes[j]));
+            gamma[j] = std::get<0>(nodes[j]) *
+                       gaussianPdf(points.col(i), std::get<1>(nodes[j]), std::get<2>(nodes[j]));
         }
         const Float den = gamma(Eigen::seqN(j0, N_NODE)).sum();
         if (den > eps) {
@@ -152,10 +139,8 @@ probreg::gmmTreeEstep(const Matrix3X& points, const NodeParamArray& nodes,
     return moments;
 }
 
-void
-probreg::gmmTreeMstep(const NodeParamArray& params, Integer l,
-                      NodeParamArray& nodes, Integer n_points, Float lambda_d)
-{
+void probreg::gmmTreeMstep(
+    const NodeParamArray& params, Integer l, NodeParamArray& nodes, Integer n_points, Float lambda_d) {
     const Integer lb = level(l);
     const Integer le = level(l + 1);
 
@@ -164,10 +149,10 @@ probreg::gmmTreeMstep(const NodeParamArray& params, Integer l,
     }
 }
 
-NodeParamArray
-probreg::gmmTreeRegEstep(const Matrix3X& points, const NodeParamArray& nodes,
-                         Integer max_tree_level, Float lambda_c)
-{
+NodeParamArray probreg::gmmTreeRegEstep(const Matrix3X& points,
+                                        const NodeParamArray& nodes,
+                                        Integer max_tree_level,
+                                        Float lambda_c) {
     const Integer n_total = N_NODE * (1 - std::pow(N_NODE, max_tree_level)) / (1 - N_NODE);
     NodeParamArray moments(n_total);
     for (Integer j = 0; j < n_total; ++j) {
@@ -182,9 +167,8 @@ probreg::gmmTreeRegEstep(const Matrix3X& points, const NodeParamArray& nodes,
         for (Integer l = 0; l < max_tree_level; ++l) {
             const Integer j0 = child(search_id);
             for (Integer j = j0; j < j0 + N_NODE; ++j) {
-                gamma[j - j0] = std::get<0>(nodes[j]) * gaussianPdf(points.col(i),
-                                                                    std::get<1>(nodes[j]),
-                                                                    std::get<2>(nodes[j]));
+                gamma[j - j0] = std::get<0>(nodes[j]) *
+                                gaussianPdf(points.col(i), std::get<1>(nodes[j]), std::get<2>(nodes[j]));
             }
             const Float den = gamma.sum();
             if (den > eps) {

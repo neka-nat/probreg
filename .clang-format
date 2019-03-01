@@ -1,0 +1,5 @@
+---
+BasedOnStyle:  Google
+ColumnLimit: 110
+IndentWidth: 4
+BinPackParameters: false

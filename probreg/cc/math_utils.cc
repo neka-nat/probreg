@@ -2,8 +2,7 @@
 
 using namespace probreg;
 
-Matrix
-probreg::kernelBase(const Matrix& x, const Matrix& y, const func_type& fn) {
+Matrix probreg::kernelBase(const Matrix& x, const Matrix& y, const func_type& fn) {
     Matrix k = Matrix::Zero(x.rows(), y.rows());
     for (Integer i = 0; i < y.rows(); ++i) {
         auto diff2 = (x.rowwise() - y.row(i)).rowwise().squaredNorm();
@@ -12,24 +11,19 @@ probreg::kernelBase(const Matrix& x, const Matrix& y, const func_type& fn) {
     return k;
 }
 
-Matrix
-probreg::squaredKernel(const Matrix& x, const Matrix& y) {
-    return kernelBase(x, y);
+Matrix probreg::squaredKernel(const Matrix& x, const Matrix& y) { return kernelBase(x, y); }
+
+Matrix probreg::rbfKernel(const Matrix& x, const Matrix& y, Float beta) {
+    return kernelBase(x, y, [&beta](const Vector& diff2) { return (-diff2 / (2.0 * beta)).array().exp(); });
 }
 
-Matrix
-probreg::rbfKernel(const Matrix& x, const Matrix& y, Float beta) {
-    return kernelBase(x, y, [&beta] (const Vector& diff2) {return (-diff2 / (2.0 * beta)).array().exp();});
-}
-
-Matrix
-probreg::tpsKernel2d(const Matrix& x, const Matrix& y) {
+Matrix probreg::tpsKernel2d(const Matrix& x, const Matrix& y) {
     static const Float eps = 1.0e-9;
-    return kernelBase(x, y,
-      [] (const Vector& diff2) {return (diff2.array() > eps).select(diff2.array() * diff2.array().sqrt().log(), 0.0);});
+    return kernelBase(x, y, [](const Vector& diff2) {
+        return (diff2.array() > eps).select(diff2.array() * diff2.array().sqrt().log(), 0.0);
+    });
 }
 
-Matrix
-probreg::tpsKernel3d(const Matrix& x, const Matrix& y) {
-   return kernelBase(x, y, [] (const Vector& diff2) {return -diff2.array().sqrt();});
+Matrix probreg::tpsKernel3d(const Matrix& x, const Matrix& y) {
+    return kernelBase(x, y, [](const Vector& diff2) { return -diff2.array().sqrt(); });
 }
