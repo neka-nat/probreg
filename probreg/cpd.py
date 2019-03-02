@@ -119,6 +119,7 @@ class RigidCPD(CoherentPointDrift):
             sigma2 = (tr_xp1x - scale * tr_atr) / (n_p * ndim)
         else:
             sigma2 = (tr_xp1x + tr_yp1y - scale * tr_atr) / (n_p * ndim)
+        sigma2 = max(sigma2, np.finfo(np.float32).eps)
         q = (tr_xp1x - 2.0 * scale * tr_atr + (scale ** 2) * tr_yp1y) / (2.0 * sigma2)
         q += ndim * n_p * 0.5 * np.log(sigma2)
         return MstepResult(tf.RigidTransformation(rot, t, scale), sigma2, q)
@@ -152,6 +153,7 @@ class AffineCPD(CoherentPointDrift):
         tr_xpyb = np.trace(np.dot(a, b.T))
         sigma2 = (tr_xp1x - tr_xpyb) / (n_p * ndim)
         tr_ab = np.trace(np.dot(a, b.T))
+        sigma2 = max(sigma2, np.finfo(np.float32).eps)
         q = (tr_xp1x - 2 * tr_ab + tr_xpyb) / (2.0 * sigma2)
         q += ndim * n_p * 0.5 * np.log(sigma2)
         return MstepResult(tf.AffineTransformation(b, t), sigma2, q)
