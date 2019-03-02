@@ -1,4 +1,5 @@
 # ![logo](images/logo.png)
+[![PyPI version](https://badge.fury.io/py/probreg.svg)](https://badge.fury.io/py/probreg)
 
 Implementation of point cloud **reg**istration algorithms with **prob**ablistic model.
 

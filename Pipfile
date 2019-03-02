@@ -10,12 +10,12 @@ six = "*"
 transformations = "*"
 scipy = "*"
 scikit-learn = "*"
-"e1839a8" = {path = ".", editable = true}
 sphinx = "*"
 matplotlib = "*"
-pycodestyle = "*"
+"e1839a8" = {path = ".", editable = true}
 
 [dev-packages]
+"flake8" = "*"
 
-[requires]
-python_version = "3.6"
+[scripts]
+lint = "flake8 ."
