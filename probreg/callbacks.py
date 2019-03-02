@@ -4,7 +4,16 @@ import matplotlib.pyplot as plt
 
 
 class Plot2DCallback(object):
-    def __init__(self, source, target, save=False):
+    """Display the 2D registration result of each iteration.
+
+    Args:
+        source (numpy.ndarray): Source point cloud data.
+        target (numpy.ndarray): Target point cloud data.
+        save (bool, optional): If this flag is True,
+            each iteration image is saved in a sequential number.
+    """
+    def __init__(self, source, target, save=False,
+                 keep_window=True):
         self._source = source
         self._target = target
         self._result = copy.deepcopy(self._source)
@@ -32,6 +41,16 @@ class Plot2DCallback(object):
         self._cnt += 1
 
 class Open3dVisualizerCallback(object):
+    """Display the 3D registration result of each iteration.
+
+    Args:
+        source (numpy.ndarray): Source point cloud data.
+        target (numpy.ndarray): Target point cloud data.
+        save (bool, optional): If this flag is True,
+            each iteration image is saved in a sequential number.
+        keep_window (bool, optional): If this flag is True,
+            the drawing window blocks after registration is finished.
+    """
     def __init__(self, source, target, save=False,
                  keep_window=True):
         self._vis = o3.Visualizer()
