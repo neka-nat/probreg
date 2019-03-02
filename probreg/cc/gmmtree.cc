@@ -17,7 +17,7 @@ Float gaussianPdf(const Vector3& x, const Vector3& mu, const Matrix3& cov) {
     return (ep > min_thres) ? c * std::exp(ep) : 0.0;
 }
 
-Float logLiklihood(const NodeParamArray& nodes, const Matrix3X& points, Integer j0, Integer jn) {
+Float logLikelihood(const NodeParamArray& nodes, const Matrix3X& points, Integer j0, Integer jn) {
     Float q = 0.0;
     for (Integer i = 0; i < points.cols(); ++i) {
         Float tmp = 0.0;
@@ -94,7 +94,7 @@ NodeParamArray probreg::buildGmmTree(const Matrix3X& points,
             const NodeParamArray params =
                 gmmTreeEstep(points, nodes, parent_idx, current_idx, max_tree_level);
             gmmTreeMstep(params, l, nodes, points.cols(), lambda_d);
-            const Float q = logLiklihood(nodes, points, level(l), level(l + 1));
+            const Float q = logLikelihood(nodes, points, level(l), level(l + 1));
             if (std::abs(q - prev_q) < lambda_s) {
                 break;
             }
