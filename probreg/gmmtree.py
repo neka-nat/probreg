@@ -50,7 +50,7 @@ class GMMTree():
                 continue
             lmd, nn = np.linalg.eigh(self._nodes[i][2])
             s = m[1] / m[0]
-            nn = np.multiply(nn, m[0] / lmd)
+            nn = np.multiply(nn, np.sqrt(m[0] / lmd))
             sl = slice(3 * i, 3 * (i + 1))
             bmat[sl] = np.dot(nn.T, self._nodes[i][1]) - np.dot(nn.T, s)
             amat[sl, :3] = np.cross(s, nn.T)

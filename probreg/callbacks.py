@@ -32,13 +32,15 @@ class Plot2DCallback(object):
         self._cnt += 1
 
 class Open3dVisualizerCallback(object):
-    def __init__(self, source, target, save=False):
+    def __init__(self, source, target, save=False,
+                 keep_window=True):
         self._vis = o3.Visualizer()
         self._vis.create_window()
         self._source = source
         self._target = target
         self._result = copy.deepcopy(self._source)
         self._save = save
+        self._keep_window = keep_window
         self._source.paint_uniform_color([1, 0, 0])
         self._target.paint_uniform_color([0, 1, 0])
         self._result.paint_uniform_color([0, 0, 1])
@@ -48,6 +50,8 @@ class Open3dVisualizerCallback(object):
         self._cnt = 0
 
     def __del__(self):
+        if self._keep_window:
+            self._vis.run()
         self._vis.destroy_window()
 
     def __call__(self, transformation):

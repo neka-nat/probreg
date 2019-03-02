@@ -111,7 +111,6 @@ NodeParamArray probreg::gmmTreeEstep(const Matrix3X& points,
                                      VectorXi& current_idx,
                                      Integer max_tree_level) {
     const Integer n_total = N_NODE * (1 - std::pow(N_NODE, max_tree_level)) / (1 - N_NODE);
-    Vector gamma = Vector::Zero(n_total);
     NodeParamArray moments(n_total);
     for (Integer j = 0; j < n_total; ++j) {
         std::get<0>(moments[j]) = 0.0;
@@ -121,19 +120,20 @@ NodeParamArray probreg::gmmTreeEstep(const Matrix3X& points,
 
     for (Integer i = 0; i < points.cols(); ++i) {
         const Integer j0 = child(parent_idx[i]);
+        Vector gamma = Vector::Zero(N_NODE);
         for (Integer j = j0; j < j0 + N_NODE; ++j) {
-            gamma[j] = std::get<0>(nodes[j]) *
-                       gaussianPdf(points.col(i), std::get<1>(nodes[j]), std::get<2>(nodes[j]));
+            gamma[j - j0] = std::get<0>(nodes[j]) *
+                            gaussianPdf(points.col(i), std::get<1>(nodes[j]), std::get<2>(nodes[j]));
         }
-        const Float den = gamma(Eigen::seqN(j0, N_NODE)).sum();
+        const Float den = gamma.sum();
         if (den > eps) {
-            gamma(Eigen::seqN(j0, N_NODE)) /= den;
+            gamma /= den;
         }
         for (Integer j = j0; j < j0 + N_NODE; ++j) {
-            accumulate(moments[j], gamma[j], points.col(i));
+            accumulate(moments[j], gamma[j - j0], points.col(i));
         }
         Integer max_j;
-        gamma(Eigen::seqN(j0, N_NODE)).maxCoeff(&max_j);
+        gamma.maxCoeff(&max_j);
         current_idx[i] = j0 + max_j;
     }
     return moments;
