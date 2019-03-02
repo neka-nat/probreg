@@ -20,7 +20,7 @@ class GMMTree():
         self._lambda_c = lambda_c
         self._tf_type = tf.RigidTransformation
         self._tf_result = self._tf_type()
-        self._callbacks = None
+        self._callbacks = []
         if not self._source is None:
             self._nodes = _gmmtree.build_gmmtree(self._source.T,
                                                  self._tree_level,

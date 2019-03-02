@@ -15,11 +15,11 @@ class CostFunction():
         self._tf_type = tf_type
 
     @abc.abstractmethod
-    def to_transformation(self, theta, *args):
+    def to_transformation(self, theta):
         return None
 
     @abc.abstractmethod
-    def initial(self, *args):
+    def initial(self):
         return None
 
     @abc.abstractmethod
@@ -41,11 +41,11 @@ class RigidCostFunction(CostFunction):
     def __init__(self):
         self._tf_type = tf.RigidTransformation
 
-    def to_transformation(self, theta, *args):
+    def to_transformation(self, theta):
         rot = trans.quaternion_matrix(theta[:4])[:3, :3]
         return self._tf_type(rot, theta[4:7])
 
-    def initial(self, *args):
+    def initial(self):
         x0 = np.zeros(7)
         x0[0] = 1.0
         return x0
@@ -63,29 +63,29 @@ class RigidCostFunction(CostFunction):
 
 
 class TPSCostFunction(CostFunction):
-    def __init__(self, ndim, alpha=1.0, beta=0.1):
+    def __init__(self, control_pts, ndim,
+                 alpha=1.0, beta=0.1):
         self._tf_type = tf.TPSTransformation
         self._ndim = ndim
         self._alpha = alpha
         self._beta = beta
+        self._control_pts = control_pts
 
-    def to_transformation(self, theta, *args):
-        mu_source = args[0]
+    def to_transformation(self, theta):
         n_data = theta.shape[0] // self._ndim
         n_a = self._ndim * (self._ndim + 1)
         a = theta[:n_a].reshape(self._ndim + 1, self._ndim)
         v = theta[n_a:].reshape(n_data - self._ndim - 1, self._ndim)
-        return self._tf_type(a, v, mu_source)
+        return self._tf_type(a, v, self._control_pts)
 
-    def initial(self, *args):
-        mu_source = args[0]
+    def initial(self):
         a = np.r_[np.zeros((1, self._ndim)), np.identity(self._ndim)]
-        v = np.zeros((mu_source.shape[0] - self._ndim - 1, self._ndim))
+        v = np.zeros((self._control_pts.shape[0] - self._ndim - 1, self._ndim))
         return np.r_[a, v].flatten()
 
     def __call__(self, theta, *args):
         mu_source, phi_source, mu_target, phi_target, sigma = args
-        tf_obj = self.to_transformation(theta, *args)
+        tf_obj = self.to_transformation(theta)
         basis, kernel = tf_obj.prepare(mu_source)
         t_mu_source = tf_obj.transform_basis(basis)
         bending = np.trace(np.dot(tf_obj.v.T, np.dot(kernel, tf_obj.v)))

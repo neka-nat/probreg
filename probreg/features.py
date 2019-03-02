@@ -1,11 +1,26 @@
 from __future__ import print_function
 from __future__ import division
+import abc
+import six
 import numpy as np
 from sklearn import mixture
 from sklearn import svm
 
 
-class GMM(object):
+@six.add_metaclass(abc.ABCMeta)
+class Feature():
+    @abc.abstractmethod
+    def init(self):
+        pass
+
+    @abc.abstractmethod
+    def compute(self):
+        return None
+
+    def annealing(self):
+        pass
+
+class GMM(Feature):
     """Feature points extraction using Gaussian mixture model
 
     Args:
@@ -23,7 +38,7 @@ class GMM(object):
         return self._clf.means_, self._clf.weights_
 
 
-class OneClassSVM(object):
+class OneClassSVM(Feature):
     """Feature points extraction using One class SVM
 
     Args:
@@ -32,12 +47,14 @@ class OneClassSVM(object):
         gamma (float, optional): Coefficient for RBF kernel.
         nu (float, optional): An upper bound on the fraction of training errors
             and a lower bound of the fraction of support vectors.
+        delta (float, optional): Anealing parameter for optimization.
     """
-    def __init__(self, ndim, sigma, gamma=0.5, nu=0.1):
+    def __init__(self, ndim, sigma, gamma=0.5, nu=0.05, delta=0.9):
         self._ndim = ndim
         self._sigma = sigma
         self._gamma = gamma
         self._nu = nu
+        self._delta = delta
 
     def init(self):
         self._clf = svm.OneClassSVM(nu=self._nu, kernel="rbf", gamma=self._gamma)
@@ -47,3 +64,5 @@ class OneClassSVM(object):
         z = np.power(2.0 * np.pi * self._sigma**2, self._ndim * 0.5)
         return self._clf.support_vectors_, self._clf.dual_coef_[0] * z
 
+    def annealing(self):
+        self._gamma *= self._delta
