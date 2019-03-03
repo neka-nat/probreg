@@ -5,13 +5,19 @@
 
 Implementation of point cloud **reg**istration algorithms with **prob**ablistic model.
 
+The point set registration algorithms using stochastic model are more robust than ICP(Iterative Closest Point).
+This package implements several algorithms using stochastic models and provides a simple interface with [Open3D](http://www.open3d.org/).
+
 ## Algorithms
 
-* [Coherent Point Drift](https://arxiv.org/pdf/0905.2635.pdf)
-* [GMMReg](https://ieeexplore.ieee.org/document/5674050)
-* [Support Vector Registration](https://arxiv.org/pdf/1511.04240.pdf)
-* [GMMTree](https://arxiv.org/pdf/1807.02587.pdf)
-* [FilterReg](https://arxiv.org/pdf/1811.10136.pdf)
+* Distance minimization of two point clouds
+    * [Coherent Point Drift(2010)](https://arxiv.org/pdf/0905.2635.pdf)
+    * [FilterReg(2018)](https://arxiv.org/pdf/1811.10136.pdf)
+* Distance minimization of two probabilistic distributions
+    * [GMMReg(2011)](https://ieeexplore.ieee.org/document/5674050)
+    * [Support Vector Registration(2015)](https://arxiv.org/pdf/1511.04240.pdf)
+* Stocastic model with spatial partitioning
+    * [GMMTree(2018)](https://arxiv.org/pdf/1807.02587.pdf)
 
 ## Install
 
@@ -32,7 +38,7 @@ pip install -e .
 ## Quick start
 
 This is a sample code that reads a PCD file and calls CPD registration.
-You can easily execute registrations using [Open3D](http://www.open3d.org/) and draw the results.
+You can easily execute registrations from Open3D point cloud object and draw the results.
 
 ```py
 import copy
