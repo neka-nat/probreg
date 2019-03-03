@@ -15,6 +15,12 @@ Implementation of point cloud **reg**istration algorithms with **prob**ablistic 
 
 ## Install
 
+Install with pip.
+
+```
+pip install probreg
+```
+
 Install from source.
 
 ```
