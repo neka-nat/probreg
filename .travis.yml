@@ -1,25 +1,24 @@
 language: python
+sudo: required
 matrix:
   include:
     - os: linux
-      compiler: g++
+      dist: xenial
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-5', 'gcc-5']
-      env:
-        - CXX='g++-5'
-        - CC='gcc-5'
       python: 2.7
     - os: linux
-      compiler: g++
+      dist: xenial
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-5', 'gcc-5']
-      env:
-        - CXX='g++-5'
-        - CC='gcc-5'
+      python: 3.5
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
       python: 3.6
 env:
   global:

@@ -8,13 +8,12 @@ namespace {
 static const Float eps = 1.0e-15;
 
 Float gaussianPdf(const Vector3& x, const Vector3& mu, const Matrix3& cov) {
-    static const Float min_thres = -80.0;
     const Vector3 d = x - mu;
     const Float det = cov.determinant();
     if (det < eps) return 0.0;
     const Float c = 1.0 / (std::pow(det, 0.5) * std::pow(2.0 * M_PI, x.size() * 0.5));
     const Float ep = -0.5 * d.transpose() * cov.inverse() * d;
-    return (ep > min_thres) ? c * std::exp(ep) : 0.0;
+    return c * std::exp(ep);
 }
 
 Float logLikelihood(const NodeParamArray& nodes, const Matrix3X& points, Integer j0, Integer jn) {
@@ -44,7 +43,6 @@ Integer child(Integer j) { return (j + 1) * N_NODE; }
 Integer level(Integer l) { return N_NODE * (std::pow(N_NODE, l) - 1) / (N_NODE - 1); }
 
 void accumulate(NodeParam& moments, Float gamma, const Vector& z) {
-    static const Float eps = 1.0e-15;
     if (gamma < eps) return;
     std::get<0>(moments) += gamma;
     std::get<1>(moments) += gamma * z;
@@ -129,6 +127,9 @@ NodeParamArray probreg::gmmTreeEstep(const Matrix3X& points,
         if (den > eps) {
             gamma /= den;
         }
+        else {
+            gamma = Vector::Zero(N_NODE);
+        }
         for (Integer j = j0; j < j0 + N_NODE; ++j) {
             accumulate(moments[j], gamma[j - j0], points.col(i));
         }
@@ -173,6 +174,8 @@ NodeParamArray probreg::gmmTreeRegEstep(const Matrix3X& points,
             const Float den = gamma.sum();
             if (den > eps) {
                 gamma /= den;
+            } else {
+                gamma = Vector::Zero(N_NODE);
             }
             gamma.maxCoeff(&search_id);
             search_id += j0;
