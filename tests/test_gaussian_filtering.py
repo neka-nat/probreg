@@ -14,7 +14,7 @@ class GaussianFilteringTest(unittest.TestCase):
                                           v0.flatten()[5:], np.sqrt(2.0))
         out3 = gt._gauss_transform_direct(x[5:, :], x[:5, :],
                                           v1.flatten()[5:], np.sqrt(2.0))
-        self.assertTrue(np.allclose((out0 / out1), (out2 / out3), atol=1.0e-2, rtol=1.0e-2))
+        self.assertTrue(np.allclose((out0 / out1), (out2 / out3), atol=0, rtol=1.0e-1))
 
 if __name__ == "__main__":
     unittest.main()
