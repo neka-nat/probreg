@@ -59,7 +59,8 @@ class CoherentPointDrift():
     def maximization_step(self, target, estep_res, sigma2_p=None):
         return self._maximization_step(self._source, target, estep_res, sigma2_p)
 
-    @abc.abstractstaticmethod
+    @staticmethod
+    @abc.abstractmethod
     def _maximization_step(source, target, estep_res, sigma2_p=None):
         return None
 

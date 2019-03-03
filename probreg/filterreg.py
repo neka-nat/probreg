@@ -82,7 +82,8 @@ class FilterReg():
         return self._maximization_step(t_source, target, estep_res,
                                        self._tf_result, self._sigma2, w)
 
-    @abc.abstractstaticmethod
+    @staticmethod
+    @abc.abstractmethod
     def _maximization_step(t_source, target, estep_res, sigma2, w=0.0):
         return None
 
