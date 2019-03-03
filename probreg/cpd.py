@@ -166,37 +166,38 @@ class NonRigidCPD(CoherentPointDrift):
         self._tf_type = tf.NonRigidTransformation
         self._beta = beta
         self._lmd = lmd
-        self._g = None
+        self._tf_obj = None
         if not self._source is None:
-            self._g = mu.rbf_kernel(self._source, self._source, self._beta)
+            self._tf_obj = self._tf_type(None, self._source, self._beta)
 
     def set_source(self, source):
         self._source = source
-        self._g = mu.rbf_kernel(self._source, self._source, self._beta)
+        self._tf_obj = self._tf_type(None, self._source, self._beta)
 
     def maximization_step(self, target, estep_res, sigma2_p=None):
         return self._maximization_step(self._source, target, estep_res,
-                                       sigma2_p, self._g, self._lmd)
+                                       sigma2_p, self._tf_obj, self._lmd)
 
     def _initialize(self, target):
         ndim = self._source.shape[1]
         sigma2 = mu.squared_kernel_sum(self._source, target)
         q = 1.0 + target.shape[0] * ndim * 0.5 * np.log(sigma2)
-        return MstepResult(self._tf_type(self._g, np.zeros_like(self._source)),
-                           sigma2, q)
+        self._tf_obj.w = np.zeros_like(self._source)
+        return MstepResult(self._tf_obj, sigma2, q)
 
     @staticmethod
-    def _maximization_step(source, target, estep_res, sigma2_p, g, lmd):
+    def _maximization_step(source, target, estep_res, sigma2_p, tf_obj, lmd):
         pt1, p1, px, n_p = estep_res
         ndim = source.shape[1]
-        w = np.linalg.solve((p1 * g).T + lmd * sigma2_p * np.identity(source.shape[0]),
+        w = np.linalg.solve((p1 * tf_obj.g).T + lmd * sigma2_p * np.identity(source.shape[0]),
                             px - (source.T * p1).T)
-        t = source + np.dot(g, w)
+        t = source + np.dot(tf_obj.g, w)
         tr_xp1x = np.trace(np.dot(target.T * pt1, target))
         tr_pxt = np.trace(np.dot(px.T, t))
         tr_tpt = np.trace(np.dot(t.T * p1, t))
         sigma2 = (tr_xp1x - 2.0 * tr_pxt + tr_tpt) / (n_p * ndim)
-        return MstepResult(tf.NonRigidTransformation(g, w), sigma2, sigma2)
+        tf_obj.w = w
+        return MstepResult(tf_obj, sigma2, sigma2)
 
 
 def registration_cpd(source, target, tf_type_name='rigid',

@@ -48,9 +48,9 @@ class AffineTransformation(Transformation):
 
 
 class NonRigidTransformation(Transformation):
-    def __init__(self, g, w):
+    def __init__(self, w, points, beta=2.0):
         super(NonRigidTransformation, self).__init__()
-        self.g = g
+        self.g = mu.rbf_kernel(points, points, beta)
         self.w = w
 
     def _transform(self, points):
