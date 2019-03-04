@@ -5,7 +5,7 @@
 
 .. image:: _static/logo_horizontal.png
     :alt: probreg logo
-    :width: 320px
+    :width: 640px
     :align: center
 
 Probreg: probablistic point cloud registration library
