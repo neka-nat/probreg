@@ -95,8 +95,7 @@ class TPSGMMReg(L2DistRegistration):
                  use_estimated_sigma=True):
         n_gmm_components = min(n_gmm_components, int(source.shape[0] * 0.8))
         super(TPSGMMReg, self).__init__(source, ft.GMM(n_gmm_components),
-                                        cf.TPSCostFunction([], source.shape[1],
-                                                           alpha, beta),
+                                        cf.TPSCostFunction([], alpha, beta),
                                         sigma, delta,
                                         use_estimated_sigma)
         self._feature_gen.init()
@@ -127,8 +126,7 @@ class TPSSVR(L2DistRegistration):
         super(TPSSVR, self).__init__(source,
                                      ft.OneClassSVM(source.shape[1],
                                                     sigma, gamma, nu),
-                                     cf.TPSCostFunction([], source.shape[1],
-                                                        alpha, beta),
+                                     cf.TPSCostFunction([], alpha, beta),
                                      sigma, delta,
                                      use_estimated_sigma)
         self._feature_gen.init()

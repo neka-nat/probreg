@@ -63,27 +63,29 @@ class RigidCostFunction(CostFunction):
 
 
 class TPSCostFunction(CostFunction):
-    def __init__(self, control_pts, ndim,
+    def __init__(self, control_pts,
                  alpha=1.0, beta=0.1):
         self._tf_type = tf.TPSTransformation
-        self._ndim = ndim
         self._alpha = alpha
         self._beta = beta
         self._control_pts = control_pts
 
     def to_transformation(self, theta):
-        n_data = theta.shape[0] // self._ndim
-        n_a = self._ndim * (self._ndim + 1)
-        a = theta[:n_a].reshape(self._ndim + 1, self._ndim)
-        v = theta[n_a:].reshape(n_data - self._ndim - 1, self._ndim)
+        ndim = self._control_pts.shape[1]
+        n_data = theta.shape[0] // ndim
+        n_a = ndim * (ndim + 1)
+        a = theta[:n_a].reshape(ndim + 1, ndim)
+        v = theta[n_a:].reshape(n_data - ndim - 1, ndim)
         return self._tf_type(a, v, self._control_pts)
 
     def initial(self):
-        a = np.r_[np.zeros((1, self._ndim)), np.identity(self._ndim)]
-        v = np.zeros((self._control_pts.shape[0] - self._ndim - 1, self._ndim))
+        ndim = self._control_pts.shape[1]
+        a = np.r_[np.zeros((1, ndim)), np.identity(ndim)]
+        v = np.zeros((self._control_pts.shape[0] - ndim - 1, ndim))
         return np.r_[a, v].flatten()
 
     def __call__(self, theta, *args):
+        ndim = self._control_pts.shape[1]
         mu_source, phi_source, mu_target, phi_target, sigma = args
         tf_obj = self.to_transformation(theta)
         basis, kernel = tf_obj.prepare(mu_source)
@@ -96,5 +98,5 @@ class TPSCostFunction(CostFunction):
         f = -f1 + 2.0 * f2
         g = -2.0 * g1 + 2.0 * g2
         grad = self._alpha * np.dot(basis.T, g)
-        grad[self._ndim + 1:, :] += 2.0 * self._beta * np.dot(kernel, tf_obj.v)
+        grad[ndim + 1:, :] += 2.0 * self._beta * np.dot(kernel, tf_obj.v)
         return self._alpha * f + self._beta * bending, grad.flatten()

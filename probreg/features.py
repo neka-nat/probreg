@@ -49,7 +49,7 @@ class OneClassSVM(Feature):
             and a lower bound of the fraction of support vectors.
         delta (float, optional): Anealing parameter for optimization.
     """
-    def __init__(self, ndim, sigma, gamma=0.5, nu=0.05, delta=0.9):
+    def __init__(self, ndim, sigma, gamma=0.5, nu=0.05, delta=10.0):
         self._ndim = ndim
         self._sigma = sigma
         self._gamma = gamma
