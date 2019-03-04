@@ -15,6 +15,8 @@ Probreg: probablistic point cloud registration library
    :maxdepth: 2
    :caption: Contents:
 
+   probreg
+
 
 
 Indices and tables

@@ -67,6 +67,10 @@ result.paint_uniform_color([0, 0, 1])
 o3.draw_geometries([source, target, result])
 ```
 
+## Documentation
+
+https://neka-nat.github.io/probreg/
+
 ## Results
 
 ### Regid registration
