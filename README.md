@@ -3,10 +3,15 @@
 [![PyPI version](https://badge.fury.io/py/probreg.svg)](https://badge.fury.io/py/probreg)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
-Implementation of point cloud **reg**istration algorithms with **prob**ablistic model.
+Probreg is a library that implements point cloud **reg**istration algorithms with **prob**ablistic model.
 
 The point set registration algorithms using stochastic model are more robust than ICP(Iterative Closest Point).
 This package implements several algorithms using stochastic models and provides a simple interface with [Open3D](http://www.open3d.org/).
+
+## Core features
+
+* Open3D interface
+* Rigid and non-rigid transformation
 
 ## Algorithms
 
@@ -19,15 +24,15 @@ This package implements several algorithms using stochastic models and provides 
 * Stocastic model with spatial partitioning
     * [GMMTree(2018)](https://arxiv.org/pdf/1807.02587.pdf)
 
-## Install
+## Installation
 
-Install with pip.
+You can install probreg using `pip`.
 
 ```
 pip install probreg
 ```
 
-Install from source.
+Or install probreg from source.
 
 ```
 git clone https://github.com/neka-nat/probreg.git --recursive
@@ -35,7 +40,7 @@ cd probreg
 pip install -e .
 ```
 
-## Quick start
+## Getting Started
 
 This is a sample code that reads a PCD file and calls CPD registration.
 You can easily execute registrations from Open3D point cloud object and draw the results.
@@ -67,9 +72,9 @@ result.paint_uniform_color([0, 0, 1])
 o3.draw_geometries([source, target, result])
 ```
 
-## Documentation
+## Resources
 
-https://neka-nat.github.io/probreg/
+* [Documentation](https://neka-nat.github.io/probreg/)
 
 ## Results
 
