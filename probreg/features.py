@@ -20,6 +20,7 @@ class Feature():
     def annealing(self):
         pass
 
+
 class GMM(Feature):
     """Feature points extraction using Gaussian mixture model
 

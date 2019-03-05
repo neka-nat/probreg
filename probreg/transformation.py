@@ -36,6 +36,7 @@ class RigidTransformation(Transformation):
         return RigidTransformation(self.rot.T, -np.dot(self.rot.T, self.t),
                                    1.0 / self.scale)
 
+
 class AffineTransformation(Transformation):
     def __init__(self, b=np.identity(3),
                  t=np.zeros(3)):

@@ -56,10 +56,10 @@ class L2DistRegistration():
         for c in self._callbacks:
             c(tf_result)
 
-    def registration(self, target, max_itr=1, tol=1.0e-3):
+    def registration(self, target, maxitr=1, tol=1.0e-3):
         f = None
         x_ini = self._cost_fn.initial()
-        for _ in range(max_itr):
+        for _ in range(maxitr):
             self._feature_gen.init()
             mu_source, phi_source = self._feature_gen.compute(self._source)
             mu_target, phi_target = self._feature_gen.compute(target)

@@ -213,7 +213,7 @@ def registration_cpd(source, target, tf_type_name='rigid',
     elif tf_type_name == 'nonrigid':
         cpd = NonRigidCPD(cv(source), **kargs)
     else:
-        raise ValueError('Unknown transform type %s' % tf_type_name)
+        raise ValueError('Unknown transformation type %s' % tf_type_name)
     cpd.set_callbacks(callbacks)
     return cpd.registration(cv(target),
                             w, maxiter, tol)
