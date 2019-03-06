@@ -59,6 +59,8 @@ class NonRigidTransformation(Transformation):
 
 
 class TPSTransformation(Transformation):
+    """Thin Plate Spline transformaion.
+    """
     def __init__(self, a, v, control_pts,
                  kernel=mu.tps_kernel):
         super(TPSTransformation, self).__init__()

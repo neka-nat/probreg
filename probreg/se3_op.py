@@ -8,6 +8,11 @@ def skew(x):
     """
     skew-symmetric matrix, that represent
     cross products as matrix multiplications.
+
+    Args:
+        x (numpy.ndarray): 3D vector.
+    Returns:
+        3x3 skew-symmetric matrix.
     """
     return np.array([[0.0, -x[2], x[1]],
                      [x[2], 0.0, -x[0]],
@@ -15,6 +20,13 @@ def skew(x):
 
 
 def twist_trans(tw):
+    """
+    Linear approximation of transformation matrix
+    using twist representation.
+
+    Args:
+        tw (numpy.ndarray): Twist vector.
+    """
     return np.identity(3) + skew(tw[:3]), tw[3:]
 
 

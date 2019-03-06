@@ -13,6 +13,11 @@ MstepResult = namedtuple('MstepResult', ['transformation', 'q'])
 
 class GMMTree():
     """GMM Tree
+
+    Args:
+        source (numpy.ndarray, optional): Source point cloud data.
+        tree_level (int, optional): Maximum depth level of GMM tree.
+        lambda_c (float, optional): Parameter that determine the pruning of GMM tree
     """
     def __init__(self, source=None, tree_level=2, lambda_c=0.01):
         self._source = source

@@ -22,6 +22,9 @@ class CoherentPointDrift():
     according to the type of transformation.
     In this class, Estimation step in EM algorithm is implemented and
     Maximazation step is implemented in the inherited classes.
+
+    Args:
+        source (numpy.ndarray, optional): Source point cloud data.
     """
     def __init__(self, source=None):
         self._source = source
