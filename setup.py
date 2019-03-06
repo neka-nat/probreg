@@ -6,7 +6,7 @@ from setuptools.command.build_ext import build_ext
 import sys
 import setuptools
 
-__version__ = '0.0.2'
+__version__ = '0.0.5'
 
 def find_eigen(hint=[]):
     """
@@ -173,7 +173,8 @@ setup(
     author_email='nekanat.stock@gmail.com',
     url='https://github.com/neka-nat/probreg',
     description='Probablistic point cloud resitration algorithms',
-    long_description='',
+    long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
     ext_modules=ext_modules,
     install_requires=['pybind11>=2.2', 'open3d-python',
                       'six', 'transformations', 'scipy',

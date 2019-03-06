@@ -1,4 +1,4 @@
-# ![logo](images/logo.png)
+# ![logo](https://raw.githubusercontent.com/neka-nat/probreg/master/images/logo.png)
 [![Build Status](https://travis-ci.org/neka-nat/probreg.svg?branch=master)](https://travis-ci.org/neka-nat/probreg)
 [![PyPI version](https://badge.fury.io/py/probreg.svg)](https://badge.fury.io/py/probreg)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
@@ -81,21 +81,21 @@ o3.draw_geometries([source, target, result])
 ### Regid registration
 
 #### CPD
-![rigid_cpd](images/cpd_rigid.gif)
+![rigid_cpd](https://raw.githubusercontent.com/neka-nat/probreg/master/images/cpd_rigid.gif)
 
 #### SVR
-![rigid_svr](images/svr_rigid.gif)
+![rigid_svr](https://raw.githubusercontent.com/neka-nat/probreg/master/images/svr_rigid.gif)
 
 #### GMMTree
-![rigid_gmmtree](images/gmmtree_rigid.gif)
+![rigid_gmmtree](https://raw.githubusercontent.com/neka-nat/probreg/master/images/gmmtree_rigid.gif)
 
 #### FilterReg
-![rigid_filterreg](images/filterreg_rigid.gif)
+![rigid_filterreg](https://raw.githubusercontent.com/neka-nat/probreg/master/images/filterreg_rigid.gif)
 
 ### Non rigid registration
 
 #### CPD
-![nonrigid_cpd](images/cpd_nonrigid.gif)
+![nonrigid_cpd](https://raw.githubusercontent.com/neka-nat/probreg/master/images/cpd_nonrigid.gif)
 
 #### SVR
-![nonrigid_svr](images/svr_nonrigid.gif)
+![nonrigid_svr](https://raw.githubusercontent.com/neka-nat/probreg/master/images/svr_nonrigid.gif)
