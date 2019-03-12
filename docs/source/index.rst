@@ -15,6 +15,7 @@ Probreg: probablistic point cloud registration library
    :maxdepth: 2
    :caption: Contents:
 
+   install
    probreg
 
 
