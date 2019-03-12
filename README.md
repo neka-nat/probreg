@@ -79,15 +79,13 @@ o3.draw_geometries([source, target, result])
 
 ## Results
 
-### Regid registration
-
-#### Compare algorithms
+### Compare algorithms
 
 | CPD | SVR | GMMTree | FilterReg |
 |-----|-----|---------|-----------|
 | <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/cpd_rigid.gif" width="640"> |  <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/svr_rigid.gif" width="640"> | <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/gmmtree_rigid.gif" width="640"> | <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/filterreg_rigid.gif" width="640"> |
 
-#### Noise test
+### Noise test
 
 | ICP | CPD | FilterReg |
 |-----|-----|-----------|
@@ -95,8 +93,6 @@ o3.draw_geometries([source, target, result])
 
 ### Non rigid registration
 
-#### CPD
-![nonrigid_cpd](https://raw.githubusercontent.com/neka-nat/probreg/master/images/cpd_nonrigid.gif)
-
-#### SVR
-![nonrigid_svr](https://raw.githubusercontent.com/neka-nat/probreg/master/images/svr_nonrigid.gif)
+| CPD | SVR |
+|-----|-----|
+| <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/cpd_nonrigid.gif" width="640"> | <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/svr_nonrigid.gif" width="640"> |
