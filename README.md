@@ -81,17 +81,17 @@ o3.draw_geometries([source, target, result])
 
 ### Regid registration
 
-#### CPD
-![rigid_cpd](https://raw.githubusercontent.com/neka-nat/probreg/master/images/cpd_rigid.gif)
+## Compare algorithms
 
-#### SVR
-![rigid_svr](https://raw.githubusercontent.com/neka-nat/probreg/master/images/svr_rigid.gif)
+| CPD | SVR | GMMTree | FilterReg |
+|-----|-----|---------|-----------|
+| <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/cpd_rigid.gif" width="320"> |  <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/svr_rigid.gif" width="320"> | <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/gmmtree_rigid.gif" width="320"> | <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/filterreg_rigid.gif" width="320"> |
 
-#### GMMTree
-![rigid_gmmtree](https://raw.githubusercontent.com/neka-nat/probreg/master/images/gmmtree_rigid.gif)
+## Noise test
 
-#### FilterReg
-![rigid_filterreg](https://raw.githubusercontent.com/neka-nat/probreg/master/images/filterreg_rigid.gif)
+| ICP | CPD | FilterReg |
+|-----|-----|-----------|
+| <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/icp_noise.gif" width="320"> |  <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/cpd_noise.gif" width="320"> | <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/filterreg_noise.gif" width="320"> |
 
 ### Non rigid registration
 

@@ -4,7 +4,7 @@ from probreg import gmmtree
 from probreg import callbacks
 import utils
 
-source, target = utils.prepare_source_and_target_rigid_3d('bunny.pcd')
+source, target = utils.prepare_source_and_target_rigid_3d('bunny.pcd', n_random=0)
 
 cbs = [callbacks.Open3dVisualizerCallback(source, target)]
 tf_param, _ = gmmtree.registration_gmmtree(source, target, callbacks=cbs)

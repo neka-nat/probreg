@@ -10,11 +10,11 @@ six = "*"
 transformations = "*"
 scipy = "*"
 scikit-learn = "*"
-sphinx = "*"
 matplotlib = "*"
 "e1839a8" = {path = ".", editable = true}
 
 [dev-packages]
+sphinx = "*"
 "flake8" = "*"
 
 [scripts]
