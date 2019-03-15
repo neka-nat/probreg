@@ -40,6 +40,7 @@ class Plot2DCallback(object):
         plt.pause(0.001)
         self._cnt += 1
 
+
 class Open3dVisualizerCallback(object):
     """Display the 3D registration result of each iteration.
 

@@ -25,8 +25,7 @@ Float logLikelihood(const NodeParamArray& nodes, const Matrix3X& points, Integer
             tmp += std::get<0>(nodes[j]) *
                    gaussianPdf(points.col(i), std::get<1>(nodes[j]), std::get<2>(nodes[j]));
         }
-        if (tmp < eps) continue;
-        q += std::log(tmp);
+        q += std::log(std::max(tmp, eps));
     }
     return q;
 }

@@ -206,8 +206,18 @@ class NonRigidCPD(CoherentPointDrift):
 def registration_cpd(source, target, tf_type_name='rigid',
                      w=0.0, maxiter=50, tol=0.001,
                      callbacks=[], **kargs):
-    """CPD Registraion
-    """
+    """CPD Registraion.
+
+    Args:
+        source (numpy.ndarray): Source point cloud data.
+        target (numpy.ndarray): Target point cloud data.
+        tf_type_name (str): Transformation type('rigid', 'affine', 'nonrigid')
+        w (float): Weight of the uniform distribution, 0 < `w` < 1.
+        maxitr (int): Maximum number of iterations to EM algorithm.
+        tol (float): Tolerance for termination.
+        callback (:obj:`list` of :obj:`function`): Called after each iteration.
+            `callback(probreg.Transformation)`
+        """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     if tf_type_name == 'rigid':
         cpd = RigidCPD(cv(source), **kargs)

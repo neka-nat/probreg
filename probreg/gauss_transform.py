@@ -19,7 +19,17 @@ class Direct(object):
     def compute(self, target, weights):
         return _gauss_transform_direct(self._source, target, weights, self._h)
 
+
 class GaussTransform(object):
+    """Calculate Gauss Transform
+
+    Args:
+        source (numpy.ndarray): Source data.
+        h (float): Bandwidth parameter of the Gaussian.
+        eps (float): Small floating point used in Gauss Transform.
+        sw_h (float): Value of the bandwidth parameter to
+            switch between direct method and IFGT.
+    """
     def __init__(self, source, h, eps=1.0e-4, sw_h=0.3):
         self._m = source.shape[0]
         if h < sw_h:
@@ -28,6 +38,12 @@ class GaussTransform(object):
             self._impl = _ifgt.Ifgt(source, h, eps)
 
     def compute(self, target, weights=None):
+        """Compute gauss transform
+
+        Args:
+            target (numpy.ndarray): Target data.
+            weights (numpy.ndarray): Weights of Gauss Transform.
+        """
         if weights is None:
             weights = np.ones(self._m)
         if weights.ndim == 1:
