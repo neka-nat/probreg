@@ -132,6 +132,7 @@ Vector Ifgt::compute(const Matrix& target, const Vector& weights) const {
 
     cmat.array().rowwise() *= constant_series_.transpose().array();
     Vector gvec = Vector::Zero(target.rows());
+    #pragma omp parallel for
     for (Integer i = 0; i < target.rows(); ++i) {
         for (Integer j = 0; j < params_.num_clusters_; ++j) {
             Vector dy = target.row(i) - cluster_.cluster_centers_.row(j);

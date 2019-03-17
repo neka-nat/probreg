@@ -6,6 +6,8 @@ namespace py = pybind11;
 using namespace probreg;
 
 PYBIND11_MODULE(_ifgt, m) {
+    Eigen::initParallel();
+
     py::class_<Ifgt>(m, "Ifgt").def(py::init<Matrix, Float, Float>()).def("compute", &Ifgt::compute);
 
     m.def("_kcenter_clustering", [](const Matrix& data, Integer num_clusters) {

@@ -8,6 +8,48 @@ import setuptools
 
 __version__ = '0.0.5'
 
+
+def _check_for_openmp():
+    """Check  whether the default compiler supports OpenMP.
+    This routine is adapted from pynbody // yt.
+    """
+    import distutils.sysconfig
+    import tempfile
+    import shutil
+
+    tmpdir = tempfile.mkdtemp(prefix='probreg')
+    compiler = os.environ.get(
+      'CC', distutils.sysconfig.get_config_var('CC')).split()[0]
+
+    # Attempt to compile a test script.
+    # See http://openmp.org/wp/openmp-compilers/
+    tmpfile = os.path.join(tmpdir, 'check_openmp.c')
+    with open(tmpfile, 'w') as f:
+        f.write('''
+#include <omp.h>
+#include <stdio.h>
+int main() {
+    #pragma omp parallel
+    printf("Hello from thread %d", omp_get_thread_num());
+}
+''')
+
+    try:
+        with open(os.devnull, 'w') as fnull:
+            exit_code = subprocess.call([compiler, '-fopenmp', '-o%s'
+                                         % os.path.join(tmpdir, 'check_openmp'),
+                                         tmpfile],
+                                        stdout=fnull, stderr=fnull)
+    except OSError:
+        exit_code = 1
+    finally:
+        shutil.rmtree(tmpdir)
+
+    if exit_code == 0:
+        print ('Continuing your build using OpenMP...\n')
+        return True
+
+
 def find_eigen(hint=[]):
     """
     Find the location of the Eigen 3 include directory. This will return
@@ -63,6 +105,8 @@ class get_pybind_include(object):
         return pybind11.get_include(self.user)
 
 
+use_omp = _check_for_openmp()
+
 ext_modules = [
     Extension(
         'probreg._ifgt',
@@ -73,6 +117,7 @@ ext_modules = [
             get_pybind_include(user=True),
             find_eigen(['third_party/eigen'])
         ],
+        extra_link_args=['-lgomp'] if use_omp else [],
         language='c++'
     ),
     Extension(
@@ -157,6 +202,8 @@ class BuildExt(build_ext):
         if ct == 'unix':
             opts.append('-DVERSION_INFO="%s"' % self.distribution.get_version())
             opts.append(cpp_flag(self.compiler))
+            if use_omp:
+                opts.append('-fopenmp')
             if has_flag(self.compiler, '-fvisibility=hidden'):
                 opts.append('-fvisibility=hidden')
         elif ct == 'msvc':

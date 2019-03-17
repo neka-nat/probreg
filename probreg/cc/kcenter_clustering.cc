@@ -34,12 +34,16 @@ Float probreg::updateClustering(const Matrix& data,
                                 VectorXi& counts,
                                 Matrix& sum_members) {
     Float err = 0.0;
+    #pragma omp parallel for
     for (Integer i = 0; i < data.rows(); ++i) {
         Float min_distance =
             (cluster_centers.rowwise() - data.row(i)).rowwise().squaredNorm().minCoeff(&labels[i]);
-        sum_members.row(labels[i]) += data.row(i);
-        ++counts[labels[i]];
-        err += min_distance;
+        #pragma omp critical
+        {
+            sum_members.row(labels[i]) += data.row(i);
+            ++counts[labels[i]];
+            err += min_distance;
+        }
     }
     return err;
 }
