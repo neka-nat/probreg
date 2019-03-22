@@ -8,7 +8,7 @@ from . import features as ft
 from . import cost_functions as cf
 
 
-class L2DistRegistration():
+class L2DistRegistration(object):
     """L2 distance registration class
     This algorithm expresses point clouds as mixture gaussian distributions and
     performs registration by minimizing the distance between two distributions.
