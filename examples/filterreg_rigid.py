@@ -7,7 +7,7 @@ import utils
 source, target = utils.prepare_source_and_target_rigid_3d('bunny.pcd')
 
 cbs = [callbacks.Open3dVisualizerCallback(source, target)]
-tf_param, _, _ = filterreg.registration_filterreg(source, target, sigma2=0.01,
+tf_param, _, _ = filterreg.registration_filterreg(source, target, sigma2=None,
                                                   callbacks=cbs)
 rot = trans.identity_matrix()
 rot[:3, :3] = tf_param.rot

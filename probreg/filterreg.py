@@ -129,19 +129,21 @@ class RigidFilterReg(FilterReg):
         drxdx = np.sqrt(m0m0 * 1.0 / sigma2)
         if objective_type == 'pt2pl':
             drxdx = (drxdx * nx.T / m0).T
+        dxdz = np.apply_along_axis(lambda x: np.c_[so.skew(x).T, np.identity(ndim)],
+                                   1, t_source)
+        if objective_type == 'pt2pt':
+            drxdth = np.einsum('i,ijl->ijl', drxdx, dxdz)
+            a = np.einsum('ijk,ijl->kl', drxdth, drxdth)
+        elif objective_type == 'pt2pl':
+            drxdth = np.einsum('ij,ijl->il', drxdx, dxdz)
+            a = np.einsum('ik,il->kl', drxdth, drxdth)
         for _ in range(maxiter):
             x = tf.RigidTransformation(*so.twist_trans(tw)).transform(t_source)
-            dxdz = np.apply_along_axis(lambda x: np.c_[so.skew(x).T, np.identity(ndim)],
-                                       1, x)
             if objective_type == 'pt2pt':
                 rx = np.multiply(drxdx, (x - m1m0).T).T
-                drxdth = np.einsum('i,ijl->ijl', drxdx, dxdz)
-                a = np.einsum('ijk,ijl->kl', drxdth, drxdth)
                 b = np.einsum('ijk,ij->k', drxdth, rx)
             elif objective_type == 'pt2pl':
                 rx = np.multiply(drxdx, (x - m1m0)).sum(axis=1)
-                drxdth = np.einsum('ij,ijl->il', drxdx, dxdz)
-                a = np.einsum('ik,il->kl', drxdth, drxdth)
                 b = np.einsum('ik,i->k', drxdth, rx)
             else:
                 raise ValueError('Unknown objective_type: %s.' % objective_type)
