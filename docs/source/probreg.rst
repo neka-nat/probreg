@@ -1,96 +1,96 @@
-probreg package
-===============
+probreg package modules
+=======================
 
-callbacks module
-----------------
+callbacks
+---------
 
 .. automodule:: probreg.callbacks
     :members:
     :undoc-members:
     :show-inheritance:
 
-cost\_functions module
-----------------------
+cost\_functions
+---------------
 
 .. automodule:: probreg.cost_functions
     :members:
     :undoc-members:
     :show-inheritance:
 
-cpd module
-----------
+cpd
+---
 
 .. automodule:: probreg.cpd
     :members:
     :undoc-members:
     :show-inheritance:
 
-features module
----------------
+features
+--------
 
 .. automodule:: probreg.features
     :members:
     :undoc-members:
     :show-inheritance:
 
-filterreg module
-----------------
+filterreg
+---------
 
 .. automodule:: probreg.filterreg
     :members:
     :undoc-members:
     :show-inheritance:
 
-gauss\_transform module
------------------------
+gauss\_transform
+----------------
 
 .. automodule:: probreg.gauss_transform
     :members:
     :undoc-members:
     :show-inheritance:
 
-gaussian\_filtering module
---------------------------
+gaussian\_filtering
+-------------------
 
 .. automodule:: probreg.gaussian_filtering
     :members:
     :undoc-members:
     :show-inheritance:
 
-gmmtree module
---------------
+gmmtree
+-------
 
 .. automodule:: probreg.gmmtree
     :members:
     :undoc-members:
     :show-inheritance:
 
-l2dist\_regs module
--------------------
+l2dist\_regs
+------------
 
 .. automodule:: probreg.l2dist_regs
     :members:
     :undoc-members:
     :show-inheritance:
 
-math\_utils module
-------------------
+math\_utils
+-----------
 
 .. automodule:: probreg.math_utils
     :members:
     :undoc-members:
     :show-inheritance:
 
-se3\_op module
---------------
+se3\_op
+-------
 
 .. automodule:: probreg.se3_op
     :members:
     :undoc-members:
     :show-inheritance:
 
-transformation module
----------------------
+transformation
+--------------
 
 .. automodule:: probreg.transformation
     :members:

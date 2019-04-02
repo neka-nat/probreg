@@ -46,6 +46,7 @@ extensions = [
 
 autodoc_member_order = 'bysource'
 autodoc_default_flags = ['members', 'show-inheritance']
+autodoc_mock_imports = ['probreg._gmmtree', 'probreg._ifgt', 'probreg._math', 'probreg._permutohedral_lattice']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
