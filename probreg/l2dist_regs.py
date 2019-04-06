@@ -56,10 +56,11 @@ class L2DistRegistration(object):
         for c in self._callbacks:
             c(tf_result)
 
-    def registration(self, target, maxitr=1, tol=1.0e-3):
+    def registration(self, target, maxiter=1, tol=1.0e-3,
+                     opt_maxiter=50, opt_tol=1.0e-3):
         f = None
         x_ini = self._cost_fn.initial()
-        for _ in range(maxitr):
+        for _ in range(maxiter):
             self._feature_gen.init()
             mu_source, phi_source = self._feature_gen.compute(self._source)
             mu_target, phi_target = self._feature_gen.compute(target)
@@ -69,6 +70,8 @@ class L2DistRegistration(object):
                            x_ini,
                            args=args,
                            method='BFGS', jac=True,
+                           tol=opt_tol,
+                           options={'maxiter': opt_maxiter},
                            callback=self.optimization_cb)
             self._annealing()
             self._feature_gen.annealing()
@@ -153,6 +156,8 @@ def registration_gmmreg(source, target, tf_type_name='rigid',
 
 
 def registration_svr(source, target, tf_type_name='rigid',
+                     maxiter=1, tol=1.0e-3,
+                     opt_maxiter=50, opt_tol=1.0e-3,
                      callbacks=[], **kargs):
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     if tf_type_name == 'rigid':
@@ -162,4 +167,4 @@ def registration_svr(source, target, tf_type_name='rigid',
     else:
         raise ValueError('Unknown transform type %s' % tf_type_name)
     svr.set_callbacks(callbacks)
-    return svr.registration(cv(target))
+    return svr.registration(cv(target), maxiter, tol, opt_maxiter, opt_tol)

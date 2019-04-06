@@ -64,9 +64,9 @@ class GMMTree():
         rot, t = so.twist_mul(x, trans_p.rot, trans_p.t)
         return MstepResult(tf.RigidTransformation(rot, t), q)
 
-    def registration(self, target, max_itr=20, tol=1.0e-4):
+    def registration(self, target, maxiter=20, tol=1.0e-4):
         q = None
-        for _ in range(max_itr):
+        for _ in range(maxiter):
             t_target = self._tf_result.transform(target)
             estep_res = self.expectation_step(t_target)
             res = self.maximization_step(estep_res, self._tf_result)
@@ -79,8 +79,9 @@ class GMMTree():
         return MstepResult(self._tf_result.inverse(), res.q)
 
 
-def registration_gmmtree(source, target, callbacks=[], **kargs):
+def registration_gmmtree(source, target, maxiter=20, tol=1.0e-4,
+                         callbacks=[], **kargs):
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     gt = GMMTree(cv(source), **kargs)
     gt.set_callbacks(callbacks)
-    return gt.registration(cv(target))
+    return gt.registration(cv(target), maxiter, tol)

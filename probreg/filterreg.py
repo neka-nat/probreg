@@ -160,8 +160,9 @@ class RigidFilterReg(FilterReg):
 
 
 def registration_filterreg(source, target, target_normals=None,
-                           sigma2=None, callbacks=[], **kargs):
+                           sigma2=None, maxiter=50, tol=0.001,
+                           callbacks=[], **kargs):
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     frg = RigidFilterReg(cv(source), target_normals, sigma2, **kargs)
     frg.set_callbacks(callbacks)
-    return frg.registration(cv(target))
+    return frg.registration(cv(target), maxiter=maxiter, tol=tol)
