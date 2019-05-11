@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import division
 import numpy as np
 import transformations as trans
+from . import _se3_op
 
 
 def skew(x):
@@ -35,10 +36,8 @@ def twist_mul(tw, rot, t):
     return np.dot(tr, rot), np.dot(t, tr.T) + tt
 
 
-def diff_x_from_tw(x):
-    return np.array([[0.0, x[2], -x[1], 1.0, 0.0, 0.0],
-                     [-x[2], 0.0, x[0], 0.0, 1.0, 0.0],
-                     [x[1], -x[0], 0.0, 0.0, 0.0, 1.0]])
+def diff_from_tw(x):
+    return np.array(_se3_op.diff_from_twist(x.T))
 
 
 def diff_rot_from_quaternion(q):

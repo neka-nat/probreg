@@ -1,6 +1,5 @@
 #include "optimizers.h"
 #include <Eigen/Dense>
-#include <iostream>
 
 using namespace probreg;
 
