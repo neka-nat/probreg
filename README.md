@@ -19,12 +19,12 @@ This package implements several algorithms using stochastic models and provides 
 
 * Distance minimization of two point clouds
     * [Coherent Point Drift(2010)](https://arxiv.org/pdf/0905.2635.pdf)
-    * [FilterReg(2018)](https://arxiv.org/pdf/1811.10136.pdf)
+    * [FilterReg(CVPR2019)](https://arxiv.org/pdf/1811.10136.pdf)
 * Distance minimization of two probabilistic distributions
     * [GMMReg(2011)](https://ieeexplore.ieee.org/document/5674050)
     * [Support Vector Registration(2015)](https://arxiv.org/pdf/1511.04240.pdf)
-* Stocastic model with spatial partitioning
-    * [GMMTree(2018)](https://arxiv.org/pdf/1807.02587.pdf)
+* Hierarchical Stocastic model
+    * [GMMTree(ECCV2018)](https://arxiv.org/pdf/1807.02587.pdf)
 
 ## Installation
 

@@ -217,7 +217,7 @@ def registration_cpd(source, target, tf_type_name='rigid',
         tol (float): Tolerance for termination.
         callback (:obj:`list` of :obj:`function`): Called after each iteration.
             `callback(probreg.Transformation)`
-        """
+    """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     if tf_type_name == 'rigid':
         cpd = RigidCPD(cv(source), **kargs)

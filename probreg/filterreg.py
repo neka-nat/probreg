@@ -9,6 +9,7 @@ from . import transformation as tf
 from . import gaussian_filtering as gf
 from . import gauss_transform as gt
 from . import se3_op as so
+from . import _optimizers as opt
 from . import math_utils as mu
 
 
@@ -136,20 +137,22 @@ class RigidFilterReg(FilterReg):
         elif objective_type == 'pt2pl':
             drxdth = np.einsum('ij,ijl->il', drxdx, dxdz)
             a = np.einsum('ik,il->kl', drxdth, drxdth)
-        for _ in range(maxiter):
+        else:
+            raise ValueError('Unknown objective_type: %s.' % objective_type)
+
+        def calc_ab(tw):
             x = tf.RigidTransformation(*so.twist_trans(tw)).transform(t_source)
             if objective_type == 'pt2pt':
                 rx = np.multiply(drxdx, (x - m1m0).T).T
                 b = np.einsum('ijk,ij->k', drxdth, rx)
             elif objective_type == 'pt2pl':
-                rx = np.multiply(drxdx, (x - m1m0)).sum(axis=1)
+                rx = np.multiply(drxdx, (x - m1m0).T).sum(axis=1)
                 b = np.einsum('ik,i->k', drxdth, rx)
             else:
                 raise ValueError('Unknown objective_type: %s.' % objective_type)
-            dtw = np.linalg.solve(a, b)
-            tw -= dtw
-            if np.linalg.norm(dtw) < tol:
-                break
+            return (rx, a, b)
+
+        tw, rx = opt.gauss_newton(tw, calc_ab, tol, maxiter)
         rot, t = so.twist_mul(tw, trans_p.rot, trans_p.t)
         if not m2 is None:
             sigma2 = ((m0 * np.square(t_source).sum(axis=1) - 2.0 * (t_source * m1).sum(axis=1) + m2) / (m0 + c)).sum()
