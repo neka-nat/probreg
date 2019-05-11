@@ -130,11 +130,11 @@ class RigidFilterReg(FilterReg):
         drxdx = np.sqrt(m0m0 * 1.0 / sigma2)
         if objective_type == 'pt2pl':
             drxdx = (drxdx * nx.T / m0).T
-        dxdz = so.diff_from_tw(t_source)
         if objective_type == 'pt2pt':
-            drxdth = np.einsum('i,ijl->ijl', drxdx, dxdz)
+            drxdth = so.diff_from_tw(t_source, drxdx)
             a = np.einsum('ijk,ijl->kl', drxdth, drxdth)
         elif objective_type == 'pt2pl':
+            dxdz = so.diff_from_tw(t_source)
             drxdth = np.einsum('ij,ijl->il', drxdx, dxdz)
             a = np.einsum('ik,il->kl', drxdth, drxdth)
         else:

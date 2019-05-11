@@ -36,8 +36,11 @@ def twist_mul(tw, rot, t):
     return np.dot(tr, rot), np.dot(t, tr.T) + tt
 
 
-def diff_from_tw(x):
-    return np.array(_se3_op.diff_from_twist(x.T))
+def diff_from_tw(x, w=None):
+    if w is None:
+        return np.array(_se3_op.diff_from_twist(x.T))
+    else:
+        return np.array(_se3_op.diff_from_twist(x.T, w))
 
 
 def diff_rot_from_quaternion(q):

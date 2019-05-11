@@ -11,6 +11,9 @@ typedef std::vector<Matrix36> Matrix36Array;
 Matrix36Array
 diffFromTwist(const Matrix3X& points);
 
+Matrix36Array
+diffFromTwist(const Matrix3X& points, const Vector& weights);
+
 }  // namespace probreg
 
 #endif
