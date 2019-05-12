@@ -16,7 +16,7 @@ MstepResult = namedtuple('MstepResult', ['transformation', 'sigma2', 'q'])
 
 @six.add_metaclass(abc.ABCMeta)
 class CoherentPointDrift():
-    """Coherent Point Drigt algorithm.
+    """Coherent Point Drift algorithm.
     This is an abstract class.
     Based on this class, it is inherited by rigid, affine, nonrigid classes
     according to the type of transformation.

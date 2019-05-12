@@ -44,6 +44,13 @@ def diff_from_tw(x, w=None):
 
 
 def diff_rot_from_quaternion(q):
+    """Differencial rotation matrix from quaternion.
+
+    dR(q)/dq = [dR(q)/dq0, dR(q)/dq1, dR(q)/dq2, dR(q)/dq3]
+
+    Args:
+        q (numpy.ndarray): Quaternion.
+    """
     rot = trans.quaternion_matrix(q)[:3, :3]
     q2 = np.square(q)
     z = np.sum(q2)
