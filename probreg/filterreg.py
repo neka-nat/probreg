@@ -131,23 +131,22 @@ class RigidFilterReg(FilterReg):
         if objective_type == 'pt2pl':
             drxdx = (drxdx * nx.T / m0).T
         if objective_type == 'pt2pt':
-            drxdth = so.diff_from_tw(t_source, drxdx)
-            a = np.einsum('ijk,ijl->kl', drxdth, drxdth)
+            drxdth = so.diff_from_tw(t_source, drxdx).reshape((-1, 6))
         elif objective_type == 'pt2pl':
             dxdz = so.diff_from_tw(t_source)
             drxdth = np.einsum('ij,ijl->il', drxdx, dxdz)
-            a = np.einsum('ik,il->kl', drxdth, drxdth)
         else:
             raise ValueError('Unknown objective_type: %s.' % objective_type)
+        a = np.dot(drxdth.T, drxdth)
 
         def calc_ab(tw):
             x = tf.RigidTransformation(*so.twist_trans(tw)).transform(t_source)
             if objective_type == 'pt2pt':
                 rx = np.multiply(drxdx, (x - m1m0).T).T
-                b = np.einsum('ijk,ij->k', drxdth, rx)
+                b = np.dot(drxdth.T, rx.flatten())
             elif objective_type == 'pt2pl':
                 rx = np.multiply(drxdx, (x - m1m0).T).sum(axis=1)
-                b = np.einsum('ik,i->k', drxdth, rx)
+                b = np.dot(drxdth.T, rx)
             else:
                 raise ValueError('Unknown objective_type: %s.' % objective_type)
             return (rx, a, b)

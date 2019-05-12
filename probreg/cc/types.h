@@ -23,7 +23,7 @@ typedef Eigen::Matrix3f Matrix3;
 typedef Eigen::Vector3f Vector3;
 #endif
 typedef Eigen::Matrix<Float, 3, Eigen::Dynamic> Matrix3X;
-typedef Eigen::Matrix<Float, 3, 6> Matrix36;
+typedef Eigen::Matrix<Float, 18, Eigen::Dynamic> Matrix18X;
 }  // namespace probreg
 
 #endif

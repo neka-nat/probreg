@@ -2,28 +2,27 @@
 
 using namespace probreg;
 
-Matrix36Array probreg::diffFromTwist(const Matrix3X& points) {
+Matrix18X probreg::diffFromTwist(const Matrix3X& points) {
     return diffFromTwist(points, Vector3::Ones(points.cols()));
 }
 
-Matrix36Array probreg::diffFromTwist(const Matrix3X& points, const Vector& weights){
-    Matrix36Array ans(points.cols());
+Matrix18X probreg::diffFromTwist(const Matrix3X& points, const Vector& weights){
+    Matrix18X ans = Matrix18X::Zero(18, points.cols());
     for (Integer i = 0; i < points.cols(); ++i) {
         const Vector& x = points.col(i);
-        ans[i].fill(0.0);
-        Float x0 = x[0] * weights[i];
-        Float x1 = x[1] * weights[i];
-        Float x2 = x[2] * weights[i];
-        Float one = 1.0 * weights[i];
-        ans[i](0, 1) = x2;
-        ans[i](0, 2) = -x1;
-        ans[i](0, 3) = one;
-        ans[i](1, 0) = -x2;
-        ans[i](1, 2) = x0;
-        ans[i](1, 4) = one;
-        ans[i](2, 0) = x1;
-        ans[i](2, 1) = -x0;
-        ans[i](2, 5) = one;
+        const Float x0 = x[0] * weights[i];
+        const Float x1 = x[1] * weights[i];
+        const Float x2 = x[2] * weights[i];
+        const Float one = 1.0 * weights[i];
+        ans(0 * 6 + 1, i) = x2;
+        ans(0 * 6 + 2, i) = -x1;
+        ans(0 * 6 + 3, i) = one;
+        ans(1 * 6 + 0, i) = -x2;
+        ans(1 * 6 + 2, i) = x0;
+        ans(1 * 6 + 4, i) = one;
+        ans(2 * 6 + 0, i) = x1;
+        ans(2 * 6 + 1, i) = -x0;
+        ans(2 * 6 + 5, i) = one;
     }
     return ans;
 }

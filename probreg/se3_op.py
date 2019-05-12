@@ -38,9 +38,9 @@ def twist_mul(tw, rot, t):
 
 def diff_from_tw(x, w=None):
     if w is None:
-        return np.array(_se3_op.diff_from_twist(x.T))
+        return _se3_op.diff_from_twist(x.T).T.reshape((-1, 3, 6))
     else:
-        return np.array(_se3_op.diff_from_twist(x.T, w))
+        return _se3_op.diff_from_twist(x.T, w).T.reshape((-1, 3, 6))
 
 
 def diff_rot_from_quaternion(q):
