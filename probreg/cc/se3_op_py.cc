@@ -9,6 +9,7 @@ using namespace probreg;
 PYBIND11_MODULE(_se3_op, m) {
     m.def("diff_from_twist", py::overload_cast<const Matrix3X&, const Vector&>(&diffFromTwist));
     m.def("diff_from_twist", py::overload_cast<const Matrix3X&>(&diffFromTwist));
+    m.def("diff_from_twist2", diffFromTwist2);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = VERSION_INFO;

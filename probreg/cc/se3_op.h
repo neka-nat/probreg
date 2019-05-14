@@ -12,6 +12,9 @@ diffFromTwist(const Matrix3X& points);
 Matrix18X
 diffFromTwist(const Matrix3X& points, const Vector& weights);
 
+Matrix6
+diffFromTwist2(const Matrix18X diff);
+
 }  // namespace probreg
 
 #endif
