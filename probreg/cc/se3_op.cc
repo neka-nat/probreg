@@ -3,7 +3,7 @@
 using namespace probreg;
 
 Matrix18X probreg::diffFromTwist(const Matrix3X& points) {
-    return diffFromTwist(points, Vector3::Ones(points.cols()));
+    return diffFromTwist(points, Vector::Ones(points.cols()));
 }
 
 Matrix18X probreg::diffFromTwist(const Matrix3X& points, const Vector& weights){
