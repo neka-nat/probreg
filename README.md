@@ -26,6 +26,13 @@ This package implements several algorithms using stochastic models and provides 
 * Hierarchical Stocastic model
     * [GMMTree(ECCV2018)](https://arxiv.org/pdf/1807.02587.pdf)
 
+### Transformations
+
+| type | CPD | SVR, GMMReg | GMMTree | FilterReg |
+|------|-----|-------------|---------|-----------|
+|Rigid | Scale + 6D pose | 6D pose | 6D pose | 6D pose|
+|NonRigid | Affine, MCT | TPS | - | - |
+
 ## Installation
 
 You can install probreg using `pip`.
