@@ -49,7 +49,7 @@ class FilterReg():
         self._callbacks = callbacks
 
     def expectation_step(self, t_source, target, sigma2,
-                         objective_type='pt2pt'):
+                         objective_type='pt2pt', alpha=0.015):
         """Expectation step
         """
         assert t_source.ndim == 2 and target.ndim == 2, "source and target must have 2 dimensions."
@@ -61,6 +61,8 @@ class FilterReg():
         dem = np.power(2.0 * np.pi * sigma2, ndim * 0.5)
         fin = np.r_[fx, fy]
         ph = gf.Permutohedral(fin)
+        if ph.get_lattice_size() < n * alpha:
+            ph = gf.Permutohedral(fin, False)
         vin0 = np.r_[np.zeros((m, 1)), np.ones((n, 1)) / dem]
         vin1 = np.r_[np.zeros_like(fx), target / dem]
         m0 = ph.filter(vin0).flatten()[:m]

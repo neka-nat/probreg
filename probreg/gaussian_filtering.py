@@ -9,5 +9,8 @@ class Permutohedral(object):
         self._impl = _permutohedral_lattice.Permutohedral()
         self._impl.init(p.T, with_blur)
 
+    def get_lattice_size(self):
+        return self._impl.get_lattice_size()
+
     def filter(self, v):
         return self._impl.filter(v.T).T
