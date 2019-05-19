@@ -60,21 +60,22 @@ class FilterReg():
         fy = target / sigma
         dem = np.power(2.0 * np.pi * sigma2, ndim * 0.5)
         fin = np.r_[fx, fy]
+        ph = gf.Permutohedral(fin)
         vin0 = np.r_[np.zeros((m, 1)), np.ones((n, 1)) / dem]
         vin1 = np.r_[np.zeros_like(fx), target / dem]
-        m0 = gf.filter(fin, vin0).flatten()[:m]
-        m1 = gf.filter(fin, vin1)[:m]
+        m0 = ph.filter(vin0).flatten()[:m]
+        m1 = ph.filter(vin1)[:m]
         if self._update_sigma2:
             vin2 = np.r_[np.zeros((m, 1)),
                          np.expand_dims(np.square(target).sum(axis=1), axis=1) / dem]
-            m2 = gf.filter(fin, vin2).flatten()[:m]
+            m2 = ph.filter(vin2).flatten()[:m]
         else:
             m2 = None
         if objective_type == 'pt2pt':
             nx = None
         elif objective_type == 'pt2pl':
             vin = np.r_[np.zeros((m, 3)), self._target_normals]
-            nx = gf.filter(fin, vin / dem)
+            nx = ph.filter(vin / dem)
         else:
             raise ValueError('Unknown objective_type: %s.' % objective_type)
         return EstepResult(m0, m1, m2, nx)

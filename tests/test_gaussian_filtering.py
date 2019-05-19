@@ -8,8 +8,9 @@ class GaussianFilteringTest(unittest.TestCase):
         x = np.random.rand(10, 1)
         v0 = np.r_[np.zeros((5, 1)), np.ones((5, 1))]
         v1 = np.r_[np.zeros((5, 1)), np.random.rand(5, 1)]
-        out0 = gf.filter(x, v0).flatten()[:5]
-        out1 = gf.filter(x, v1).flatten()[:5]
+        ph = gf.Permutohedral(x)
+        out0 = ph.filter(v0).flatten()[:5]
+        out1 = ph.filter(v1).flatten()[:5]
         out2 = gt._gauss_transform_direct(x[5:, :], x[:5, :],
                                           v0.flatten()[5:], np.sqrt(2.0))
         out3 = gt._gauss_transform_direct(x[5:, :], x[:5, :],

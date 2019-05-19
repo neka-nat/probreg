@@ -7,6 +7,16 @@ namespace py = pybind11;
 using namespace probreg;
 
 PYBIND11_MODULE(_permutohedral_lattice, m) {
+    py::class_<Permutohedral>(m, "Permutohedral")
+        .def(py::init())
+        .def("init", &Permutohedral::init)
+        .def("get_lattice_size", &Permutohedral::getLatticeSize)
+        .def("filter", [](const Permutohedral& ph, const probreg::Matrix& v) {
+            probreg::Matrix out = probreg::Matrix::Zero(v.rows(), v.cols());
+            ph.compute(out, v);
+            return out;
+        });
+
     m.def("filter", [](const probreg::Matrix& p, const probreg::Matrix& v, bool with_blur) {
         assert(p.cols() == v.cols());
         probreg::Matrix out = probreg::Matrix::Zero(v.rows(), p.cols());
