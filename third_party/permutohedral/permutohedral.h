@@ -38,6 +38,8 @@ using namespace Eigen;
 /***          Permutohedral Lattice           ***/
 /************************************************/
 
+static const int DIMENSION = 3;
+
 class Permutohedral
 {
 protected:
@@ -50,14 +52,14 @@ protected:
 	std::vector<float> barycentric_;
 	std::vector<Neighbors> blur_neighbors_;
 	// Number of elements, size of sparse discretized space, dimension of features
-	int N_, M_, d_;
+	int N_, M_;
+    bool with_blur_;
 	void sseCompute ( float* out, const float* in, int value_size, bool reverse=false ) const;
 	void seqCompute ( float* out, const float* in, int value_size, bool reverse=false ) const;
 public:
 	Permutohedral();
-	void init ( const MatrixXf & features );
+	void init ( const MatrixXf & features, bool with_blur = true );
+    int getLatticeSize() const;
 	MatrixXf compute ( const MatrixXf & v, bool reverse=false ) const;
 	void compute ( MatrixXf & out, const MatrixXf & in, bool reverse=false ) const;
-	// Compute the gradient of a^T K b
-	void gradient ( float* df, const float * a, const float* b, int value_size ) const;
 };

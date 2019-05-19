@@ -134,17 +134,19 @@ public:
 /***          Permutohedral Lattice           ***/
 /************************************************/
 
-Permutohedral::Permutohedral():N_( 0 ), M_( 0 ), d_( 0 ) {
+Permutohedral::Permutohedral():N_( 0 ), M_( 0 ), with_blur_( true ) {
 }
 #ifdef SSE_PERMUTOHEDRAL
-void Permutohedral::init ( const MatrixXf & feature )
+void Permutohedral::init ( const MatrixXf & feature, bool with_blur )
 {
 	// Compute the lattice coordinates for each feature [there is going to be a lot of magic here
 	N_ = feature.cols();
-	d_ = feature.rows();
+	constexpr int d_ = DIMENSION;
+	assert(d_ == feature.rows());
+	with_blur_ = with_blur;
 	HashTable hash_table( d_, N_/**(d_+1)*/ );
 	
-	const int blocksize = sizeof(__m128) / sizeof(float);
+	constexpr int blocksize = sizeof(__m128) / sizeof(float);
 	const __m128 invdplus1   = _mm_set1_ps( 1.0f / (d_+1) );
 	const __m128 dplus1      = _mm_set1_ps( d_+1 );
 	const __m128 Zero        = _mm_set1_ps( 0 );
@@ -158,14 +160,14 @@ void Permutohedral::init ( const MatrixXf & feature )
 	rank_.resize( (d_+1)*(N_+16) );
 	
 	// Allocate the local memory
-	__m128 * scale_factor = (__m128*) _mm_malloc( (d_  )*sizeof(__m128) , 16 );
-	__m128 * f            = (__m128*) _mm_malloc( (d_  )*sizeof(__m128) , 16 );
-	__m128 * elevated     = (__m128*) _mm_malloc( (d_+1)*sizeof(__m128) , 16 );
-	__m128 * rem0         = (__m128*) _mm_malloc( (d_+1)*sizeof(__m128) , 16 );
-	__m128 * rank         = (__m128*) _mm_malloc( (d_+1)*sizeof(__m128), 16 );
-	float * barycentric = new float[(d_+2)*blocksize];
-	short * canonical = new short[(d_+1)*(d_+1)];
-	short * key = new short[d_+1];
+	__m128 __attribute__((aligned(16))) scale_factor[d_];
+	__m128 __attribute__((aligned(16))) f[d_];
+	__m128 __attribute__((aligned(16))) elevated[d_+1];
+	__m128 __attribute__((aligned(16))) rem0[d_+1];
+	__m128 __attribute__((aligned(16))) rank[d_+1];
+	float barycentric[(d_+2)*blocksize];
+	short canonical[(d_+1)*(d_+1)];
+	short key[d_+1];
 	
 	// Compute the canonical simplex
 	for( int i=0; i<=d_; i++ ){
@@ -176,7 +178,7 @@ void Permutohedral::init ( const MatrixXf & feature )
 	}
 	
 	// Expected standard deviation of our filter (p.6 in [Adams etal 2010])
-	float inv_std_dev = sqrt(2.0 / 3.0)*(d_+1);
+	float inv_std_dev = (with_blur_)? sqrt(2.0 / 3.0)*(d_+1) : sqrt(1.0 / 6.0)*(d_+1);
 	// Compute the diagonal part of E (p.5 in [Adams etal 2010])
 	for( int i=0; i<d_; i++ )
 		scale_factor[i] = _mm_set1_ps( 1.0 / sqrt( (i+2)*(i+1) ) * inv_std_dev );
@@ -275,14 +277,6 @@ void Permutohedral::init ( const MatrixXf & feature )
 			}
 		}
 	}
-	_mm_free( scale_factor );
-	_mm_free( f );
-	_mm_free( elevated );
-	_mm_free( rem0 );
-	_mm_free( rank );
-	delete [] barycentric;
-	delete [] canonical;
-	delete [] key;
 	
 	// Reset the SSE rounding
 #ifndef __SSE4_1__
@@ -295,36 +289,38 @@ void Permutohedral::init ( const MatrixXf & feature )
 	// Get the number of vertices in the lattice
 	M_ = hash_table.size();
 	
-	// Create the neighborhood structure
-	blur_neighbors_.resize( (d_+1)*M_ );
-	
-	short * n1 = new short[d_+1];
-	short * n2 = new short[d_+1];
-	
-	// For each of d+1 axes,
-	for( int j = 0; j <= d_; j++ ){
-		for( int i=0; i<M_; i++ ){
-			const short * key = hash_table.getKey( i );
-			for( int k=0; k<d_; k++ ){
-				n1[k] = key[k] - 1;
-				n2[k] = key[k] + 1;
+	if (with_blur_){
+		// Create the neighborhood structure
+		blur_neighbors_.resize( (d_+1)*M_ );
+
+		short n1[d_+1];
+		short n2[d_+1];
+
+		// For each of d+1 axes,
+		for( int j = 0; j <= d_; j++ ){
+			for( int i=0; i<M_; i++ ){
+				const short * key = hash_table.getKey( i );
+				for( int k=0; k<d_; k++ ){
+					n1[k] = key[k] - 1;
+					n2[k] = key[k] + 1;
+				}
+				n1[j] = key[j] + d_;
+				n2[j] = key[j] - d_;
+
+				blur_neighbors_[j*M_+i].n1 = hash_table.find( n1 );
+				blur_neighbors_[j*M_+i].n2 = hash_table.find( n2 );
 			}
-			n1[j] = key[j] + d_;
-			n2[j] = key[j] - d_;
-			
-			blur_neighbors_[j*M_+i].n1 = hash_table.find( n1 );
-			blur_neighbors_[j*M_+i].n2 = hash_table.find( n2 );
 		}
 	}
-	delete[] n1;
-	delete[] n2;
 }
 #else
-void Permutohedral::init ( const MatrixXf & feature )
+void Permutohedral::init ( const MatrixXf & feature, bool with_blur )
 {
 	// Compute the lattice coordinates for each feature [there is going to be a lot of magic here
 	N_ = feature.cols();
-	d_ = feature.rows();
+	constexpr int d_ = DIMENSION;
+	assert(d_ == feature.rows());
+	with_blur_ = with_blur;
 	HashTable hash_table( d_, N_*(d_+1) );
 
 	// Allocate the class memory
@@ -333,13 +329,13 @@ void Permutohedral::init ( const MatrixXf & feature )
 	barycentric_.resize( (d_+1)*N_ );
 	
 	// Allocate the local memory
-	float * scale_factor = new float[d_];
-	float * elevated = new float[d_+1];
-	float * rem0 = new float[d_+1];
-	float * barycentric = new float[d_+2];
-	short * rank = new short[d_+1];
-	short * canonical = new short[(d_+1)*(d_+1)];
-	short * key = new short[d_+1];
+	float scale_factor[d_];
+	float elevated[d_+1];
+	float rem0[d_+1];
+	float barycentric[d_+2];
+	short rank[d_+1];
+	short canonical[(d_+1)*(d_+1)];
+	short key[d_+1];
 	
 	// Compute the canonical simplex
 	for( int i=0; i<=d_; i++ ){
@@ -350,7 +346,7 @@ void Permutohedral::init ( const MatrixXf & feature )
 	}
 	
 	// Expected standard deviation of our filter (p.6 in [Adams etal 2010])
-	float inv_std_dev = sqrt(2.0 / 3.0)*(d_+1);
+	float inv_std_dev = (with_blur_)? sqrt(2.0 / 3.0)*(d_+1) : sqrt(1.0 / 6.0)*(d_+1);
 	// Compute the diagonal part of E (p.5 in [Adams etal 2010])
 	for( int i=0; i<d_; i++ )
 		scale_factor[i] = 1.0 / sqrt( double((i+2)*(i+1)) ) * inv_std_dev;
@@ -434,47 +430,40 @@ void Permutohedral::init ( const MatrixXf & feature )
 			barycentric_[ k*(d_+1)+remainder ] = barycentric[ remainder ];
 		}
 	}
-	delete [] scale_factor;
-	delete [] elevated;
-	delete [] rem0;
-	delete [] barycentric;
-	delete [] rank;
-	delete [] canonical;
-	delete [] key;
-	
 	
 	// Find the Neighbors of each lattice point
 	
 	// Get the number of vertices in the lattice
 	M_ = hash_table.size();
 	
-	// Create the neighborhood structure
-	blur_neighbors_.resize( (d_+1)*M_ );
-	
-	short * n1 = new short[d_+1];
-	short * n2 = new short[d_+1];
-	
-	// For each of d+1 axes,
-	for( int j = 0; j <= d_; j++ ){
-		for( int i=0; i<M_; i++ ){
-			const short * key = hash_table.getKey( i );
-			for( int k=0; k<d_; k++ ){
-				n1[k] = key[k] - 1;
-				n2[k] = key[k] + 1;
+	if (with_blur_){
+		// Create the neighborhood structure
+		blur_neighbors_.resize( (d_+1)*M_ );
+
+		short n1[d_+1];
+		short n2[d_+1];
+
+		// For each of d+1 axes,
+		for( int j = 0; j <= d_; j++ ){
+			for( int i=0; i<M_; i++ ){
+				const short * key = hash_table.getKey( i );
+				for( int k=0; k<d_; k++ ){
+					n1[k] = key[k] - 1;
+					n2[k] = key[k] + 1;
+				}
+				n1[j] = key[j] + d_;
+				n2[j] = key[j] - d_;
+
+				blur_neighbors_[j*M_+i].n1 = hash_table.find( n1 );
+				blur_neighbors_[j*M_+i].n2 = hash_table.find( n2 );
 			}
-			n1[j] = key[j] + d_;
-			n2[j] = key[j] - d_;
-			
-			blur_neighbors_[j*M_+i].n1 = hash_table.find( n1 );
-			blur_neighbors_[j*M_+i].n2 = hash_table.find( n2 );
 		}
 	}
-	delete[] n1;
-	delete[] n2;
 }
 #endif
 void Permutohedral::seqCompute ( float* out, const float* in, int value_size, bool reverse ) const
 {
+	constexpr int d_ = DIMENSION;
 	// Shift all values by 1 such that -1 -> 0 (used for blurring)
 	float * values = new float[ (M_+2)*value_size ];
 	float * new_values = new float[ (M_+2)*value_size ];
@@ -492,19 +481,22 @@ void Permutohedral::seqCompute ( float* out, const float* in, int value_size, bo
 		}
 	}
 	
-	for( int j=reverse?d_:0; j<=d_ && j>=0; reverse?j--:j++ ){
-		for( int i=0; i<M_; i++ ){
-			float * old_val = values + (i+1)*value_size;
-			float * new_val = new_values + (i+1)*value_size;
-			
-			int n1 = blur_neighbors_[j*M_+i].n1+1;
-			int n2 = blur_neighbors_[j*M_+i].n2+1;
-			float * n1_val = values + n1*value_size;
-			float * n2_val = values + n2*value_size;
-			for( int k=0; k<value_size; k++ )
-				new_val[k] = old_val[k]+0.5*(n1_val[k] + n2_val[k]);
+	if (with_blur_)
+	{
+		for( int j=reverse?d_:0; j<=d_ && j>=0; reverse?j--:j++ ){
+			for( int i=0; i<M_; i++ ){
+				float * old_val = values + (i+1)*value_size;
+				float * new_val = new_values + (i+1)*value_size;
+
+				int n1 = blur_neighbors_[j*M_+i].n1+1;
+				int n2 = blur_neighbors_[j*M_+i].n2+1;
+				float * n1_val = values + n1*value_size;
+				float * n2_val = values + n2*value_size;
+				for( int k=0; k<value_size; k++ )
+					new_val[k] = old_val[k]+0.5*(n1_val[k] + n2_val[k]);
+			}
+			std::swap( values, new_values );
 		}
-		std::swap( values, new_values );
 	}
 	// Alpha is a magic scaling constant (write Andrew if you really wanna understand this)
 	float alpha = 1.0f / (1+powf(2, -d_));
@@ -528,6 +520,7 @@ void Permutohedral::seqCompute ( float* out, const float* in, int value_size, bo
 #ifdef SSE_PERMUTOHEDRAL
 void Permutohedral::sseCompute ( float* out, const float* in, int value_size, bool reverse ) const
 {
+	constexpr int d_ = DIMENSION;
 	const int sse_value_size = (value_size-1)*sizeof(float) / sizeof(__m128) + 1;
 	// Shift all values by 1 such that -1 -> 0 (used for blurring)
 	__m128 * sse_val    = (__m128*) _mm_malloc( sse_value_size*sizeof(__m128), 16 );
@@ -552,20 +545,23 @@ void Permutohedral::sseCompute ( float* out, const float* in, int value_size, bo
 		}
 	}
 	// Blurring
-	__m128 half = _mm_set1_ps(0.5);
-	for( int j=reverse?d_:0; j<=d_ && j>=0; reverse?j--:j++ ){
-		for( int i=0; i<M_; i++ ){
-			__m128 * old_val = values + (i+1)*sse_value_size;
-			__m128 * new_val = new_values + (i+1)*sse_value_size;
-			
-			int n1 = blur_neighbors_[j*M_+i].n1+1;
-			int n2 = blur_neighbors_[j*M_+i].n2+1;
-			__m128 * n1_val = values + n1*sse_value_size;
-			__m128 * n2_val = values + n2*sse_value_size;
-			for( int k=0; k<sse_value_size; k++ )
-				new_val[k] = old_val[k]+half*(n1_val[k] + n2_val[k]);
+	if (with_blur_)
+	{
+		__m128 half = _mm_set1_ps(0.5);
+		for( int j=reverse?d_:0; j<=d_ && j>=0; reverse?j--:j++ ){
+			for( int i=0; i<M_; i++ ){
+				__m128 * old_val = values + (i+1)*sse_value_size;
+				__m128 * new_val = new_values + (i+1)*sse_value_size;
+
+				int n1 = blur_neighbors_[j*M_+i].n1+1;
+				int n2 = blur_neighbors_[j*M_+i].n2+1;
+				__m128 * n1_val = values + n1*sse_value_size;
+				__m128 * n2_val = values + n2*sse_value_size;
+				for( int k=0; k<sse_value_size; k++ )
+					new_val[k] = old_val[k]+half*(n1_val[k] + n2_val[k]);
+			}
+			std::swap( values, new_values );
 		}
-		std::swap( values, new_values );
 	}
 	// Alpha is a magic scaling constant (write Andrew if you really wanna understand this)
 	float alpha = 1.0f / (1+powf(2, -d_));
@@ -608,88 +604,8 @@ MatrixXf Permutohedral::compute ( const MatrixXf & in, bool reverse ) const
 	compute( r, in, reverse );
 	return r;
 }
-// Compute the gradient of a^T K b
-void Permutohedral::gradient ( float* df, const float * a, const float* b, int value_size ) const
+
+int Permutohedral::getLatticeSize() const
 {
-	// Shift all values by 1 such that -1 -> 0 (used for blurring)
-	float * values = new float[ (M_+2)*value_size ];
-	float * new_values = new float[ (M_+2)*value_size ];
-	
-	// Set the results to 0
-	std::fill( df, df+N_*d_, 0.f );
-	
-	// Initialize some constants
-	std::vector<float> scale_factor( d_ );
-	float inv_std_dev = sqrt(2.0 / 3.0)*(d_+1);
-	for( int i=0; i<d_; i++ )
-		scale_factor[i] = 1.0 / sqrt( double((i+2)*(i+1)) ) * inv_std_dev;
-	
-	// Alpha is a magic scaling constant multiplied by down_factor
-	float alpha = 1.0f / (1+powf(2, -d_)) / (d_+1);
-	
-	for( int dir=0; dir<2; dir++ ) {
-		for( int i=0; i<(M_+2)*value_size; i++ )
-			values[i] = new_values[i] = 0;
-	
-		// Splatting
-		for( int i=0;  i<N_; i++ ){
-			for( int j=0; j<=d_; j++ ){
-				int o = offset_[i*(d_+1)+j]+1;
-				float w = barycentric_[i*(d_+1)+j];
-				for( int k=0; k<value_size; k++ )
-					values[ o*value_size+k ] += w * (dir?b:a)[ i*value_size+k ];
-			}
-		}
-		
-		// BLUR
-		for( int j=dir?d_:0; j<=d_ && j>=0; dir?j--:j++ ){
-			for( int i=0; i<M_; i++ ){
-				float * old_val = values + (i+1)*value_size;
-				float * new_val = new_values + (i+1)*value_size;
-			
-				int n1 = blur_neighbors_[j*M_+i].n1+1;
-				int n2 = blur_neighbors_[j*M_+i].n2+1;
-				float * n1_val = values + n1*value_size;
-				float * n2_val = values + n2*value_size;
-				for( int k=0; k<value_size; k++ )
-					new_val[k] = old_val[k]+0.5*(n1_val[k] + n2_val[k]);
-			}
-			std::swap( values, new_values );
-		}
-	
-		// Slicing gradient computation
-		std::vector<float> r_a( (d_+1)*value_size ), sm( value_size );
-	
-		for( int i=0; i<N_; i++ ){
-			// Rotate a
-			std::fill( r_a.begin(), r_a.end(), 0.f );
-			for( int j=0; j<=d_; j++ ){
-				int r0 = d_ - rank_[i*(d_+1)+j];
-				int r1 = r0+1>d_?0:r0+1;
-				int o0 = offset_[i*(d_+1)+r0]+1;
-				int o1 = offset_[i*(d_+1)+r1]+1;
-				for( int k=0; k<value_size; k++ ) {
-					r_a[ j*value_size+k ] += alpha*values[ o0*value_size+k ];
-					r_a[ j*value_size+k ] -= alpha*values[ o1*value_size+k ];
-				}
-			}
-			// Multiply by the elevation matrix
-			std::copy( r_a.begin(), r_a.begin()+value_size, sm.begin() );
-			for( int j=1; j<=d_; j++ ) {
-				float grad = 0;
-				for( int k=0; k<value_size; k++ ) {
-					// Elevate ...
-					float v = scale_factor[j-1]*(sm[k]-j*r_a[j*value_size+k]);
-					// ... and add
-					grad += (dir?a:b)[ i*value_size+k ]*v;
-				
-					sm[k] += r_a[j*value_size+k];
-				}
-				// Store the gradient
-				df[i*d_+j-1] += grad;
-			}
-		}
-	}		
-	delete[] values;
-	delete[] new_values;
+	return M_;
 }
