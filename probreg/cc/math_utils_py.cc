@@ -6,6 +6,8 @@ namespace py = pybind11;
 using namespace probreg;
 
 PYBIND11_MODULE(_math, m) {
+    Eigen::initParallel();
+
     m.def("squared_kernel", &squaredKernel);
     m.def("rbf_kernel", &rbfKernel);
     m.def("tps_kernel_2d", &tpsKernel2d);

@@ -58,17 +58,19 @@ class FilterReg():
         sigma = np.sqrt(sigma2)
         fx = t_source / sigma
         fy = target / sigma
+        zero_m1 = np.zeros((m, 1))
+        zeros_md = np.zeros_like(fx)
         dem = np.power(2.0 * np.pi * sigma2, ndim * 0.5)
         fin = np.r_[fx, fy]
         ph = gf.Permutohedral(fin)
         if ph.get_lattice_size() < n * alpha:
             ph = gf.Permutohedral(fin, False)
-        vin0 = np.r_[np.zeros((m, 1)), np.ones((n, 1)) / dem]
-        vin1 = np.r_[np.zeros_like(fx), target / dem]
+        vin0 = np.r_[zero_m1, np.ones((n, 1)) / dem]
+        vin1 = np.r_[zeros_md, target / dem]
         m0 = ph.filter(vin0).flatten()[:m]
         m1 = ph.filter(vin1)[:m]
         if self._update_sigma2:
-            vin2 = np.r_[np.zeros((m, 1)),
+            vin2 = np.r_[zero_m1,
                          np.expand_dims(np.square(target).sum(axis=1), axis=1) / dem]
             m2 = ph.filter(vin2).flatten()[:m]
         else:
@@ -76,7 +78,7 @@ class FilterReg():
         if objective_type == 'pt2pt':
             nx = None
         elif objective_type == 'pt2pl':
-            vin = np.r_[np.zeros((m, 3)), self._target_normals]
+            vin = np.r_[zeros_md, self._target_normals]
             nx = ph.filter(vin / dem)
         else:
             raise ValueError('Unknown objective_type: %s.' % objective_type)

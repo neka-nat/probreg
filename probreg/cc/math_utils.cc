@@ -4,6 +4,7 @@ using namespace probreg;
 
 Matrix probreg::kernelBase(const Matrix& x, const Matrix& y, const func_type& fn) {
     Matrix k = Matrix::Zero(x.rows(), y.rows());
+    #pragma omp parallel for
     for (Integer i = 0; i < y.rows(); ++i) {
         auto diff2 = (x.rowwise() - y.row(i)).rowwise().squaredNorm();
         k(Eigen::all, i) = fn(diff2);

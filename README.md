@@ -104,3 +104,18 @@ o3.draw_geometries([source, target, result])
 | CPD | SVR |
 |-----|-----|
 | <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/cpd_nonrigid.gif" width="640"> | <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/svr_nonrigid.gif" width="640"> |
+
+### Time measurement
+
+Execute an example script for measuring time.
+
+```
+OMP_NUM_THREADS=1 python time_measurement.py
+
+# Results [s]
+# ICP:  0.03253709900127433
+# CPD:  20.430273542000577
+# SVR:  1.9952461369994126
+# GMMTree:  0.555915835999258
+# FilterReg:  0.17510278900044796
+```
