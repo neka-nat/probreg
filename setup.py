@@ -19,7 +19,10 @@ def _check_for_openmp():
 
     tmpdir = tempfile.mkdtemp(prefix='probreg')
     compiler = os.environ.get(
-      'CC', distutils.sysconfig.get_config_var('CC')).split()[0]
+      'CC', distutils.sysconfig.get_config_var('CC'))
+    if compiler is None:
+        return False
+    compiler = compiler.split()[0]
 
     # Attempt to compile a test script.
     # See http://openmp.org/wp/openmp-compilers/
@@ -48,6 +51,7 @@ int main() {
     if exit_code == 0:
         print ('Continuing your build using OpenMP...\n')
         return True
+    return False
 
 
 def find_eigen(hint=[]):

@@ -1,7 +1,6 @@
 #ifndef __probreg_gmm_tree_h__
 #define __probreg_gmm_tree_h__
 
-#include <cmath>
 #include <vector>
 #include "types.h"
 

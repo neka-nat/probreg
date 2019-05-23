@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include "gmmtree.h"
 #include <Eigen/Eigenvalues>
 #include <cmath>
