@@ -6,7 +6,7 @@ from setuptools.command.build_ext import build_ext
 import sys
 import setuptools
 
-__version__ = '0.0.9'
+__version__ = '0.1.0'
 
 
 def _check_for_openmp():

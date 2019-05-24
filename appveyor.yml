@@ -36,7 +36,4 @@ build_script:
   - "pipenv run pip install -e ."
 
 test_script:
-  # Run the project tests and store results in .xml log
-  - ps: |
-      pipenv run python -m unittest discover
-      if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode) }
+  - "pipenv run python -m unittest discover"
