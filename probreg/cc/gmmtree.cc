@@ -54,7 +54,7 @@ NodeParam mlEstimator(const NodeParam& moments, Integer n_points, Float lambda_d
     std::get<0>(node) = std::get<0>(moments) / n_points;
     if (std::get<0>(moments) < lambda_d) {
         std::get<0>(node) = 0;
-        std::get<1>(node) = Vector3::Zero();
+        std::get<1>(node).fill(0.0);
         std::get<2>(node) = Matrix3::Identity();
     } else {
         std::get<1>(node) = std::get<1>(moments) / std::get<0>(moments);
@@ -112,8 +112,8 @@ NodeParamArray probreg::gmmTreeEstep(const Matrix3X& points,
     NodeParamArray moments(n_total);
     for (Integer j = 0; j < n_total; ++j) {
         std::get<0>(moments[j]) = 0.0;
-        std::get<1>(moments[j]) = Vector3::Zero();
-        std::get<2>(moments[j]) = Matrix3::Zero();
+        std::get<1>(moments[j]).fill(0.0);
+        std::get<2>(moments[j]).fill(0.0);
     }
 
     for (Integer i = 0; i < points.cols(); ++i) {
@@ -128,7 +128,7 @@ NodeParamArray probreg::gmmTreeEstep(const Matrix3X& points,
             gamma /= den;
         }
         else {
-            gamma = Vector::Zero(N_NODE);
+            gamma.fill(0.0);
         }
         for (Integer j = j0; j < j0 + N_NODE; ++j) {
             accumulate(moments[j], gamma[j - j0], points.col(i));
@@ -158,8 +158,8 @@ NodeParamArray probreg::gmmTreeRegEstep(const Matrix3X& points,
     NodeParamArray moments(n_total);
     for (Integer j = 0; j < n_total; ++j) {
         std::get<0>(moments[j]) = 0.0;
-        std::get<1>(moments[j]) = Vector3::Zero();
-        std::get<2>(moments[j]) = Matrix3::Zero();
+        std::get<1>(moments[j]).fill(0.0);
+        std::get<2>(moments[j]).fill(0.0);
     }
 
     for (Integer i = 0; i < points.cols(); ++i) {
@@ -175,7 +175,7 @@ NodeParamArray probreg::gmmTreeRegEstep(const Matrix3X& points,
             if (den > eps) {
                 gamma /= den;
             } else {
-                gamma = Vector::Zero(N_NODE);
+                gamma.fill(0.0);
             }
             gamma.maxCoeff(&search_id);
             search_id += j0;
