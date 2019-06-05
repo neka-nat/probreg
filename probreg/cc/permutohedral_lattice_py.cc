@@ -11,9 +11,9 @@ PYBIND11_MODULE(_permutohedral_lattice, m) {
         .def(py::init())
         .def("init", &Permutohedral::init)
         .def("get_lattice_size", &Permutohedral::getLatticeSize)
-        .def("filter", [](const Permutohedral& ph, const probreg::Matrix& v) {
+        .def("filter", [](const Permutohedral& ph, const probreg::Matrix& v, Integer start) {
             probreg::Matrix out = probreg::Matrix::Zero(v.rows(), v.cols());
-            ph.compute(out, v);
+            ph.compute(out, v, false, start);
             return out;
         });
 

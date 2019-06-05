@@ -244,8 +244,7 @@ void Permutohedral::init ( const MatrixXf & feature, bool with_blur )
 		}
 		
 		// Compute the barycentric coordinates (p.10 in [Adams etal 2010])
-		for( int i=0; i<(d_+2)*blocksize; i++ )
-			barycentric[ i ] = 0;
+		memset(barycentric, 0, sizeof(float)*(d_+2)*blocksize);
 		for( int i=0; i<=d_; i++ ){
 			__m128 v = (elevated[i] - rem0[i])*invdplus1;
 			
@@ -461,21 +460,21 @@ void Permutohedral::init ( const MatrixXf & feature, bool with_blur )
 	}
 }
 #endif
-void Permutohedral::seqCompute ( float* out, const float* in, int value_size, bool reverse ) const
+void Permutohedral::seqCompute ( float* out, const float* in, int value_size, bool reverse, int start ) const
 {
 	constexpr int d_ = DIMENSION;
 	// Shift all values by 1 such that -1 -> 0 (used for blurring)
 	float * values = new float[ (M_+2)*value_size ];
 	float * new_values = new float[ (M_+2)*value_size ];
 	
-	for( int i=0; i<(M_+2)*value_size; i++ )
-		values[i] = new_values[i] = 0;
+	memset(values, 0, sizeof(float)*(M_+2)*value_size);
+	memset(new_values, 0, sizeof(float)*(M_+2)*value_size);
 	
 	// Splatting
-	for( int i=0;  i<N_; i++ ){
+	for( int i=start;  i<N_; i++ ){
 		for( int j=0; j<=d_; j++ ){
-			int o = offset_[i*(d_+1)+j]+1;
-			float w = barycentric_[i*(d_+1)+j];
+			const int o = offset_[i*(d_+1)+j]+1;
+			const float& w = barycentric_[i*(d_+1)+j];
 			for( int k=0; k<value_size; k++ )
 				values[ o*value_size+k ] += w * in[ i*value_size+k ];
 		}
@@ -499,15 +498,15 @@ void Permutohedral::seqCompute ( float* out, const float* in, int value_size, bo
 		}
 	}
 	// Alpha is a magic scaling constant (write Andrew if you really wanna understand this)
-	float alpha = 1.0f / (1+powf(2, -d_));
+	constexpr float alpha = 1.0f / (1+powf(2, -d_));
 	
 	// Slicing
 	for( int i=0; i<N_; i++ ){
 		for( int k=0; k<value_size; k++ )
 			out[i*value_size+k] = 0;
 		for( int j=0; j<=d_; j++ ){
-			int o = offset_[i*(d_+1)+j]+1;
-			float w = barycentric_[i*(d_+1)+j];
+			const int o = offset_[i*(d_+1)+j]+1;
+			const float& w = barycentric_[i*(d_+1)+j];
 			for( int k=0; k<value_size; k++ )
 				out[ i*value_size+k ] += w * values[ o*value_size+k ] * alpha;
 		}
@@ -518,7 +517,7 @@ void Permutohedral::seqCompute ( float* out, const float* in, int value_size, bo
 	delete[] new_values;
 }
 #ifdef SSE_PERMUTOHEDRAL
-void Permutohedral::sseCompute ( float* out, const float* in, int value_size, bool reverse ) const
+void Permutohedral::sseCompute ( float* out, const float* in, int value_size, bool reverse, int start ) const
 {
 	constexpr int d_ = DIMENSION;
 	const int sse_value_size = (value_size-1)*sizeof(float) / sizeof(__m128) + 1;
@@ -535,7 +534,7 @@ void Permutohedral::sseCompute ( float* out, const float* in, int value_size, bo
 		sse_val[i] = Zero;
 	
 	// Splatting
-	for( int i=0;  i<N_; i++ ){
+	for( int i=start;  i<N_; i++ ){
 		memcpy( sse_val, in+i*value_size, value_size*sizeof(float) );
 		for( int j=0; j<=d_; j++ ){
 			int o = offset_[i*(d_+1)+j]+1;
@@ -564,7 +563,7 @@ void Permutohedral::sseCompute ( float* out, const float* in, int value_size, bo
 		}
 	}
 	// Alpha is a magic scaling constant (write Andrew if you really wanna understand this)
-	float alpha = 1.0f / (1+powf(2, -d_));
+	constexpr float alpha = 1.0f / (1+powf(2, -d_));
 	
 	// Slicing
 	for( int i=0; i<N_; i++ ){
@@ -584,24 +583,24 @@ void Permutohedral::sseCompute ( float* out, const float* in, int value_size, bo
 	_mm_free( new_values );
 }
 #else
-void Permutohedral::sseCompute ( float* out, const float* in, int value_size, bool reverse ) const
+void Permutohedral::sseCompute ( float* out, const float* in, int value_size, bool reverse, int start ) const
 {
-	seqCompute( out, in, value_size, reverse );
+	seqCompute( out, in, value_size, reverse, start );
 }
 #endif
-void Permutohedral::compute ( MatrixXf & out, const MatrixXf & in, bool reverse ) const
+void Permutohedral::compute ( MatrixXf & out, const MatrixXf & in, bool reverse, int start ) const
 {
 	if( out.cols() != in.cols() || out.rows() != in.rows() )
 		out = 0*in;
 	if( in.rows() <= 2 )
-		seqCompute( out.data(), in.data(), in.rows(), reverse );
+		seqCompute( out.data(), in.data(), in.rows(), reverse, start );
 	else
-		sseCompute( out.data(), in.data(), in.rows(), reverse );
+		sseCompute( out.data(), in.data(), in.rows(), reverse, start );
 }
-MatrixXf Permutohedral::compute ( const MatrixXf & in, bool reverse ) const
+MatrixXf Permutohedral::compute ( const MatrixXf & in, bool reverse, int start ) const
 {
 	MatrixXf r;
-	compute( r, in, reverse );
+	compute( r, in, reverse, start );
 	return r;
 }
 

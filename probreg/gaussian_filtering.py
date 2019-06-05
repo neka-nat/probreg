@@ -12,5 +12,5 @@ class Permutohedral(object):
     def get_lattice_size(self):
         return self._impl.get_lattice_size()
 
-    def filter(self, v):
-        return self._impl.filter(v.T).T
+    def filter(self, v, start=0):
+        return self._impl.filter(v.T, start).T

@@ -67,8 +67,8 @@ class FilterReg():
             ph = gf.Permutohedral(fin, False)
         vin0 = np.r_[zero_m1, np.ones((n, 1)) / dem]
         vin1 = np.r_[zeros_md, target / dem]
-        m0 = ph.filter(vin0).flatten()[:m]
-        m1 = ph.filter(vin1)[:m]
+        m0 = ph.filter(vin0, m).flatten()[:m]
+        m1 = ph.filter(vin1, m)[:m]
         if self._update_sigma2:
             vin2 = np.r_[zero_m1,
                          np.expand_dims(np.square(target).sum(axis=1), axis=1) / dem]

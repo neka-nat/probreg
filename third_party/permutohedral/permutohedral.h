@@ -53,13 +53,13 @@ protected:
 	std::vector<Neighbors> blur_neighbors_;
 	// Number of elements, size of sparse discretized space, dimension of features
 	int N_, M_;
-    bool with_blur_;
-	void sseCompute ( float* out, const float* in, int value_size, bool reverse=false ) const;
-	void seqCompute ( float* out, const float* in, int value_size, bool reverse=false ) const;
+	bool with_blur_;
+	void sseCompute ( float* out, const float* in, int value_size, bool reverse=false, int start=0 ) const;
+	void seqCompute ( float* out, const float* in, int value_size, bool reverse=false, int start=0 ) const;
 public:
 	Permutohedral();
 	void init ( const MatrixXf & features, bool with_blur = true );
-    int getLatticeSize() const;
-	MatrixXf compute ( const MatrixXf & v, bool reverse=false ) const;
-	void compute ( MatrixXf & out, const MatrixXf & in, bool reverse=false ) const;
+	int getLatticeSize() const;
+	MatrixXf compute ( const MatrixXf & v, bool reverse=false, int start=0 ) const;
+	void compute ( MatrixXf & out, const MatrixXf & in, bool reverse=false, int start=0 ) const;
 };
