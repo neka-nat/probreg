@@ -23,7 +23,7 @@ class SVRTest(unittest.TestCase):
         ref_rot[:3, :3] = self._tf.rot
         self.assertTrue(np.allclose(trans.euler_from_matrix(res_rot),
                                     trans.euler_from_matrix(ref_rot), atol=1.0e-1, rtol=1.0e-1))
-        self.assertTrue(np.allclose(res.t, self._tf.t, atol=1.0e-1, rtol=1.0e-3))
+        self.assertTrue(np.allclose(res.t, self._tf.t, atol=1.0e-2, rtol=1.0e-3))
 
 if __name__ == "__main__":
     unittest.main()

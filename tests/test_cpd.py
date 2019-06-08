@@ -22,7 +22,7 @@ class CPDTest(unittest.TestCase):
         ref_rot = trans.identity_matrix()
         ref_rot[:3, :3] = self._tf.rot
         self.assertTrue(np.allclose(trans.euler_from_matrix(res_rot),
-                                    trans.euler_from_matrix(ref_rot), atol=1.0e-1, rtol=1.0e-1))
+                                    trans.euler_from_matrix(ref_rot), atol=1.0e-2, rtol=1.0e-2))
         self.assertTrue(np.allclose(res.transformation.t, self._tf.t, atol=1.0e-4, rtol=1.0e-4))
 
 if __name__ == "__main__":

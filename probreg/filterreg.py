@@ -72,28 +72,32 @@ class FilterReg():
         if self._update_sigma2:
             vin2 = np.r_[zero_m1,
                          np.expand_dims(np.square(target).sum(axis=1), axis=1) / dem]
-            m2 = ph.filter(vin2).flatten()[:m]
+            m2 = ph.filter(vin2, m).flatten()[:m]
         else:
             m2 = None
         if objective_type == 'pt2pt':
             nx = None
         elif objective_type == 'pt2pl':
-            vin = np.r_[zeros_md, self._target_normals]
-            nx = ph.filter(vin / dem)
+            vin = np.r_[zeros_md, self._target_normals / dem]
+            nx = ph.filter(vin, m)[:m]
         else:
             raise ValueError('Unknown objective_type: %s.' % objective_type)
         return EstepResult(m0, m1, m2, nx)
 
-    def maximization_step(self, t_source, target, estep_res, w=0.0):
+    def maximization_step(self, t_source, target, estep_res, w=0.0,
+                          objective_type='pt2pt'):
         return self._maximization_step(t_source, target, estep_res,
-                                       self._tf_result, self._sigma2, w)
+                                       self._tf_result, self._sigma2, w,
+                                       objective_type)
 
     @staticmethod
     @abc.abstractmethod
-    def _maximization_step(t_source, target, estep_res, sigma2, w=0.0):
+    def _maximization_step(t_source, target, estep_res, sigma2, w=0.0,
+                           objective_type='pt2pt'):
         return None
 
     def registration(self, target, w=0.0,
+                     objective_type='pt2pt',
                      maxiter=50, tol=0.001):
         assert not self._tf_type is None, "transformation type is None."
         q = None
@@ -101,8 +105,9 @@ class FilterReg():
             self._sigma2 = mu.squared_kernel_sum(self._source, target)
         for _ in range(maxiter):
             t_source = self._tf_result.transform(self._source)
-            estep_res = self.expectation_step(t_source, target, self._sigma2)
-            res = self.maximization_step(t_source, target, estep_res, w=w)
+            estep_res = self.expectation_step(t_source, target, self._sigma2, objective_type)
+            res = self.maximization_step(t_source, target, estep_res, w=w,
+                                         objective_type=objective_type)
             self._tf_result = res.transformation
             self._sigma2 = res.sigma2
             for c in self._callbacks:
@@ -151,7 +156,7 @@ class RigidFilterReg(FilterReg):
                 rx = np.multiply(drxdx, (x - m1m0).T).T
                 b = np.dot(drxdth.reshape((-1, 6)).T, rx.flatten())
             elif objective_type == 'pt2pl':
-                rx = np.multiply(drxdx, (x - m1m0).T).sum(axis=1)
+                rx = np.multiply(drxdx, x - m1m0).sum(axis=1)
                 b = np.dot(drxdth.T, rx)
             else:
                 raise ValueError('Unknown objective_type: %s.' % objective_type)
@@ -167,9 +172,9 @@ class RigidFilterReg(FilterReg):
 
 
 def registration_filterreg(source, target, target_normals=None,
-                           sigma2=None, maxiter=50, tol=0.001,
+                           sigma2=None, objective_type='pt2pt', maxiter=50, tol=0.001,
                            callbacks=[], **kargs):
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
-    frg = RigidFilterReg(cv(source), target_normals, sigma2, **kargs)
+    frg = RigidFilterReg(cv(source), cv(target_normals), sigma2, **kargs)
     frg.set_callbacks(callbacks)
-    return frg.registration(cv(target), maxiter=maxiter, tol=tol)
+    return frg.registration(cv(target), objective_type=objective_type, maxiter=maxiter, tol=tol)

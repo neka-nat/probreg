@@ -6,7 +6,8 @@ import transformations as trans
 def prepare_source_and_target_rigid_3d(source_filename,
                                        noise_amp=0.001,
                                        n_random=500,
-                                       orientation=np.deg2rad([0.0, 0.0, 30.0])):
+                                       orientation=np.deg2rad([0.0, 0.0, 30.0]),
+                                       normals=False):
     source = o3.read_point_cloud(source_filename)
     source = o3.voxel_down_sample(source, voxel_size=0.005)
     print(source)
@@ -17,6 +18,9 @@ def prepare_source_and_target_rigid_3d(source_filename,
     target.points = o3.Vector3dVector(np.r_[tp + noise_amp * np.random.randn(*tp.shape), rands])
     ans = trans.euler_matrix(*orientation)
     target.transform(ans)
+    if normals:
+        o3.estimate_normals(target, search_param=o3.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=50))
+        o3.orient_normals_to_align_with_direction(target)
     return source, target
 
 def prepare_source_and_target_nonrigid_2d(source_filename,

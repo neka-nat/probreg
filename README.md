@@ -63,7 +63,7 @@ from probreg import cpd
 
 # load source and target point cloud
 source = o3.read_point_cloud('bunny.pcd')
-target = o3.read_point_cloud('bunny.pcd')
+target = target = copy.deepcopy(source)
 # transform target point cloud
 th = np.deg2rad(30.0)
 target.transform(np.array([[np.cos(th), -np.sin(th), 0.0, 0.0],
