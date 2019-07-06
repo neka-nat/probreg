@@ -10,6 +10,7 @@ from . import gaussian_filtering as gf
 from . import gauss_transform as gt
 from . import se3_op as so
 from . import _optimizers as opt
+from . import _kabsch as kabsch
 from . import math_utils as mu
 
 
@@ -140,30 +141,25 @@ class RigidFilterReg(FilterReg):
         drxdx = np.sqrt(m0m0 * 1.0 / sigma2)
         if objective_type == 'pt2pl':
             drxdx = (drxdx * nx.T / m0).T
+
         if objective_type == 'pt2pt':
-            drxdth = so.diff_from_tw(t_source, drxdx)
-            a = so.diff_from_tw2(drxdth)
+            dr, dt = kabsch.kabsch(t_source.T, m1m0.T, drxdx)
+            rx = np.multiply(drxdx, (t_source - m1m0).T).T.sum(axis=1)
+            rot, t = np.dot(dr, trans_p.rot), np.dot(trans_p.t, dr.T) + dt
         elif objective_type == 'pt2pl':
             dxdz = so.diff_from_tw(t_source)
             drxdth = np.einsum('ij,ijl->il', drxdx, dxdz)
             a = np.dot(drxdth.T, drxdth)
+            def calc_ab(tw):
+                x = tf.RigidTransformation(*so.twist_trans(tw)).transform(t_source)
+                rx = np.multiply(drxdx, x - m1m0).sum(axis=1)
+                b = np.dot(drxdth.T, rx)
+                return (rx, a, b)
+            tw, rx = opt.gauss_newton(tw, calc_ab, tol, maxiter)
+            rot, t = so.twist_mul(tw, trans_p.rot, trans_p.t)
         else:
             raise ValueError('Unknown objective_type: %s.' % objective_type)
 
-        def calc_ab(tw):
-            x = tf.RigidTransformation(*so.twist_trans(tw)).transform(t_source)
-            if objective_type == 'pt2pt':
-                rx = np.multiply(drxdx, (x - m1m0).T).T
-                b = np.dot(drxdth.reshape((-1, 6)).T, rx.flatten())
-            elif objective_type == 'pt2pl':
-                rx = np.multiply(drxdx, x - m1m0).sum(axis=1)
-                b = np.dot(drxdth.T, rx)
-            else:
-                raise ValueError('Unknown objective_type: %s.' % objective_type)
-            return (rx, a, b)
-
-        tw, rx = opt.gauss_newton(tw, calc_ab, tol, maxiter)
-        rot, t = so.twist_mul(tw, trans_p.rot, trans_p.t)
         if not m2 is None:
             sigma2 = ((m0 * np.square(t_source).sum(axis=1) - 2.0 * (t_source * m1).sum(axis=1) + m2) / (m0 + c)).sum()
             sigma2 /= m0m0.sum()

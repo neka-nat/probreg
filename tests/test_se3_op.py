@@ -14,13 +14,6 @@ class Se3OpTest(unittest.TestCase):
         dx_1 = np.apply_along_axis(diff_from_tw_orig, 1, x)
         self.assertTrue(np.allclose(dx_0, dx_1))
 
-    def test_diff_from_tw2(self):
-        x = np.random.rand(5, 3)
-        dx = so.diff_from_tw(x)
-        dx2_0 = so.diff_from_tw2(dx)
-        dx = dx.reshape((-1, 6))
-        dx2_1 = np.dot(dx.T, dx)
-        self.assertTrue(np.allclose(dx2_0, dx2_1))
 
 if __name__ == "__main__":
     unittest.main()

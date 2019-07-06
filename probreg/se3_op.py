@@ -43,10 +43,6 @@ def diff_from_tw(x, w=None):
         return _se3_op.diff_from_twist(x.T, w).T.reshape((-1, 3, 6))
 
 
-def diff_from_tw2(x):
-    return _se3_op.diff_from_twist2(x.reshape((-1, 18)).T)
-
-
 def diff_rot_from_quaternion(q):
     """Differencial rotation matrix from quaternion.
 

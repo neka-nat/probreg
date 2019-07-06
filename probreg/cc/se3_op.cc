@@ -27,26 +27,3 @@ Matrix18X probreg::diffFromTwist(const Matrix3X& points, const Vector& weights) 
     }
     return ans;
 }
-
-Matrix6 probreg::diffFromTwist2(const Matrix18X diff) {
-    Matrix6 ans = Matrix6::Zero();
-    for (Integer i = 0; i < diff.cols(); ++i) {
-        const Matrix63 x = diff.col(i).reshaped(6, 3);
-        ans(0, 0) += x(0, 1) * x(0, 1) + x(0, 2) * x(0, 2);
-        ans(0, 1) += x(0, 2) * x(1, 2);
-        ans(0, 2) += x(0, 1) * x(2, 1);
-        ans(0, 4) += x(0, 1) * x(4, 1);
-        ans(0, 5) += x(0, 2) * x(5, 2);
-        ans(1, 1) += x(1, 0) * x(1, 0) + x(1, 2) * x(1, 2);
-        ans(1, 2) += x(1, 0) * x(2, 0);
-        ans(1, 3) += x(1, 0) * x(3, 0);
-        ans(1, 5) += x(1, 2) * x(5, 2);
-        ans(2, 2) += x(2, 0) * x(2, 0) + x(2, 1) * x(2, 1);
-        ans(2, 3) += x(2, 0) * x(3, 0);
-        ans(2, 4) += x(2, 1) * x(4, 1);
-        ans(3, 3) += x(3, 0) * x(3, 0);
-        ans(4, 4) += x(4, 1) * x(4, 1);
-        ans(5, 5) += x(5, 2) * x(5, 2);
-    }
-    return ans.selfadjointView<Eigen::Upper>();
-}
