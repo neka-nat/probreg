@@ -31,9 +31,20 @@ def twist_trans(tw):
     return np.identity(3) + skew(tw[:3]), tw[3:]
 
 
-def twist_mul(tw, rot, t):
-    tr, tt = twist_trans(tw)
-    return np.dot(tr, rot), np.dot(t, tr.T) + tt
+def twist_mul(tw, rot, t, linear=False):
+    if linear:
+        tr, tt = twist_trans(tw)
+        return np.dot(tr, rot), np.dot(t, tr.T) + tt
+    else:
+        twd = np.linalg.norm(tw[:3])
+        if twd == 0.0:
+            return rot, t + tw[3:]
+        else:
+            ntw = tw[:3] / twd
+            c = np.cos(twd)
+            s = np.sin(twd)
+            tr = c * np.identity(3) + (1.0 - c) * np.outer(ntw, ntw) + s * skew(ntw)
+            return np.dot(tr, rot), np.dot(t, tr.T) + tw[3:]
 
 
 def diff_from_tw(x, w=None):
@@ -41,7 +52,6 @@ def diff_from_tw(x, w=None):
         return _se3_op.diff_from_twist(x.T).T.reshape((-1, 3, 6))
     else:
         return _se3_op.diff_from_twist(x.T, w).T.reshape((-1, 3, 6))
-
 
 def diff_rot_from_quaternion(q):
     """Differencial rotation matrix from quaternion.
