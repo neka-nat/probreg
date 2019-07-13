@@ -16,7 +16,7 @@ class FilterRegTest(unittest.TestCase):
         rot = trans.euler_matrix(*np.random.uniform(0.0, np.pi / 4, 3))
         self._tf = tf.RigidTransformation(rot[:3, :3], np.zeros(3))
         self._target = self._tf.transform(self._source)
-        self._target_normals = np.asarray(pcd.normals)
+        self._target_normals = np.asarray(np.dot(pcd.normals, self._tf.rot.T))
 
     def test_filterreg_registration_pt2pt(self):
         res = filterreg.registration_filterreg(self._source, self._target)

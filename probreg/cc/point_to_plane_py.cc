@@ -1,14 +1,12 @@
+#include "point_to_plane.h"
 #include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/functional.h>
-#include "optimizers.h"
 
-namespace py = pybind11;
 using namespace probreg;
+namespace py = pybind11;
 
-PYBIND11_MODULE(_optimizers, m) {
-    m.def("gauss_newton", &gaussNewton);
+PYBIND11_MODULE(_pt2pl, m) {
+    m.def("compute_twist_for_pt2pl", &computeTwistForPointToPlane);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = VERSION_INFO;

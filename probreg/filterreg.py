@@ -9,8 +9,8 @@ from . import transformation as tf
 from . import gaussian_filtering as gf
 from . import gauss_transform as gt
 from . import se3_op as so
-from . import _optimizers as opt
 from . import _kabsch as kabsch
+from . import _pt2pl as pt2pl
 from . import math_utils as mu
 
 
@@ -139,23 +139,14 @@ class RigidFilterReg(FilterReg):
         m1m0 = np.divide(m1.T, m0).T
         m0m0 = m0 / (m0 + c)
         drxdx = np.sqrt(m0m0 * 1.0 / sigma2)
-        if objective_type == 'pt2pl':
-            drxdx = (drxdx * nx.T / m0).T
-
         if objective_type == 'pt2pt':
             dr, dt = kabsch.kabsch(t_source.T, m1m0.T, drxdx)
             rx = np.multiply(drxdx, (t_source - m1m0).T).T.sum(axis=1)
             rot, t = np.dot(dr, trans_p.rot), np.dot(trans_p.t, dr.T) + dt
         elif objective_type == 'pt2pl':
-            dxdz = so.diff_from_tw(t_source)
-            drxdth = np.einsum('ij,ijl->il', drxdx, dxdz)
-            a = np.dot(drxdth.T, drxdth)
-            def calc_ab(tw):
-                x = tf.RigidTransformation(*so.twist_trans(tw)).transform(t_source)
-                rx = np.multiply(drxdx, x - m1m0).sum(axis=1)
-                b = np.dot(drxdth.T, rx)
-                return (rx, a, b)
-            tw, rx = opt.gauss_newton(tw, calc_ab, tol, maxiter)
+            nxm0 = (nx.T / m0).T
+            tw = pt2pl.compute_twist_for_pt2pl(t_source.T, m1m0.T, nxm0.T, drxdx)
+            rx = np.multiply((drxdx * nxm0.T).T, t_source - m1m0).sum(axis=1)
             rot, t = so.twist_mul(tw, trans_p.rot, trans_p.t)
         else:
             raise ValueError('Unknown objective_type: %s.' % objective_type)

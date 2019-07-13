@@ -2,7 +2,6 @@ from __future__ import print_function
 from __future__ import division
 import numpy as np
 import transformations as trans
-from . import _se3_op
 
 
 def skew(x):
@@ -46,12 +45,6 @@ def twist_mul(tw, rot, t, linear=False):
             tr = c * np.identity(3) + (1.0 - c) * np.outer(ntw, ntw) + s * skew(ntw)
             return np.dot(tr, rot), np.dot(t, tr.T) + tw[3:]
 
-
-def diff_from_tw(x, w=None):
-    if w is None:
-        return _se3_op.diff_from_twist(x.T).T.reshape((-1, 3, 6))
-    else:
-        return _se3_op.diff_from_twist(x.T, w).T.reshape((-1, 3, 6))
 
 def diff_rot_from_quaternion(q):
     """Differencial rotation matrix from quaternion.

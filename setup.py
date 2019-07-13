@@ -137,17 +137,6 @@ ext_modules = [
         language='c++'
     ),
     Extension(
-        'probreg._se3_op',
-        ['probreg/cc/se3_op_py.cc', 'probreg/cc/se3_op.cc'],
-        include_dirs=[
-            # Path to pybind11 headers
-            get_pybind_include(),
-            get_pybind_include(user=True),
-            find_eigen(['third_party/eigen'])
-        ],
-        language='c++'
-    ),
-    Extension(
         'probreg._kabsch',
         ['probreg/cc/kabsch_py.cc', 'probreg/cc/kabsch.cc'],
         include_dirs=[
@@ -159,8 +148,8 @@ ext_modules = [
         language='c++'
     ),
     Extension(
-        'probreg._optimizers',
-        ['probreg/cc/optimizers_py.cc', 'probreg/cc/optimizers.cc'],
+        'probreg._pt2pl',
+        ['probreg/cc/point_to_plane_py.cc', 'probreg/cc/point_to_plane.cc'],
         include_dirs=[
             # Path to pybind11 headers
             get_pybind_include(),
