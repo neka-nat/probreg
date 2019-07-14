@@ -22,7 +22,7 @@ for i in range(icp_iteration):
     reg_p2p = o3.registration_icp(result, target, threshold,
                 np.identity(4), o3.TransformationEstimationPointToPoint(),
                 o3.ICPConvergenceCriteria(max_iteration=1))
-    result.transform(reg_p2l.transformation)
+    result.transform(reg_p2p.transformation)
     vis.update_geometry()
     vis.poll_events()
     vis.update_renderer()
