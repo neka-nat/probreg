@@ -31,11 +31,7 @@ KabschResult probreg::computeKabsch(const Matrix3X& model,
         auto centralized_target_k = target_k - target_center;
         const Float this_weight = weight[k];
         h_weight += this_weight * this_weight;
-        for(auto i = 0; i < 3; ++i) {
-            for(auto j = 0; j < 3; ++j) {
-                hh(i, j) += (this_weight * this_weight) * centralized_model_k[i] * centralized_target_k[j];
-            }
-        }
+        hh += (this_weight * this_weight) * centralized_model_k * centralized_target_k.transpose();
     }
 
     //Do svd

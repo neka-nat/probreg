@@ -143,10 +143,10 @@ class RigidFilterReg(FilterReg):
             dr, dt = kabsch.kabsch(t_source.T, m1m0.T, drxdx)
             rx = np.multiply(drxdx, (t_source - m1m0).T).T.sum(axis=1)
             rot, t = np.dot(dr, trans_p.rot), np.dot(trans_p.t, dr.T) + dt
+            q = np.dot(rx.T, rx).sum()
         elif objective_type == 'pt2pl':
             nxm0 = (nx.T / m0).T
-            tw = pt2pl.compute_twist_for_pt2pl(t_source.T, m1m0.T, nxm0.T, drxdx)
-            rx = np.multiply((drxdx * nxm0.T).T, t_source - m1m0).sum(axis=1)
+            tw, q = pt2pl.compute_twist_for_pt2pl(t_source.T, m1m0.T, nxm0.T, drxdx)
             rot, t = so.twist_mul(tw, trans_p.rot, trans_p.t)
         else:
             raise ValueError('Unknown objective_type: %s.' % objective_type)
@@ -154,7 +154,6 @@ class RigidFilterReg(FilterReg):
         if not m2 is None:
             sigma2 = ((m0 * np.square(t_source).sum(axis=1) - 2.0 * (t_source * m1).sum(axis=1) + m2) / (m0 + c)).sum()
             sigma2 /= m0m0.sum()
-        q = np.dot(rx.T, rx).sum()
         return MstepResult(tf.RigidTransformation(rot, t), sigma2, q)
 
 

@@ -33,7 +33,7 @@ def twist_trans(tw, linear=False):
     else:
         twd = np.linalg.norm(tw[:3])
         if twd == 0.0:
-            return rot, t + tw[3:]
+            return np.identity(3), tw[3:]
         else:
             ntw = tw[:3] / twd
             c = np.cos(twd)

@@ -3,31 +3,24 @@
 
 using namespace probreg;
 
-Vector6 probreg::computeTwistForPointToPlane(const Matrix3X& model,
-                                             const Matrix3X& target,
-                                             const Matrix3X& target_normal,
-                                             const Vector& weight) {
+Pt2PlResult probreg::computeTwistForPointToPlane(const Matrix3X& model,
+                                                 const Matrix3X& target,
+                                                 const Matrix3X& target_normal,
+                                                 const Vector& weight) {
     Matrix6 ata = Matrix6::Zero();
     Vector6 atb = Vector6::Zero();
+    Float r_sum = 0.0;
 
     for (auto k = 0; k < model.cols(); ++k){
         const auto& vertex_k = model.col(k);
         const auto& target_k = target.col(k);
         const auto& normal_k = target_normal.col(k);
         const auto& weight_k = weight[k];
-        const Float residual = normal_k.dot(vertex_k - target_k);
+        const Float residual = normal_k.dot(target_k - vertex_k);
         const Vector6 jac = (Vector6() << vertex_k.cross(normal_k), normal_k).finished();
-        for (Integer i = 0; i < 6; ++i) {
-            for (Integer j = i; j < 6; ++j) {
-                const Float jac_ij = weight_k * jac[i] * jac[j];
-                ata(i, j) += jac_ij;
-            }
-        }
-        for (Integer i = 0; i < 6; ++i) {
-            const Float data = weight_k * (-residual * jac[i]);
-            atb[i] += data;
-        }
+        ata += weight_k * jac * jac.transpose();
+        atb += weight_k * residual * jac;
+        r_sum += weight_k * weight_k * residual * residual;
     }
-
-    return ata.selfadjointView<Eigen::Upper>().ldlt().solve(atb);
+    return std::make_pair(ata.selfadjointView<Eigen::Upper>().ldlt().solve(atb), r_sum);
 }

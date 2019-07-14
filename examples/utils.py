@@ -19,6 +19,8 @@ def prepare_source_and_target_rigid_3d(source_filename,
     ans = trans.euler_matrix(*orientation)
     target.transform(ans)
     if normals:
+        o3.estimate_normals(source, search_param=o3.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=50))
+        o3.orient_normals_to_align_with_direction(source)
         o3.estimate_normals(target, search_param=o3.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=50))
         o3.orient_normals_to_align_with_direction(target)
     return source, target
