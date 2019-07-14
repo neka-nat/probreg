@@ -7,8 +7,8 @@ Vector6 probreg::computeTwistForPointToPlane(const Matrix3X& model,
                                              const Matrix3X& target,
                                              const Matrix3X& target_normal,
                                              const Vector& weight) {
-    Matrix6 amat = Matrix6::Zero();
-    Vector6 bvec = Vector6::Zero();
+    Matrix6 ata = Matrix6::Zero();
+    Vector6 atb = Vector6::Zero();
 
     for (auto k = 0; k < model.cols(); ++k){
         const auto& vertex_k = model.col(k);
@@ -20,14 +20,14 @@ Vector6 probreg::computeTwistForPointToPlane(const Matrix3X& model,
         for (Integer i = 0; i < 6; ++i) {
             for (Integer j = i; j < 6; ++j) {
                 const Float jac_ij = weight_k * jac[i] * jac[j];
-                amat(i, j) += jac_ij;
+                ata(i, j) += jac_ij;
             }
         }
         for (Integer i = 0; i < 6; ++i) {
             const Float data = weight_k * (-residual * jac[i]);
-            bvec[i] += data;
+            atb[i] += data;
         }
     }
 
-    return amat.selfadjointView<Eigen::Upper>().ldlt().solve(bvec);
+    return ata.selfadjointView<Eigen::Upper>().ldlt().solve(atb);
 }
