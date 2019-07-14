@@ -19,21 +19,17 @@ def skew(x):
                      [-x[1], x[0], 0.0]])
 
 
-def twist_trans(tw):
+def twist_trans(tw, linear=False):
     """
     Linear approximation of transformation matrix
     using twist representation.
 
     Args:
         tw (numpy.ndarray): Twist vector.
+        linear (bool): Linear approximation.
     """
-    return np.identity(3) + skew(tw[:3]), tw[3:]
-
-
-def twist_mul(tw, rot, t, linear=False):
     if linear:
-        tr, tt = twist_trans(tw)
-        return np.dot(tr, rot), np.dot(t, tr.T) + tt
+        return np.identity(3) + skew(tw[:3]), tw[3:]
     else:
         twd = np.linalg.norm(tw[:3])
         if twd == 0.0:
@@ -43,7 +39,12 @@ def twist_mul(tw, rot, t, linear=False):
             c = np.cos(twd)
             s = np.sin(twd)
             tr = c * np.identity(3) + (1.0 - c) * np.outer(ntw, ntw) + s * skew(ntw)
-            return np.dot(tr, rot), np.dot(t, tr.T) + tw[3:]
+            return tr, tw[3:]
+
+
+def twist_mul(tw, rot, t, linear=False):
+    tr, tt = twist_trans(tw, linear=linear)
+    return np.dot(tr, rot), np.dot(t, tr.T) + tt
 
 
 def diff_rot_from_quaternion(q):
