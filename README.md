@@ -70,6 +70,9 @@ target.transform(np.array([[np.cos(th), -np.sin(th), 0.0, 0.0],
                            [np.sin(th), np.cos(th), 0.0, 0.0],
                            [0.0, 0.0, 1.0, 0.0],
                            [0.0, 0.0, 0.0, 1.0]]))
+source = o3.voxel_down_sample(source, voxel_size=0.005)
+target = o3.voxel_down_sample(target, voxel_size=0.005)
+
 # compute cpd registration
 tf_param, _, _ = cpd.registration_cpd(source, target)
 result = copy.deepcopy(source)
