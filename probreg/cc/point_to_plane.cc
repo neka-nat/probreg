@@ -18,8 +18,8 @@ Pt2PlResult probreg::computeTwistForPointToPlane(const Matrix3X& model,
         const auto& weight_k = weight[k];
         const Float residual = normal_k.dot(target_k - vertex_k);
         const Vector6 jac = (Vector6() << vertex_k.cross(normal_k), normal_k).finished();
-        ata += weight_k * jac * jac.transpose();
-        atb += weight_k * residual * jac;
+        ata.noalias() += weight_k * jac * jac.transpose();
+        atb.noalias() += weight_k * residual * jac;
         r_sum += weight_k * weight_k * residual * residual;
     }
     return std::make_pair(ata.selfadjointView<Eigen::Upper>().ldlt().solve(atb), r_sum);

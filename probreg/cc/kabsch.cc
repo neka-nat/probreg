@@ -13,8 +13,8 @@ KabschResult probreg::computeKabsch(const Matrix3X& model,
     for(auto i = 0; i < model.cols(); ++i) {
         const Float w_i = weight[i];
         total_weight += w_i;
-        model_center += w_i * model.col(i);
-        target_center += w_i * target.col(i);
+        model_center.noalias() += w_i * model.col(i);
+        target_center.noalias() += w_i * target.col(i);
     }
     Float divided_by = 1.0f / total_weight;
     model_center *= divided_by;
@@ -31,7 +31,7 @@ KabschResult probreg::computeKabsch(const Matrix3X& model,
         auto centralized_target_k = target_k - target_center;
         const Float this_weight = weight[k];
         h_weight += this_weight * this_weight;
-        hh += (this_weight * this_weight) * centralized_model_k * centralized_target_k.transpose();
+        hh.noalias() += (this_weight * this_weight) * centralized_model_k * centralized_target_k.transpose();
     }
 
     //Do svd
@@ -39,11 +39,11 @@ KabschResult probreg::computeKabsch(const Matrix3X& model,
     Eigen::JacobiSVD<Matrix3> svd(hh, Eigen::ComputeFullU | Eigen::ComputeFullV);
     Vector3 ss = Vector3::Ones(3);
     ss[2] = (svd.matrixU() * svd.matrixV()).determinant();
-    Matrix3 r = svd.matrixV() * ss.asDiagonal() * svd.matrixU().transpose();
+    const Matrix3 r = svd.matrixV() * ss.asDiagonal() * svd.matrixU().transpose();
 
     //The translation
     Vector3 translation = target_center;
-    translation -= r * model_center;
+    translation.noalias() -= r * model_center;
 
     return std::make_pair(r, translation);
 }
