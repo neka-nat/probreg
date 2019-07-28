@@ -21,12 +21,11 @@ def skew(x):
 
 def twist_trans(tw, linear=False):
     """
-    Linear approximation of transformation matrix
-    using twist representation.
+    Convert from twist representation to transformation matrix.
 
     Args:
         tw (numpy.ndarray): Twist vector.
-        linear (bool): Linear approximation.
+        linear (bool, optional): Linear approximation.
     """
     if linear:
         return np.identity(3) + skew(tw[:3]), tw[3:]
@@ -43,6 +42,15 @@ def twist_trans(tw, linear=False):
 
 
 def twist_mul(tw, rot, t, linear=False):
+    """
+    Multiply twist vector and transformation matrix.
+
+    Args:
+        tw (numpy.ndarray): Twist vector.
+        rot (numpy.ndarray): Rotation matrix.
+        t (numpy.ndarray): Translation vector.
+        linear (bool, optional): Linear approximation.
+    """
     tr, tt = twist_trans(tw, linear=linear)
     return np.dot(tr, rot), np.dot(t, tr.T) + tt
 

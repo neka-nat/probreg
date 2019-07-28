@@ -22,6 +22,12 @@ class Transformation():
 
 
 class RigidTransformation(Transformation):
+    """Rigid Transformation
+    Args:
+        rot (numpy.ndarray, optional): Rotation matrix.
+        t (numpy.ndarray, optional): Translation vector.
+        scale (Float, optional): Scale factor.
+    """
     def __init__(self, rot=np.identity(3),
                  t=np.zeros(3), scale=1.0):
         super(RigidTransformation, self).__init__()
