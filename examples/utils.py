@@ -13,6 +13,7 @@ def prepare_source_and_target_rigid_3d(source_filename,
     print(source)
     target = copy.deepcopy(source)
     tp = np.asarray(target.points)
+    np.random.shuffle(tp)
     rg = 1.5 * (tp.max(axis=0) - tp.min(axis=0))
     rands = (np.random.rand(n_random, 3) - 0.5) * rg + tp.mean(axis=0)
     target.points = o3.Vector3dVector(np.r_[tp + noise_amp * np.random.randn(*tp.shape), rands])
