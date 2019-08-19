@@ -99,8 +99,8 @@ o3.draw_geometries([source, target, result])
 
 ### Noise test
 
-| ICP | CPD | FilterReg |
-|-----|-----|-----------|
+| ICP(Open3D) | CPD | FilterReg |
+|-------------|-----|-----------|
 | <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/icp_noise.gif" width="640"> |  <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/cpd_noise.gif" width="640"> | <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/filterreg_noise.gif" width="640"> |
 
 ### Non rigid registration
@@ -117,7 +117,7 @@ Execute an example script for measuring time.
 OMP_NUM_THREADS=1 python time_measurement.py
 
 # Results [s]
-# ICP:  0.01905073800298851
+# ICP(Open3D):  0.01905073800298851
 # CPD:  14.830138777004322
 # SVR:  1.8208692720072577
 # GMMTree:  0.48409615199489053

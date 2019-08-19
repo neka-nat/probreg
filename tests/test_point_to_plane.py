@@ -24,7 +24,7 @@ class Point2PlaneTest(unittest.TestCase):
         self._target_normals = np.dot(np.array(normals), self._tf.rot.T)
 
     def test_point_to_plane(self):
-        tw, q = pt2pl.compute_twist_for_pt2pl(self._source.T, self._target.T, self._target_normals.T,
+        tw, q = pt2pl.compute_twist_for_pt2pl(self._source, self._target, self._target_normals,
                                               np.ones(self._source.shape[0]))
         r, t = so.twist_mul(tw, np.identity(3), np.zeros(3))
         r0 = np.identity(4)

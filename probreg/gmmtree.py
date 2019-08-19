@@ -27,13 +27,13 @@ class GMMTree():
         self._tf_result = self._tf_type()
         self._callbacks = []
         if not self._source is None:
-            self._nodes = _gmmtree.build_gmmtree(self._source.T,
+            self._nodes = _gmmtree.build_gmmtree(self._source,
                                                  self._tree_level,
                                                  0.001, 1.0e-4)
 
     def set_source(self, source):
         self._source = source
-        self._nodes = _gmmtree.build_gmmtree(self._source.T,
+        self._nodes = _gmmtree.build_gmmtree(self._source,
                                              self._tree_level,
                                              0.001, 1.0e-4)
 
@@ -41,7 +41,7 @@ class GMMTree():
         self._callbacks = callbacks
 
     def expectation_step(self, target):
-        res = _gmmtree.gmmtree_reg_estep(target.T, self._nodes,
+        res = _gmmtree.gmmtree_reg_estep(target, self._nodes,
                                          self._tree_level, self._lambda_c)
         return EstepResult(res)
 

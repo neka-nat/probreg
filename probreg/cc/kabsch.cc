@@ -3,18 +3,18 @@
 
 using namespace probreg;
 
-KabschResult probreg::computeKabsch(const Matrix3X& model,
-                                    const Matrix3X& target,
+KabschResult probreg::computeKabsch(const MatrixX3& model,
+                                    const MatrixX3& target,
                                     const Vector& weight) {
     //Compute the center
     Vector3 model_center = Vector3::Zero();
     Vector3 target_center = Vector3::Zero();
     Float total_weight = 0.0f;
-    for(auto i = 0; i < model.cols(); ++i) {
+    for(auto i = 0; i < model.rows(); ++i) {
         const Float w_i = weight[i];
         total_weight += w_i;
-        model_center.noalias() += w_i * model.col(i);
-        target_center.noalias() += w_i * target.col(i);
+        model_center.noalias() += w_i * model.row(i);
+        target_center.noalias() += w_i * target.row(i);
     }
     Float divided_by = 1.0f / total_weight;
     model_center *= divided_by;
@@ -24,10 +24,10 @@ KabschResult probreg::computeKabsch(const Matrix3X& model,
     //Compute the H matrix
     Float h_weight = 0.0f;
     Matrix3 hh = Matrix3::Zero();
-    for(auto k = 0; k < model.cols(); ++k) {
-        const auto& model_k = model.col(k);
+    for(auto k = 0; k < model.rows(); ++k) {
+        const auto& model_k = model.row(k).transpose();
         auto centralized_model_k = model_k - model_center;
-        const auto& target_k = target.col(k);
+        const auto& target_k = target.row(k).transpose();
         auto centralized_target_k = target_k - target_center;
         const Float this_weight = weight[k];
         h_weight += this_weight * this_weight;

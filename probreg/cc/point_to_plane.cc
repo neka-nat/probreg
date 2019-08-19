@@ -3,18 +3,18 @@
 
 using namespace probreg;
 
-Pt2PlResult probreg::computeTwistForPointToPlane(const Matrix3X& model,
-                                                 const Matrix3X& target,
-                                                 const Matrix3X& target_normal,
+Pt2PlResult probreg::computeTwistForPointToPlane(const MatrixX3& model,
+                                                 const MatrixX3& target,
+                                                 const MatrixX3& target_normal,
                                                  const Vector& weight) {
     Matrix6 ata = Matrix6::Zero();
     Vector6 atb = Vector6::Zero();
     Float r_sum = 0.0;
 
-    for (auto k = 0; k < model.cols(); ++k){
-        const auto& vertex_k = model.col(k);
-        const auto& target_k = target.col(k);
-        const auto& normal_k = target_normal.col(k);
+    for (auto k = 0; k < model.rows(); ++k){
+        const auto& vertex_k = model.row(k).transpose();
+        const auto& target_k = target.row(k).transpose();
+        const auto& normal_k = target_normal.row(k).transpose();
         const auto& weight_k = weight[k];
         const Float residual = normal_k.dot(target_k - vertex_k);
         const Vector6 jac = (Vector6() << vertex_k.cross(normal_k), normal_k).finished();

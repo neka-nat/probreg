@@ -10,9 +10,9 @@ static const Integer N_NODE = 8;
 typedef std::tuple<Float, Vector3, Matrix3> NodeParam;
 typedef std::vector<NodeParam, Eigen::aligned_allocator<NodeParam> > NodeParamArray;
 
-NodeParamArray buildGmmTree(const Matrix3X& points, Integer max_tree_level, Float lambda_s, Float lambda_d);
+NodeParamArray buildGmmTree(const MatrixX3& points, Integer max_tree_level, Float lambda_s, Float lambda_d);
 
-NodeParamArray gmmTreeEstep(const Matrix3X& points,
+NodeParamArray gmmTreeEstep(const MatrixX3& points,
                             const NodeParamArray& nodes,
                             const VectorXi& parent_idx,
                             VectorXi& current_idx,
@@ -21,7 +21,7 @@ NodeParamArray gmmTreeEstep(const Matrix3X& points,
 void gmmTreeMstep(
     const NodeParamArray& params, Integer l, NodeParamArray& nodes, Integer n_points, Float lambda_d);
 
-NodeParamArray gmmTreeRegEstep(const Matrix3X& points,
+NodeParamArray gmmTreeRegEstep(const MatrixX3& points,
                                const NodeParamArray& nodes,
                                Integer max_tree_level,
                                Float lambda_c);

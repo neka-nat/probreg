@@ -8,8 +8,8 @@ namespace probreg {
 
 typedef std::pair<Matrix3, Vector3> KabschResult;
 
-KabschResult computeKabsch(const Matrix3X& model,
-                           const Matrix3X& target,
+KabschResult computeKabsch(const MatrixX3& model,
+                           const MatrixX3& target,
                            const Vector& weight);
 
 }  // namespace probreg

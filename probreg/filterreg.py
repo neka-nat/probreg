@@ -140,13 +140,13 @@ class RigidFilterReg(FilterReg):
         m0m0 = m0 / (m0 + c)
         drxdx = np.sqrt(m0m0 * 1.0 / sigma2)
         if objective_type == 'pt2pt':
-            dr, dt = kabsch.kabsch(t_source.T, m1m0.T, drxdx)
+            dr, dt = kabsch.kabsch(t_source, m1m0, drxdx)
             rx = np.multiply(drxdx, (t_source - m1m0).T).T.sum(axis=1)
             rot, t = np.dot(dr, trans_p.rot), np.dot(trans_p.t, dr.T) + dt
             q = np.dot(rx.T, rx).sum()
         elif objective_type == 'pt2pl':
             nxm0 = (nx.T / m0).T
-            tw, q = pt2pl.compute_twist_for_pt2pl(t_source.T, m1m0.T, nxm0.T, drxdx)
+            tw, q = pt2pl.compute_twist_for_pt2pl(t_source, m1m0, nxm0, drxdx)
             rot, t = so.twist_mul(tw, trans_p.rot, trans_p.t)
         else:
             raise ValueError('Unknown objective_type: %s.' % objective_type)

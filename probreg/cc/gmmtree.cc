@@ -17,14 +17,14 @@ Float gaussianPdf(const Vector3& x, const Vector3& mu, const Matrix3& cov) {
     return c * std::exp(ep);
 }
 
-Float logLikelihood(const NodeParamArray& nodes, const Matrix3X& points, Integer j0, Integer jn) {
+Float logLikelihood(const NodeParamArray& nodes, const MatrixX3& points, Integer j0, Integer jn) {
     Float q = 0.0;
-    for (Integer i = 0; i < points.cols(); ++i) {
+    for (Integer i = 0; i < points.rows(); ++i) {
         Float tmp = 0.0;
         for (Integer j = j0; j < jn; ++j) {
             if (std::get<0>(nodes[j]) < eps) continue;
             tmp += std::get<0>(nodes[j]) *
-                   gaussianPdf(points.col(i), std::get<1>(nodes[j]), std::get<2>(nodes[j]));
+                   gaussianPdf(points.row(i), std::get<1>(nodes[j]), std::get<2>(nodes[j]));
         }
         q += std::log(std::max(tmp, eps));
     }
@@ -66,7 +66,7 @@ NodeParam mlEstimator(const NodeParam& moments, Integer n_points, Float lambda_d
 
 }  // namespace
 
-NodeParamArray probreg::buildGmmTree(const Matrix3X& points,
+NodeParamArray probreg::buildGmmTree(const MatrixX3& points,
                                      Integer max_tree_level,
                                      Float lambda_s,
                                      Float lambda_d) {
@@ -74,24 +74,24 @@ NodeParamArray probreg::buildGmmTree(const Matrix3X& points,
     NodeParamArray nodes(n_total);
     auto idxs = (n_total * Vector::Random(n_total)).array().abs().cast<Integer>();
     Float sig2 = 0.0;
-    for (Integer i = 0; i < points.cols(); ++i) {
-        sig2 += (points.colwise() - points.col(i)).colwise().squaredNorm().sum();
+    for (Integer i = 0; i < points.rows(); ++i) {
+        sig2 += (points.rowwise() - points.row(i)).rowwise().squaredNorm().sum();
     }
-    sig2 /= points.cols() * points.cols() * points.rows() * N_NODE;
+    sig2 /= points.rows() * points.rows() * points.cols() * N_NODE;
     for (Integer j = 0; j < n_total; ++j) {
         std::get<0>(nodes[j]) = 1.0 / N_NODE;
-        std::get<1>(nodes[j]) = points.col(idxs[j]);
+        std::get<1>(nodes[j]) = points.row(idxs[j]);
         std::get<2>(nodes[j]) = Matrix3::Identity() * sig2;
     }
-    VectorXi parent_idx = -VectorXi::Ones(points.cols());
-    VectorXi current_idx = VectorXi::Zero(points.cols());
+    VectorXi parent_idx = -VectorXi::Ones(points.rows());
+    VectorXi current_idx = VectorXi::Zero(points.rows());
 
     for (Integer l = 0; l < max_tree_level; ++l) {
         Float prev_q = 0.0;
         while (true) {
             const NodeParamArray params =
                 gmmTreeEstep(points, nodes, parent_idx, current_idx, max_tree_level);
-            gmmTreeMstep(params, l, nodes, points.cols(), lambda_d);
+            gmmTreeMstep(params, l, nodes, points.rows(), lambda_d);
             const Float q = logLikelihood(nodes, points, level(l), level(l + 1));
             if (std::abs(q - prev_q) < lambda_s) {
                 break;
@@ -103,7 +103,7 @@ NodeParamArray probreg::buildGmmTree(const Matrix3X& points,
     return nodes;
 }
 
-NodeParamArray probreg::gmmTreeEstep(const Matrix3X& points,
+NodeParamArray probreg::gmmTreeEstep(const MatrixX3& points,
                                      const NodeParamArray& nodes,
                                      const VectorXi& parent_idx,
                                      VectorXi& current_idx,
@@ -116,12 +116,12 @@ NodeParamArray probreg::gmmTreeEstep(const Matrix3X& points,
         std::get<2>(moments[j]).fill(0.0);
     }
 
-    for (Integer i = 0; i < points.cols(); ++i) {
+    for (Integer i = 0; i < points.rows(); ++i) {
         const Integer j0 = child(parent_idx[i]);
         Vector gamma = Vector::Zero(N_NODE);
         for (Integer j = j0; j < j0 + N_NODE; ++j) {
             gamma[j - j0] = std::get<0>(nodes[j]) *
-                            gaussianPdf(points.col(i), std::get<1>(nodes[j]), std::get<2>(nodes[j]));
+                            gaussianPdf(points.row(i), std::get<1>(nodes[j]), std::get<2>(nodes[j]));
         }
         const Float den = gamma.sum();
         if (den > eps) {
@@ -131,7 +131,7 @@ NodeParamArray probreg::gmmTreeEstep(const Matrix3X& points,
             gamma.fill(0.0);
         }
         for (Integer j = j0; j < j0 + N_NODE; ++j) {
-            accumulate(moments[j], gamma[j - j0], points.col(i));
+            accumulate(moments[j], gamma[j - j0], points.row(i));
         }
         Integer max_j;
         gamma.maxCoeff(&max_j);
@@ -150,7 +150,7 @@ void probreg::gmmTreeMstep(
     }
 }
 
-NodeParamArray probreg::gmmTreeRegEstep(const Matrix3X& points,
+NodeParamArray probreg::gmmTreeRegEstep(const MatrixX3& points,
                                         const NodeParamArray& nodes,
                                         Integer max_tree_level,
                                         Float lambda_c) {
@@ -162,14 +162,14 @@ NodeParamArray probreg::gmmTreeRegEstep(const Matrix3X& points,
         std::get<2>(moments[j]).fill(0.0);
     }
 
-    for (Integer i = 0; i < points.cols(); ++i) {
+    for (Integer i = 0; i < points.rows(); ++i) {
         Integer search_id = -1;
         Vector gamma = Vector::Zero(N_NODE);
         for (Integer l = 0; l < max_tree_level; ++l) {
             const Integer j0 = child(search_id);
             for (Integer j = j0; j < j0 + N_NODE; ++j) {
                 gamma[j - j0] = std::get<0>(nodes[j]) *
-                                gaussianPdf(points.col(i), std::get<1>(nodes[j]), std::get<2>(nodes[j]));
+                                gaussianPdf(points.row(i), std::get<1>(nodes[j]), std::get<2>(nodes[j]));
             }
             const Float den = gamma.sum();
             if (den > eps) {
@@ -180,7 +180,7 @@ NodeParamArray probreg::gmmTreeRegEstep(const Matrix3X& points,
             gamma.maxCoeff(&search_id);
             search_id += j0;
             if (complexity(std::get<2>(nodes[search_id])) <= lambda_c) break;
-            accumulate(moments[search_id], gamma[search_id - j0], points.col(i));
+            accumulate(moments[search_id], gamma[search_id - j0], points.row(i));
         }
     }
     return moments;

@@ -18,7 +18,7 @@ res = o3.registration_icp(source, target, threshold,
                           np.identity(4), o3.TransformationEstimationPointToPoint(),
                           o3.ICPConvergenceCriteria(max_iteration=max_iteration))
 end = timer()
-print('ICP: ', end - start)
+print('ICP(Open3D): ', end - start)
 
 start = timer()
 res = cpd.registration_cpd(source, target, maxiter=max_iteration, tol=threshold)

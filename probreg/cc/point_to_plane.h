@@ -8,9 +8,9 @@ namespace probreg {
 
 typedef std::pair<Vector6, Float> Pt2PlResult;
 
-Pt2PlResult computeTwistForPointToPlane(const Matrix3X& model,
-                                        const Matrix3X& target,
-                                        const Matrix3X& target_normal,
+Pt2PlResult computeTwistForPointToPlane(const MatrixX3& model,
+                                        const MatrixX3& target,
+                                        const MatrixX3& target_normal,
                                         const Vector& weight);
 
 }
