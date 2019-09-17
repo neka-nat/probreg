@@ -3,6 +3,8 @@
 *.so
 build/*
 *.egg-info/*
+dist/*
+tmp/*
 .vscode/*
 *.lock
 docs/build/html
