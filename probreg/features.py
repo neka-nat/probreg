@@ -3,6 +3,7 @@ from __future__ import division
 import abc
 import six
 import numpy as np
+import open3d as o3
 from sklearn import mixture
 from sklearn import svm
 
@@ -19,6 +20,28 @@ class Feature():
 
     def annealing(self):
         pass
+
+
+class FPFH(Feature):
+    """Fast Point Feature Histograms
+
+    Args:
+        radius_normal (float): Radius search parameter for computing normal vectors
+        radius_feature (float): Radius search parameter for computing FPFH.
+    """
+    def __init__(self, radius_normal=0.1, radius_feature=0.5):
+        self._param_normal = o3.geometry.KDTreeSearchParamHybrid(radius=radius_normal, max_nn=30)
+        self._param_feature = o3.geometry.KDTreeSearchParamHybrid(radius=radius_feature, max_nn=100)
+
+    def init(self):
+        pass
+
+    def compute(self, data):
+        pcd = o3.PointCloud()
+        pcd.points = o3.Vector3dVector(data)
+        o3.estimate_normals(pcd, self._param_normal)
+        fpfh = o3.registration.compute_fpfh_feature(pcd, self._param_feature)
+        return fpfh.data.T
 
 
 class GMM(Feature):

@@ -8,6 +8,7 @@ import open3d as o3
 from . import transformation as tf
 from . import gaussian_filtering as gf
 from . import gauss_transform as gt
+from . import features as ft
 from . import se3_op as so
 from . import _kabsch as kabsch
 from . import _pt2pl as pt2pl
@@ -49,7 +50,7 @@ class FilterReg():
     def set_callbacks(self, callbacks):
         self._callbacks = callbacks
 
-    def expectation_step(self, t_source, target, sigma2,
+    def expectation_step(self, t_source, target, y, sigma2,
                          objective_type='pt2pt', alpha=0.015):
         """Expectation step
         """
@@ -60,19 +61,19 @@ class FilterReg():
         fx = t_source / sigma
         fy = target / sigma
         zero_m1 = np.zeros((m, 1))
-        zeros_md = np.zeros_like(fx)
+        zeros_md = np.zeros((m, y.shape[1]))
         dem = np.power(2.0 * np.pi * sigma2, ndim * 0.5)
         fin = np.r_[fx, fy]
         ph = gf.Permutohedral(fin)
         if ph.get_lattice_size() < n * alpha:
             ph = gf.Permutohedral(fin, False)
         vin0 = np.r_[zero_m1, np.ones((n, 1)) / dem]
-        vin1 = np.r_[zeros_md, target / dem]
+        vin1 = np.r_[zeros_md, y / dem]
         m0 = ph.filter(vin0, m).flatten()[:m]
         m1 = ph.filter(vin1, m)[:m]
         if self._update_sigma2:
             vin2 = np.r_[zero_m1,
-                         np.expand_dims(np.square(target).sum(axis=1), axis=1) / dem]
+                         np.expand_dims(np.square(y).sum(axis=1), axis=1) / dem]
             m2 = ph.filter(vin2, m).flatten()[:m]
         else:
             m2 = None
@@ -99,14 +100,23 @@ class FilterReg():
 
     def registration(self, target, w=0.0,
                      objective_type='pt2pt',
-                     maxiter=50, tol=0.001):
+                     maxiter=50, tol=0.001,
+                     use_feature=False):
         assert not self._tf_type is None, "transformation type is None."
         q = None
+        if use_feature:
+            fpfh = ft.FPFH()
+            ftarget = fpfh.compute(target)
+        else:
+            ftarget = target
         if self._update_sigma2:
-            self._sigma2 = mu.squared_kernel_sum(self._source, target)
+            fsource = fpfh.compute(self._source) if use_feature else self._source
+            self._sigma2 = mu.squared_kernel_sum(fsource, ftarget)
         for _ in range(maxiter):
             t_source = self._tf_result.transform(self._source)
-            estep_res = self.expectation_step(t_source, target, self._sigma2, objective_type)
+            fsource = fpfh.compute(t_source) if use_feature else t_source
+            estep_res = self.expectation_step(fsource, ftarget, target,
+                                              self._sigma2, objective_type)
             res = self.maximization_step(t_source, target, estep_res, w=w,
                                          objective_type=objective_type)
             self._tf_result = res.transformation
@@ -158,9 +168,24 @@ class RigidFilterReg(FilterReg):
 
 
 def registration_filterreg(source, target, target_normals=None,
-                           sigma2=None, objective_type='pt2pt', maxiter=50, tol=0.001,
+                           sigma2=None, objective_type='pt2pt', maxiter=50,
+                           tol=0.001, use_feature=False,
                            callbacks=[], **kargs):
+    """FilterReg registration
+
+    Args:
+        source (numpy.ndarray): Source point cloud data.
+        target (numpy.ndarray): Target point cloud data.
+        target_normals (numpy.ndarray, optional): Normal vectors of target point cloud.
+        w (float, optional): Weight of the uniform distribution, 0 < `w` < 1.
+        maxitr (int, optional): Maximum number of iterations to EM algorithm.
+        tol (float, optional): Tolerance for termination.
+        use_feature (bool, optional): Computing with FPFH feature.
+        callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
+            `callback(probreg.Transformation)`
+    """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
     frg = RigidFilterReg(cv(source), cv(target_normals), sigma2, **kargs)
     frg.set_callbacks(callbacks)
-    return frg.registration(cv(target), objective_type=objective_type, maxiter=maxiter, tol=tol)
+    return frg.registration(cv(target), objective_type=objective_type, maxiter=maxiter,
+                            tol=tol, use_feature=use_feature)

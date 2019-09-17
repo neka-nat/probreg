@@ -211,11 +211,11 @@ def registration_cpd(source, target, tf_type_name='rigid',
     Args:
         source (numpy.ndarray): Source point cloud data.
         target (numpy.ndarray): Target point cloud data.
-        tf_type_name (str): Transformation type('rigid', 'affine', 'nonrigid')
-        w (float): Weight of the uniform distribution, 0 < `w` < 1.
-        maxitr (int): Maximum number of iterations to EM algorithm.
-        tol (float): Tolerance for termination.
-        callback (:obj:`list` of :obj:`function`): Called after each iteration.
+        tf_type_name (str, optional): Transformation type('rigid', 'affine', 'nonrigid')
+        w (float, optional): Weight of the uniform distribution, 0 < `w` < 1.
+        maxitr (int, optional): Maximum number of iterations to EM algorithm.
+        tol (float, optional): Tolerance for termination.
+        callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
             `callback(probreg.Transformation)`
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
