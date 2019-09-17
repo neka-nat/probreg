@@ -15,11 +15,14 @@ class Feature():
         pass
 
     @abc.abstractmethod
-    def compute(self):
+    def compute(self, data):
         return None
 
     def annealing(self):
         pass
+
+    def __call__(self, data):
+        return self.compute(data)
 
 
 class FPFH(Feature):

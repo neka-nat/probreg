@@ -8,7 +8,6 @@ import open3d as o3
 from . import transformation as tf
 from . import gaussian_filtering as gf
 from . import gauss_transform as gt
-from . import features as ft
 from . import se3_op as so
 from . import _kabsch as kabsch
 from . import _pt2pl as pt2pl
@@ -101,20 +100,16 @@ class FilterReg():
     def registration(self, target, w=0.0,
                      objective_type='pt2pt',
                      maxiter=50, tol=0.001,
-                     use_feature=False):
+                     feature_fn=lambda x: x):
         assert not self._tf_type is None, "transformation type is None."
         q = None
-        if use_feature:
-            fpfh = ft.FPFH()
-            ftarget = fpfh.compute(target)
-        else:
-            ftarget = target
+        ftarget = feature_fn(target)
         if self._update_sigma2:
-            fsource = fpfh.compute(self._source) if use_feature else self._source
+            fsource = feature_fn(self._source)
             self._sigma2 = mu.squared_kernel_sum(fsource, ftarget)
         for _ in range(maxiter):
             t_source = self._tf_result.transform(self._source)
-            fsource = fpfh.compute(t_source) if use_feature else t_source
+            fsource = feature_fn(t_source)
             estep_res = self.expectation_step(fsource, ftarget, target,
                                               self._sigma2, objective_type)
             res = self.maximization_step(t_source, target, estep_res, w=w,
@@ -169,7 +164,7 @@ class RigidFilterReg(FilterReg):
 
 def registration_filterreg(source, target, target_normals=None,
                            sigma2=None, objective_type='pt2pt', maxiter=50,
-                           tol=0.001, use_feature=False,
+                           tol=0.001, feature_fn=lambda x: x,
                            callbacks=[], **kargs):
     """FilterReg registration
 
@@ -180,7 +175,7 @@ def registration_filterreg(source, target, target_normals=None,
         w (float, optional): Weight of the uniform distribution, 0 < `w` < 1.
         maxitr (int, optional): Maximum number of iterations to EM algorithm.
         tol (float, optional): Tolerance for termination.
-        use_feature (bool, optional): Computing with FPFH feature.
+        feature_fn (function, optional): Feature function. If you use FPFH feature, set `feature_fn=probreg.feature.FPFH()`.
         callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
             `callback(probreg.Transformation)`
     """
@@ -188,4 +183,4 @@ def registration_filterreg(source, target, target_normals=None,
     frg = RigidFilterReg(cv(source), cv(target_normals), sigma2, **kargs)
     frg.set_callbacks(callbacks)
     return frg.registration(cv(target), objective_type=objective_type, maxiter=maxiter,
-                            tol=tol, use_feature=use_feature)
+                            tol=tol, feature_fn=feature_fn)
