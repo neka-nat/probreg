@@ -18,7 +18,7 @@ This package implements several algorithms using stochastic models and provides 
 
 ## Algorithms
 
-* Distance minimization of two point clouds
+* Maximum likelihood when the target or source point cloud is observation data
     * [Coherent Point Drift(2010)](https://arxiv.org/pdf/0905.2635.pdf)
     * [FilterReg(CVPR2019)](https://arxiv.org/pdf/1811.10136.pdf)
 * Distance minimization of two probabilistic distributions
@@ -31,8 +31,8 @@ This package implements several algorithms using stochastic models and provides 
 
 | type | CPD | SVR, GMMReg | GMMTree | FilterReg |
 |------|-----|-------------|---------|-----------|
-|Rigid | Scale + 6D pose | 6D pose | 6D pose | 6D pose|
-|NonRigid | Affine, MCT | TPS | - | - |
+|Rigid | **Scale + 6D pose** | **6D pose** | **6D pose** | **6D pose** </br> (Point-to-point,</br> Point-to-plane,</br> FPFH-based)|
+|NonRigid | **Affine**, **MCT** | **TPS** | - | - |
 
 ## Installation
 
