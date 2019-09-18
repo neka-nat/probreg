@@ -105,8 +105,7 @@ class FilterReg():
         q = None
         ftarget = feature_fn(target)
         if self._update_sigma2:
-            fsource = feature_fn(self._source)
-            self._sigma2 = mu.squared_kernel_sum(fsource, ftarget)
+            self._sigma2 = mu.squared_kernel_sum(self._source, target)
         for _ in range(maxiter):
             t_source = self._tf_result.transform(self._source)
             fsource = feature_fn(t_source)

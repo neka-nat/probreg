@@ -109,6 +109,12 @@ o3.draw_geometries([source, target, result])
 |-----|-----|
 | <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/cpd_nonrigid.gif" width="640"> | <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/svr_nonrigid.gif" width="640"> |
 
+### Feature based registration
+
+| FPFH FilterReg |
+|----------------|
+|<img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/filterreg_fpfh.gif" width="640"> |
+
 ### Time measurement
 
 Execute an example script for measuring time.
