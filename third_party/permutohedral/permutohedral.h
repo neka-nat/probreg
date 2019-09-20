@@ -38,7 +38,6 @@ using namespace Eigen;
 /***          Permutohedral Lattice           ***/
 /************************************************/
 
-static const int DIMENSION = 3;
 
 class Permutohedral
 {
@@ -52,7 +51,7 @@ protected:
 	std::vector<float> barycentric_;
 	std::vector<Neighbors> blur_neighbors_;
 	// Number of elements, size of sparse discretized space, dimension of features
-	int N_, M_;
+	int N_, M_, d_;
 	bool with_blur_;
 	void sseCompute ( float* out, const float* in, int value_size, bool reverse=false, int start=0 ) const;
 	void seqCompute ( float* out, const float* in, int value_size, bool reverse=false, int start=0 ) const;

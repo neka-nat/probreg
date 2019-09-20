@@ -61,18 +61,17 @@ class FilterReg():
         fy = target / sigma
         zero_m1 = np.zeros((m, 1))
         zeros_md = np.zeros((m, y.shape[1]))
-        dem = np.power(2.0 * np.pi * sigma2, ndim * 0.5)
         fin = np.r_[fx, fy]
         ph = gf.Permutohedral(fin)
         if ph.get_lattice_size() < n * alpha:
             ph = gf.Permutohedral(fin, False)
-        vin0 = np.r_[zero_m1, np.ones((n, 1)) / dem]
-        vin1 = np.r_[zeros_md, y / dem]
+        vin0 = np.r_[zero_m1, np.ones((n, 1))]
+        vin1 = np.r_[zeros_md, y]
         m0 = ph.filter(vin0, m).flatten()[:m]
         m1 = ph.filter(vin1, m)[:m]
         if self._update_sigma2:
             vin2 = np.r_[zero_m1,
-                         np.expand_dims(np.square(y).sum(axis=1), axis=1) / dem]
+                         np.expand_dims(np.square(y).sum(axis=1), axis=1)]
             m2 = ph.filter(vin2, m).flatten()[:m]
         else:
             m2 = None
