@@ -78,7 +78,7 @@ class FilterReg():
         if objective_type == 'pt2pt':
             nx = None
         elif objective_type == 'pt2pl':
-            vin = np.r_[zeros_md, self._target_normals / dem]
+            vin = np.r_[zeros_md, self._target_normals]
             nx = ph.filter(vin, m)[:m]
         else:
             raise ValueError('Unknown objective_type: %s.' % objective_type)
