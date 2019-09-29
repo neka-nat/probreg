@@ -45,18 +45,23 @@ class CoherentPointDrift():
         """Expectation step for CPD
         """
         assert t_source.ndim == 2 and target.ndim == 2, "source and target must have 2 dimensions."
-        ndim = t_source.shape[1]
-        h = np.sqrt(2.0 * sigma2)
-        c = (2.0 * np.pi * sigma2) ** (ndim * 0.5)
+        pmat = np.zeros((t_source.shape[0], target.shape[0]))
+        for i in range(t_source.shape[0]):
+            pmat[i, :] = np.sum(np.square(target - np.tile(t_source[i, :], (target.shape[0], 1))),
+                                axis=1)
+        pmat = np.exp(-pmat / (2.0 * sigma2))
+
+        c = (2.0 * np.pi * sigma2) ** (t_source.shape[1] * 0.5)
         c *= w / (1.0 - w) * t_source.shape[0] / target.shape[0]
-        gtrans = gt.GaussTransform(t_source, h)
-        kt1 = gtrans.compute(target)
-        kt1[kt1==0] = np.finfo(np.float32).eps
-        a = 1.0 / (kt1 + c)
-        pt1 = 1.0 - c * a
-        gtrans = gt.GaussTransform(target, h)
-        p1 = gtrans.compute(t_source, a)
-        px = gtrans.compute(t_source, np.tile(a, (ndim, 1)) * target.T).T
+        den = np.sum(pmat, axis=0)
+        den[den==0] = np.finfo(np.float32).eps
+        den = np.tile(den, (t_source.shape[0], 1))
+        den += c
+
+        pmat  = np.divide(pmat, den)
+        pt1 = np.sum(pmat, axis=0)
+        p1  = np.sum(pmat, axis=1)
+        px = np.dot(pmat, target)
         return EstepResult(pt1, p1, px, np.sum(p1))
 
     def maximization_step(self, target, estep_res, sigma2_p=None):
