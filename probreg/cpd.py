@@ -6,7 +6,6 @@ import six
 import numpy as np
 import open3d as o3
 from . import transformation as tf
-from . import gauss_transform as gt
 from . import math_utils as mu
 
 
@@ -55,7 +54,6 @@ class CoherentPointDrift():
         c *= w / (1.0 - w) * t_source.shape[0] / target.shape[0]
         den = np.sum(pmat, axis=0)
         den[den==0] = np.finfo(np.float32).eps
-        den = np.tile(den, (t_source.shape[0], 1))
         den += c
 
         pmat  = np.divide(pmat, den)
