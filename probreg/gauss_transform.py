@@ -30,7 +30,7 @@ class GaussTransform(object):
         sw_h (float): Value of the bandwidth parameter to
             switch between direct method and IFGT.
     """
-    def __init__(self, source, h, eps=1.0e-4, sw_h=0.1):
+    def __init__(self, source, h, eps=1.0e-4, sw_h=0.01):
         self._m = source.shape[0]
         if h < sw_h:
             self._impl = Direct(source, h)
