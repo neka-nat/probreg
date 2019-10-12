@@ -129,3 +129,15 @@ OMP_NUM_THREADS=1 python time_measurement.py
 # GMMTree:  0.34479290700983256
 # FilterReg:  0.039795294986106455
 ```
+
+## Citing
+
+```
+@software{probreg,
+    author = {{Kenta-Tanaka et al.}},
+    title = {probreg},
+    url = {https://probreg.readthedocs.io/en/latest/},
+    version = {0.1.6},
+    date = {2019-9-29},
+}
+```
