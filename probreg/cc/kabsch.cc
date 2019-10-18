@@ -16,7 +16,10 @@ KabschResult probreg::computeKabsch(const MatrixX3& model,
         model_center.noalias() += w_i * model.row(i);
         target_center.noalias() += w_i * target.row(i);
     }
-    Float divided_by = 1.0f / total_weight;
+    if (total_weight == 0) {
+        return std::make_pair(Matrix3::Identity(), Vector3::Zero());
+    }
+    const Float divided_by = 1.0f / total_weight;
     model_center *= divided_by;
     target_center *= divided_by;
 
