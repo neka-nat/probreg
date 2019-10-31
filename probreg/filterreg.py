@@ -99,13 +99,14 @@ class FilterReg():
     def registration(self, target, w=0.0,
                      objective_type='pt2pt',
                      maxiter=50, tol=0.001,
+                     min_sigma2=1.0e-4,
                      feature_fn=lambda x: x):
         assert not self._tf_type is None, "transformation type is None."
         q = None
         ftarget = feature_fn(target)
         if self._update_sigma2:
             fsource = feature_fn(self._source)
-            self._sigma2 = mu.squared_kernel_sum(fsource, ftarget)
+            self._sigma2 = max(mu.squared_kernel_sum(fsource, ftarget), min_sigma2)
         for _ in range(maxiter):
             t_source = self._tf_result.transform(self._source)
             fsource = feature_fn(t_source)
@@ -114,7 +115,7 @@ class FilterReg():
             res = self.maximization_step(t_source, target, estep_res, w=w,
                                          objective_type=objective_type)
             self._tf_result = res.transformation
-            self._sigma2 = res.sigma2
+            self._sigma2 = max(res.sigma2, min_sigma2)
             for c in self._callbacks:
                 c(self._tf_result)
             if not q is None and abs(res.q - q) < tol:
@@ -156,14 +157,14 @@ class RigidFilterReg(FilterReg):
             raise ValueError('Unknown objective_type: %s.' % objective_type)
 
         if not m2 is None:
-            sigma2 = ((m0 * np.square(t_source).sum(axis=1) - 2.0 * (t_source * m1).sum(axis=1) + m2) / (m0 + c)).sum()
-            sigma2 /= m0m0.sum()
+            sigma2 = (m0 *( np.square(t_source).sum(axis=1) - 2.0 * (t_source * m1).sum(axis=1) + m2) / (m0 + c)).sum()
+            sigma2 /= (3.0 * m0m0.sum())
         return MstepResult(tf.RigidTransformation(rot, t), sigma2, q)
 
 
 def registration_filterreg(source, target, target_normals=None,
                            sigma2=None, objective_type='pt2pt', maxiter=50,
-                           tol=0.001, feature_fn=lambda x: x,
+                           tol=0.001, min_sigma2=1.0e-4, feature_fn=lambda x: x,
                            callbacks=[], **kargs):
     """FilterReg registration
 
@@ -171,9 +172,11 @@ def registration_filterreg(source, target, target_normals=None,
         source (numpy.ndarray): Source point cloud data.
         target (numpy.ndarray): Target point cloud data.
         target_normals (numpy.ndarray, optional): Normal vectors of target point cloud.
-        w (float, optional): Weight of the uniform distribution, 0 < `w` < 1.
+        sigma2 (float, optional): Variance of GMM. If `sigma2` is `None`, `sigma2` is automatically updated.
+        objective_type (str, optional): The type of objective function selected by 'pt2pt' or 'pt2pl'.
         maxitr (int, optional): Maximum number of iterations to EM algorithm.
         tol (float, optional): Tolerance for termination.
+        min_sigma2 (float, optional): Minimum variance of GMM.
         feature_fn (function, optional): Feature function. If you use FPFH feature, set `feature_fn=probreg.feature.FPFH()`.
         callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
             `callback(probreg.Transformation)`
@@ -182,4 +185,4 @@ def registration_filterreg(source, target, target_normals=None,
     frg = RigidFilterReg(cv(source), cv(target_normals), sigma2, **kargs)
     frg.set_callbacks(callbacks)
     return frg.registration(cv(target), objective_type=objective_type, maxiter=maxiter,
-                            tol=tol, feature_fn=feature_fn)
+                            tol=tol, feature_fn=feature_fn, min_sigma2=min_sigma2)
