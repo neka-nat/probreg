@@ -157,7 +157,7 @@ class RigidFilterReg(FilterReg):
             raise ValueError('Unknown objective_type: %s.' % objective_type)
 
         if not m2 is None:
-            sigma2 = (m0 *( np.square(t_source).sum(axis=1) - 2.0 * (t_source * m1).sum(axis=1) + m2) / (m0 + c)).sum()
+            sigma2 = (m0 * (np.square(t_source).sum(axis=1) - 2.0 * (t_source * m1).sum(axis=1) + m2) / (m0 + c)).sum()
             sigma2 /= (3.0 * m0m0.sum())
         return MstepResult(tf.RigidTransformation(rot, t), sigma2, q)
 
@@ -185,4 +185,4 @@ def registration_filterreg(source, target, target_normals=None,
     frg = RigidFilterReg(cv(source), cv(target_normals), sigma2, **kargs)
     frg.set_callbacks(callbacks)
     return frg.registration(cv(target), objective_type=objective_type, maxiter=maxiter,
-                            tol=tol, feature_fn=feature_fn, min_sigma2=min_sigma2)
+                            tol=tol, min_sigma2=min_sigma2, feature_fn=feature_fn)
