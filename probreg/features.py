@@ -40,9 +40,9 @@ class FPFH(Feature):
         pass
 
     def compute(self, data):
-        pcd = o3.PointCloud()
-        pcd.points = o3.Vector3dVector(data)
-        o3.estimate_normals(pcd, self._param_normal)
+        pcd = o3.geometry.PointCloud()
+        pcd.points = o3.utility.Vector3dVector(data)
+        pcd.estimate_normals(search_param=self._param_normal)
         fpfh = o3.registration.compute_fpfh_feature(pcd, self._param_feature)
         return fpfh.data.T
 

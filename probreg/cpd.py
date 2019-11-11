@@ -221,7 +221,7 @@ def registration_cpd(source, target, tf_type_name='rigid',
         callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
             `callback(probreg.Transformation)`
     """
-    cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
+    cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     if tf_type_name == 'rigid':
         cpd = RigidCPD(cv(source), **kargs)
     elif tf_type_name == 'affine':
