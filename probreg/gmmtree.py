@@ -81,7 +81,7 @@ class GMMTree():
 
 def registration_gmmtree(source, target, maxiter=20, tol=1.0e-4,
                          callbacks=[], **kargs):
-    cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
+    cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     gt = GMMTree(cv(source), **kargs)
     gt.set_callbacks(callbacks)
     return gt.registration(cv(target), maxiter, tol)

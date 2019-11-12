@@ -181,7 +181,7 @@ def registration_filterreg(source, target, target_normals=None,
         callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
             `callback(probreg.Transformation)`
     """
-    cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
+    cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     frg = RigidFilterReg(cv(source), cv(target_normals), sigma2, **kargs)
     frg.set_callbacks(callbacks)
     return frg.registration(cv(target), objective_type=objective_type, maxiter=maxiter,

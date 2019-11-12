@@ -144,7 +144,7 @@ class TPSSVR(L2DistRegistration):
 
 def registration_gmmreg(source, target, tf_type_name='rigid',
                         callbacks=[], **kargs):
-    cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
+    cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     if tf_type_name == 'rigid':
         gmmreg = RigidGMMReg(cv(source), **kargs)
     elif tf_type_name == 'nonrigid':
@@ -159,7 +159,7 @@ def registration_svr(source, target, tf_type_name='rigid',
                      maxiter=1, tol=1.0e-3,
                      opt_maxiter=50, opt_tol=1.0e-3,
                      callbacks=[], **kargs):
-    cv = lambda x: np.asarray(x.points if isinstance(x, o3.PointCloud) else x)
+    cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     if tf_type_name == 'rigid':
         svr = RigidSVR(cv(source), **kargs)
     elif tf_type_name == 'nonrigid':

@@ -11,7 +11,7 @@ class Transformation():
         pass
 
     def transform(self, points,
-                  array_type=o3.Vector3dVector):
+                  array_type=o3.utility.Vector3dVector):
         if isinstance(points, array_type):
             return array_type(self._transform(np.asarray(points)))
         return self._transform(points)
