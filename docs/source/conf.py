@@ -14,6 +14,7 @@
 #
 import os
 import sys
+from probreg import __version__
 sys.path.insert(0, os.path.abspath('../../'))
 
 
@@ -24,9 +25,9 @@ copyright = '2019, neka-nat'
 author = 'neka-nat'
 
 # The short X.Y version
-version = ''
+version = __version__
 # The full version, including alpha/beta/rc tags
-release = ''
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------
