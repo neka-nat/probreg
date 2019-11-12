@@ -3,6 +3,16 @@ import numpy as np
 import open3d as o3
 import transformations as trans
 
+
+def estimate_normals(pcd, params):
+    if o3.__version__ >= '0.8.0.0':
+        pcd.estimate_normals(search_param=params)
+        pcd.orient_normals_to_align_with_direction()
+    else:
+        o3.estimate_normals(pcd, search_param=params)
+        o3.orient_normals_to_align_with_direction(pcd)
+
+
 def prepare_source_and_target_rigid_3d(source_filename,
                                        noise_amp=0.001,
                                        n_random=500,
@@ -22,10 +32,8 @@ def prepare_source_and_target_rigid_3d(source_filename,
     ans[:3, 3] = translation
     target.transform(ans)
     if normals:
-        o3.estimate_normals(source, search_param=o3.geometry.KDTreeSearchParamHybrid(radius=0.3, max_nn=50))
-        o3.orient_normals_to_align_with_direction(source)
-        o3.estimate_normals(target, search_param=o3.geometry.KDTreeSearchParamHybrid(radius=0.3, max_nn=50))
-        o3.orient_normals_to_align_with_direction(target)
+        estimate_normals(source, o3.geometry.KDTreeSearchParamHybrid(radius=0.3, max_nn=50))
+        estimate_normals(target, o3.geometry.KDTreeSearchParamHybrid(radius=0.3, max_nn=50))
     return source, target
 
 def prepare_source_and_target_nonrigid_2d(source_filename,
