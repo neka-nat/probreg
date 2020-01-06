@@ -250,7 +250,7 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     ext_modules=ext_modules,
-    install_requires=['pybind11>=2.2', 'open3d-python',
+    install_requires=['pybind11>=2.2', 'open3d',
                       'six', 'transformations', 'scipy',
                       'scikit-learn', 'matplotlib'],
     cmdclass={'build_ext': BuildExt},

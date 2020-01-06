@@ -7,18 +7,14 @@ from probreg import transformation as tf
 
 
 def estimate_normals(pcd, params):
-    if o3.__version__ >= '0.8.0.0':
-        pcd.estimate_normals(search_param=params)
-        pcd.orient_normals_to_align_with_direction()
-    else:
-        o3.estimate_normals(pcd, search_param=params)
-        o3.orient_normals_to_align_with_direction(pcd)
+    pcd.estimate_normals(search_param=params)
+    pcd.orient_normals_to_align_with_direction()
 
 
 class FilterRegTest(unittest.TestCase):
     def setUp(self):
-        pcd = o3.read_point_cloud('data/horse.ply')
-        pcd = o3.voxel_down_sample(pcd, voxel_size=0.01)
+        pcd = o3.io.read_point_cloud('data/horse.ply')
+        pcd = pcd.voxel_down_sample(voxel_size=0.01)
         estimate_normals(pcd, o3.geometry.KDTreeSearchParamHybrid(radius=0.01, max_nn=10))
         self._source = np.asarray(pcd.points)
         rot = trans.euler_matrix(*np.random.uniform(0.0, np.pi / 4, 3))

@@ -3,19 +3,19 @@ sudo: required
 matrix:
   include:
     - os: linux
-      dist: xenial
+      dist: bionic
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
       python: 2.7
     - os: linux
-      dist: xenial
+      dist: bionic
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
       python: 3.5
     - os: linux
-      dist: xenial
+      dist: bionic
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']

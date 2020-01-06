@@ -4,13 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"open3d-python" = "*"
 "pybind11" = "*"
 six = "*"
 transformations = "*"
 scipy = "*"
 scikit-learn = "==0.20.3"
 matplotlib = "*"
+"open3d" = "*"
 
 [dev-packages]
 sphinx = "*"
