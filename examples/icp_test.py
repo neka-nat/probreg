@@ -5,7 +5,7 @@ import utils
 
 source, target = utils.prepare_source_and_target_rigid_3d('bunny.pcd')
 
-vis = o3.Visualizer()
+vis = o3.visualization.Visualizer()
 vis.create_window()
 result = copy.deepcopy(source)
 source.paint_uniform_color([1, 0, 0])
@@ -19,11 +19,13 @@ icp_iteration = 100
 save_image = False
 
 for i in range(icp_iteration):
-    reg_p2p = o3.registration_icp(result, target, threshold,
-                np.identity(4), o3.TransformationEstimationPointToPoint(),
-                o3.ICPConvergenceCriteria(max_iteration=1))
+    reg_p2p = o3.registration.registration_icp(result, target, threshold,
+                np.identity(4), o3.registration.TransformationEstimationPointToPoint(),
+                o3.registration.ICPConvergenceCriteria(max_iteration=1))
     result.transform(reg_p2p.transformation)
-    vis.update_geometry()
+    vis.update_geometry(source)
+    vis.update_geometry(target)
+    vis.update_geometry(result)
     vis.poll_events()
     vis.update_renderer()
     if save_image:

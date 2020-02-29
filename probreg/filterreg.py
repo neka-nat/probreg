@@ -12,10 +12,21 @@ from . import se3_op as so
 from . import _kabsch as kabsch
 from . import _pt2pl as pt2pl
 from . import math_utils as mu
-
+try:
+    from dq3d import dualquat, quat
+except:
+    print("No dq3d python package, filterreg deformation model not available.")
 
 EstepResult = namedtuple('EstepResult', ['m0', 'm1', 'm2', 'nx'])
 MstepResult = namedtuple('MstepResult', ['transformation', 'sigma2', 'q'])
+
+
+def dualquat_from_twist(tw):
+    ang = np.linalg.norm(tw[:3])
+    if ang < np.finfo(np.float32).eps:
+        return dualquat(quat.identity(), tw[3:])
+    return dualquat(quat(ang, tw[:3] / ang), tw[3:])
+
 
 @six.add_metaclass(abc.ABCMeta)
 class FilterReg():
@@ -88,7 +99,7 @@ class FilterReg():
                           objective_type='pt2pt'):
         return self._maximization_step(t_source, target, estep_res,
                                        self._tf_result, self._sigma2, w,
-                                       objective_type)
+                                       objective_type=objective_type)
 
     @staticmethod
     @abc.abstractmethod
@@ -160,6 +171,73 @@ class RigidFilterReg(FilterReg):
             sigma2 = (m0 * (np.square(t_source).sum(axis=1) - 2.0 * (t_source * m1).sum(axis=1) + m2) / (m0 + c)).sum()
             sigma2 /= (3.0 * m0m0.sum())
         return MstepResult(tf.RigidTransformation(rot, t), sigma2, q)
+
+
+class DeformableKinematicFilterReg(FilterReg):
+    def __init__(self, source=None, skinning_weight=None,
+                 sigma2=None):
+        super(DeformableKinematicFilterReg, self).__init__(source, sigma2=sigma2)
+        self._tf_type = tf.DeformableKinematicModel
+        self._skinning_weight = skinning_weight
+        self._tf_result = self._tf_type([dualquat.identity() for _ in range(self._skinning_weight.n_nodes)],
+                                        self._skinning_weight)
+
+    @staticmethod
+    def _maximization_step(t_source, target, estep_res, trans_p, sigma2, w=0.0,
+                           objective_type='', maxiter=50, tol=1.0e-4):
+        m, ndim = t_source.shape
+        n6d = ndim * 2
+        idx_6d = lambda i: slice(i * n6d, (i + 1) * n6d)
+        n = target.shape[0]
+        n_nodes = trans_p.weights.n_nodes
+        assert ndim == 3, "ndim must be 3."
+        m0, m1, m2, _ = estep_res
+        tw = np.zeros(n_nodes * ndim * 2)
+        c = w / (1.0 - w) * n / m
+        m0[m0==0] = np.finfo(np.float32).eps
+        m1m0 = np.divide(m1.T, m0).T
+        m0m0 = m0 / (m0 + c)
+        drxdx = np.sqrt(m0m0 * 1.0 / sigma2)
+        dxdz = np.apply_along_axis(so.diff_x_from_twist, 1, t_source)
+        a = np.zeros((n_nodes * n6d, n_nodes * n6d))
+        for pair in trans_p.weights.pairs_set():
+            jtj_tw = np.zeros([n6d, n6d])
+            for idx in trans_p.weights.in_pair(pair):
+                drxdz = drxdx[idx] * dxdz[idx]
+                w = trans_p.weights[idx]['val']
+                jtj_tw += w[0] * w[1] * np.dot(drxdz.T, drxdz)
+            a[idx_6d(pair[0]), idx_6d(pair[1])] += jtj_tw
+            a[idx_6d(pair[1]), idx_6d(pair[0])] += jtj_tw
+        for _ in range(maxiter):
+            x = np.zeros_like(t_source)
+            for pair in trans_p.weights.pairs_set():
+                for idx in trans_p.weights.in_pair(pair):
+                    w = trans_p.weights[idx]['val']
+                    q0 = dualquat_from_twist(tw[idx_6d(pair[0])])
+                    q1 = dualquat_from_twist(tw[idx_6d(pair[1])])
+                    x[idx] = (w[0] * q0 + w[1] * q1).transform_point(t_source[idx])
+
+            rx = np.multiply(drxdx, (x - m1m0).T).T
+            b = np.zeros(n_nodes * n6d)
+            for pair in trans_p.weights.pairs_set():
+                j_tw = np.zeros(n6d)
+                for idx in trans_p.weights.in_pair(pair):
+                    drxdz = drxdx[idx] * dxdz[idx]
+                    w = trans_p.weights[idx]['val']
+                    j_tw += w[0] * np.dot(drxdz.T, rx[idx])
+                b[idx_6d(pair[0])] += j_tw
+
+            dtw = np.linalg.lstsq(a, b, rcond=None)[0]
+            tw -= dtw
+            if np.linalg.norm(dtw) < tol:
+                break
+
+        dualquats = [dualquat_from_twist(tw[idx_6d(i)]) * dq for i, dq in enumerate(trans_p.dualquats)]
+        if not m2 is None:
+            sigma2 = (m0 * (np.square(t_source).sum(axis=1) - 2.0 * (t_source * m1).sum(axis=1) + m2) / (m0 + c)).sum()
+            sigma2 /= (3.0 * m0m0.sum())
+        q = np.dot(rx.T, rx).sum()
+        return MstepResult(tf.DeformableKinematicModel(dualquats, trans_p.weights), sigma2, q)
 
 
 def registration_filterreg(source, target, target_normals=None,

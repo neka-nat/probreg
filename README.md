@@ -32,7 +32,7 @@ This package implements several algorithms using stochastic models and provides 
 | type | CPD | SVR, GMMReg | GMMTree | FilterReg |
 |------|-----|-------------|---------|-----------|
 |Rigid | **Scale + 6D pose** | **6D pose** | **6D pose** | **6D pose** </br> (Point-to-point,</br> Point-to-plane,</br> FPFH-based)|
-|NonRigid | **Affine**, **MCT** | **TPS** | - | - |
+|NonRigid | **Affine**, **MCT** | **TPS** | - | **Deformable Kinematic** </br> (experimental) |
 
 ## Installation
 
@@ -105,9 +105,9 @@ o3.visualization.draw_geometries([source, target, result])
 
 ### Non rigid registration
 
-| CPD | SVR |
-|-----|-----|
-| <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/cpd_nonrigid.gif" width="640"> | <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/svr_nonrigid.gif" width="640"> |
+| CPD | SVR | Filterreg |
+|-----|-----|-----------|
+| <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/cpd_nonrigid.gif" width="640"> | <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/svr_nonrigid.gif" width="640"> | <img src="https://raw.githubusercontent.com/neka-nat/probreg/master/images/filterreg_deformable.gif" width="640"> |
 
 ### Feature based registration
 
