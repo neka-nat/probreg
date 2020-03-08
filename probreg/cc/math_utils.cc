@@ -28,3 +28,7 @@ Matrix probreg::tpsKernel2d(const Matrix& x, const Matrix& y) {
 Matrix probreg::tpsKernel3d(const Matrix& x, const Matrix& y) {
     return kernelBase(x, y, [](const Vector& diff2) { return -diff2.array().sqrt(); });
 }
+
+Matrix probreg::inverseMultiQuadricKernel(const Matrix& x, const Matrix& y, Float c) {
+    return kernelBase(x, y, [&c](const Vector& diff2) { return 1.0 / (diff2.array() + c).sqrt(); });
+}

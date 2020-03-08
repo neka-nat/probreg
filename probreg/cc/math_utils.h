@@ -20,6 +20,8 @@ Matrix tpsKernel2d(const Matrix& x, const Matrix& y);
 
 Matrix tpsKernel3d(const Matrix& x, const Matrix& y);
 
+Matrix inverseMultiQuadricKernel(const Matrix& x, const Matrix& y, Float c);
+
 }  // namespace probreg
 
 #endif

@@ -33,3 +33,7 @@ def tps_kernel(x, y):
         return _math.tps_kernel_3d(x, y)
     else:
         raise ValueError('Invalid dimension of x: %d.' % x.shape[1])
+
+
+def inverse_multiquadric_kernel(x, y, c=1.0):
+    return _math.inverse_multiquadric_kernel(x, y, c)

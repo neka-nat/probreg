@@ -72,15 +72,15 @@ class OneClassSVM(Feature):
     """Feature points extraction using One class SVM
 
     Args:
-        ndim (int): The dimension of samples.
+        dim (int): The dimension of samples.
         sigma (float): Veriance of the gaussian distribution made from parameters of SVM.
         gamma (float, optional): Coefficient for RBF kernel.
         nu (float, optional): An upper bound on the fraction of training errors
             and a lower bound of the fraction of support vectors.
         delta (float, optional): Anealing parameter for optimization.
     """
-    def __init__(self, ndim, sigma, gamma=0.5, nu=0.05, delta=10.0):
-        self._ndim = ndim
+    def __init__(self, dim, sigma, gamma=0.5, nu=0.05, delta=10.0):
+        self._dim = dim
         self._sigma = sigma
         self._gamma = gamma
         self._nu = nu
@@ -91,7 +91,7 @@ class OneClassSVM(Feature):
 
     def compute(self, data):
         self._clf.fit(data)
-        z = np.power(2.0 * np.pi * self._sigma**2, self._ndim * 0.5)
+        z = np.power(2.0 * np.pi * self._sigma**2, self._dim * 0.5)
         return self._clf.support_vectors_, self._clf.dual_coef_[0] * z
 
     def annealing(self):

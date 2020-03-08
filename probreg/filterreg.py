@@ -65,7 +65,7 @@ class FilterReg():
         """Expectation step
         """
         assert t_source.ndim == 2 and target.ndim == 2, "source and target must have 2 dimensions."
-        m, ndim = t_source.shape
+        m, _ = t_source.shape
         n = target.shape[0]
         sigma = np.sqrt(sigma2)
         fx = t_source / sigma
@@ -145,11 +145,11 @@ class RigidFilterReg(FilterReg):
     @staticmethod
     def _maximization_step(t_source, target, estep_res, trans_p, sigma2, w=0.0,
                            objective_type='pt2pt', maxiter=10, tol=1.0e-4):
-        m, ndim = t_source.shape
+        m, dim = t_source.shape
         n = target.shape[0]
-        assert ndim == 3, "ndim must be 3."
+        assert dim == 3, "dim must be 3."
         m0, m1, m2, nx = estep_res
-        tw = np.zeros(ndim * 2)
+        tw = np.zeros(dim * 2)
         c = w / (1.0 - w) * n / m
         m0[m0==0] = np.finfo(np.float32).eps
         m1m0 = np.divide(m1.T, m0).T
@@ -185,14 +185,14 @@ class DeformableKinematicFilterReg(FilterReg):
     @staticmethod
     def _maximization_step(t_source, target, estep_res, trans_p, sigma2, w=0.0,
                            objective_type='', maxiter=50, tol=1.0e-4):
-        m, ndim = t_source.shape
-        n6d = ndim * 2
+        m, dim = t_source.shape
+        n6d = dim * 2
         idx_6d = lambda i: slice(i * n6d, (i + 1) * n6d)
         n = target.shape[0]
         n_nodes = trans_p.weights.n_nodes
-        assert ndim == 3, "ndim must be 3."
+        assert dim == 3, "dim must be 3."
         m0, m1, m2, _ = estep_res
-        tw = np.zeros(n_nodes * ndim * 2)
+        tw = np.zeros(n_nodes * dim * 2)
         c = w / (1.0 - w) * n / m
         m0[m0==0] = np.finfo(np.float32).eps
         m1m0 = np.divide(m1.T, m0).T

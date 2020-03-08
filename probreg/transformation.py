@@ -44,8 +44,13 @@ class RigidTransformation(Transformation):
         return self.scale * np.dot(points, self.rot.T) + self.t
 
     def inverse(self):
-        return RigidTransformation(self.rot.T, -np.dot(self.rot.T, self.t),
+        return RigidTransformation(self.rot.T, -np.dot(self.rot.T, self.t) / self.scale,
                                    1.0 / self.scale)
+
+    def __mul__(self, other):
+        return RigidTransformation(np.dot(self.rot, other.rot),
+                                   self.t + self.scale * np.dot(self.rot, other.t),
+                                   self.scale * other.scale)
 
 
 class AffineTransformation(Transformation):
@@ -67,6 +72,23 @@ class NonRigidTransformation(Transformation):
 
     def _transform(self, points):
         return points + np.dot(self.g, self.w)
+
+
+class CombinedTransformation(Transformation):
+    def __init__(self, rot=np.identity(3),
+                 t=np.zeros(3), scale=1.0, v=0.0):
+        super(CombinedTransformation, self).__init__()
+        self.rot = rot
+        self.t = t
+        self.scale = scale
+        self.v = v
+
+    def _transform(self, points):
+        return self.scale * np.dot((points + self.v), self.rot.T) + self.t
+
+    def inverse(self):
+        return CombinedTransformation(self.rot.T, -self.v,
+                                      1.0 / self.scale, -self.t)
 
 
 class TPSTransformation(Transformation):

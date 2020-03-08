@@ -44,9 +44,9 @@ class L2DistRegistration(object):
         self._callbacks.extend(callbacks)
 
     def _estimate_sigma(self, data):
-        ndata, ndim = data.shape
+        ndata, dim = data.shape
         data_hat = data - np.mean(data, axis=0)
-        self._sigma = np.power(np.linalg.det(np.dot(data_hat.T, data_hat) / (ndata - 1)), 1.0 / (2.0 * ndim))
+        self._sigma = np.power(np.linalg.det(np.dot(data_hat.T, data_hat) / (ndata - 1)), 1.0 / (2.0 * dim))
 
     def _annealing(self):
         self._sigma *= self._delta

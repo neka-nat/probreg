@@ -12,6 +12,7 @@ PYBIND11_MODULE(_math, m) {
     m.def("rbf_kernel", &rbfKernel);
     m.def("tps_kernel_2d", &tpsKernel2d);
     m.def("tps_kernel_3d", &tpsKernel3d);
+    m.def("inverse_multiquadric_kernel", &inverseMultiQuadricKernel);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = VERSION_INFO;

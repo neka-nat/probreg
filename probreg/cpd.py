@@ -94,10 +94,10 @@ class RigidCPD(CoherentPointDrift):
         self._update_scale = update_scale
 
     def _initialize(self, target):
-        ndim = self._source.shape[1]
+        dim = self._source.shape[1]
         sigma2 = mu.squared_kernel_sum(self._source, target)
-        q = 1.0 + target.shape[0] * ndim * 0.5 * np.log(sigma2)
-        return MstepResult(self._tf_type(np.identity(ndim), np.zeros(ndim)), sigma2, q)
+        q = 1.0 + target.shape[0] * dim * 0.5 * np.log(sigma2)
+        return MstepResult(self._tf_type(np.identity(dim), np.zeros(dim)), sigma2, q)
 
     def maximization_step(self, target, estep_res, sigma2_p=None):
         return self._maximization_step(self._source, target, estep_res,
@@ -107,14 +107,14 @@ class RigidCPD(CoherentPointDrift):
     def _maximization_step(source, target, estep_res,
                            sigma2_p=None, update_scale=True):
         pt1, p1, px, n_p = estep_res
-        ndim = source.shape[1]
+        dim = source.shape[1]
         mu_x = np.sum(px, axis=0) / n_p
         mu_y = np.dot(source.T, p1) / n_p
         target_hat = target - mu_x
         source_hat = source - mu_y
         a = np.dot(px.T, source_hat) - np.outer(mu_x, np.dot(p1.T, source_hat))
         u, _, vh = np.linalg.svd(a, full_matrices=True)
-        c = np.ones(ndim)
+        c = np.ones(dim)
         c[-1] = np.linalg.det(np.dot(u, vh))
         rot = np.dot(u * c, vh)
         tr_atr = np.trace(np.dot(a.T, rot))
@@ -123,12 +123,12 @@ class RigidCPD(CoherentPointDrift):
         t = mu_x - scale * np.dot(rot, mu_y)
         tr_xp1x = np.trace(np.dot(target_hat.T * pt1, target_hat))
         if update_scale:
-            sigma2 = (tr_xp1x - scale * tr_atr) / (n_p * ndim)
+            sigma2 = (tr_xp1x - scale * tr_atr) / (n_p * dim)
         else:
-            sigma2 = (tr_xp1x + tr_yp1y - scale * tr_atr) / (n_p * ndim)
+            sigma2 = (tr_xp1x + tr_yp1y - scale * tr_atr) / (n_p * dim)
         sigma2 = max(sigma2, np.finfo(np.float32).eps)
         q = (tr_xp1x - 2.0 * scale * tr_atr + (scale ** 2) * tr_yp1y) / (2.0 * sigma2)
-        q += ndim * n_p * 0.5 * np.log(sigma2)
+        q += dim * n_p * 0.5 * np.log(sigma2)
         return MstepResult(tf.RigidTransformation(rot, t, scale), sigma2, q)
 
 
@@ -138,16 +138,16 @@ class AffineCPD(CoherentPointDrift):
         self._tf_type = tf.AffineTransformation
 
     def _initialize(self, target):
-        ndim = self._source.shape[1]
+        dim = self._source.shape[1]
         sigma2 = mu.squared_kernel_sum(self._source, target)
-        q = 1.0 + target.shape[0] * ndim * 0.5 * np.log(sigma2)
-        return MstepResult(self._tf_type(np.identity(ndim), np.zeros(ndim)),
+        q = 1.0 + target.shape[0] * dim * 0.5 * np.log(sigma2)
+        return MstepResult(self._tf_type(np.identity(dim), np.zeros(dim)),
                            sigma2, q)
 
     @staticmethod
     def _maximization_step(source, target, estep_res, sigma2_p=None):
         pt1, p1, px, n_p = estep_res
-        ndim = source.shape[1]
+        dim = source.shape[1]
         mu_x = np.sum(px, axis=0) / n_p
         mu_y = np.dot(source.T, p1) / n_p
         target_hat = target - mu_x
@@ -158,11 +158,11 @@ class AffineCPD(CoherentPointDrift):
         t = mu_x - np.dot(b, mu_y)
         tr_xp1x = np.trace(np.dot(target_hat.T * pt1, target_hat))
         tr_xpyb = np.trace(np.dot(a, b.T))
-        sigma2 = (tr_xp1x - tr_xpyb) / (n_p * ndim)
+        sigma2 = (tr_xp1x - tr_xpyb) / (n_p * dim)
         tr_ab = np.trace(np.dot(a, b.T))
         sigma2 = max(sigma2, np.finfo(np.float32).eps)
         q = (tr_xp1x - 2 * tr_ab + tr_xpyb) / (2.0 * sigma2)
-        q += ndim * n_p * 0.5 * np.log(sigma2)
+        q += dim * n_p * 0.5 * np.log(sigma2)
         return MstepResult(tf.AffineTransformation(b, t), sigma2, q)
 
 
@@ -185,23 +185,23 @@ class NonRigidCPD(CoherentPointDrift):
                                        sigma2_p, self._tf_obj, self._lmd)
 
     def _initialize(self, target):
-        ndim = self._source.shape[1]
+        dim = self._source.shape[1]
         sigma2 = mu.squared_kernel_sum(self._source, target)
-        q = 1.0 + target.shape[0] * ndim * 0.5 * np.log(sigma2)
+        q = 1.0 + target.shape[0] * dim * 0.5 * np.log(sigma2)
         self._tf_obj.w = np.zeros_like(self._source)
         return MstepResult(self._tf_obj, sigma2, q)
 
     @staticmethod
     def _maximization_step(source, target, estep_res, sigma2_p, tf_obj, lmd):
         pt1, p1, px, n_p = estep_res
-        ndim = source.shape[1]
+        dim = source.shape[1]
         w = np.linalg.solve((p1 * tf_obj.g).T + lmd * sigma2_p * np.identity(source.shape[0]),
                             px - (source.T * p1).T)
         t = source + np.dot(tf_obj.g, w)
         tr_xp1x = np.trace(np.dot(target.T * pt1, target))
         tr_pxt = np.trace(np.dot(px.T, t))
         tr_tpt = np.trace(np.dot(t.T * p1, t))
-        sigma2 = (tr_xp1x - 2.0 * tr_pxt + tr_tpt) / (n_p * ndim)
+        sigma2 = (tr_xp1x - 2.0 * tr_pxt + tr_tpt) / (n_p * dim)
         tf_obj.w = w
         return MstepResult(tf_obj, sigma2, sigma2)
 

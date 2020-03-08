@@ -14,9 +14,9 @@ source, target = utils.prepare_source_and_target_rigid_3d('bunny.pcd',  n_random
                                                           orientation=np.deg2rad([0.0, 0.0, 10.0]))
 
 start = timer()
-res = o3.registration_icp(source, target, threshold,
-                          np.identity(4), o3.TransformationEstimationPointToPoint(),
-                          o3.ICPConvergenceCriteria(max_iteration=max_iteration))
+res = o3.registration.registration_icp(source, target, threshold,
+                                       np.identity(4), o3.registration.TransformationEstimationPointToPoint(),
+                                       o3.registration.ICPConvergenceCriteria(max_iteration=max_iteration))
 end = timer()
 print('ICP(Open3D): ', end - start)
 

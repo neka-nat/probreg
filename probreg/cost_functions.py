@@ -71,21 +71,21 @@ class TPSCostFunction(CostFunction):
         self._control_pts = control_pts
 
     def to_transformation(self, theta):
-        ndim = self._control_pts.shape[1]
-        n_data = theta.shape[0] // ndim
-        n_a = ndim * (ndim + 1)
-        a = theta[:n_a].reshape(ndim + 1, ndim)
-        v = theta[n_a:].reshape(n_data - ndim - 1, ndim)
+        dim = self._control_pts.shape[1]
+        n_data = theta.shape[0] // dim
+        n_a = dim * (dim + 1)
+        a = theta[:n_a].reshape(dim + 1, dim)
+        v = theta[n_a:].reshape(n_data - dim - 1, dim)
         return self._tf_type(a, v, self._control_pts)
 
     def initial(self):
-        ndim = self._control_pts.shape[1]
-        a = np.r_[np.zeros((1, ndim)), np.identity(ndim)]
-        v = np.zeros((self._control_pts.shape[0] - ndim - 1, ndim))
+        dim = self._control_pts.shape[1]
+        a = np.r_[np.zeros((1, dim)), np.identity(dim)]
+        v = np.zeros((self._control_pts.shape[0] - dim - 1, dim))
         return np.r_[a, v].flatten()
 
     def __call__(self, theta, *args):
-        ndim = self._control_pts.shape[1]
+        dim = self._control_pts.shape[1]
         mu_source, phi_source, mu_target, phi_target, sigma = args
         tf_obj = self.to_transformation(theta)
         basis, kernel = tf_obj.prepare(mu_source)
@@ -98,5 +98,5 @@ class TPSCostFunction(CostFunction):
         f = -f1 + 2.0 * f2
         g = -2.0 * g1 + 2.0 * g2
         grad = self._alpha * np.dot(basis.T, g)
-        grad[ndim + 1:, :] += 2.0 * self._beta * np.dot(kernel, tf_obj.v)
+        grad[dim + 1:, :] += 2.0 * self._beta * np.dot(kernel, tf_obj.v)
         return self._alpha * f + self._beta * bending, grad.flatten()
