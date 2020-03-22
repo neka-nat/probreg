@@ -20,6 +20,12 @@ matrix:
         apt:
           sources: ['ubuntu-toolchain-r-test']
       python: 3.6
+    - os: linux
+      dist: bionic
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+      python: 3.7
 env:
   global:
     - PIPENV_VENV_IN_PROJECT=1

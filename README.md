@@ -21,6 +21,8 @@ This package implements several algorithms using stochastic models and provides 
 * Maximum likelihood when the target or source point cloud is observation data
     * [Coherent Point Drift(2010)](https://arxiv.org/pdf/0905.2635.pdf)
     * [FilterReg(CVPR2019)](https://arxiv.org/pdf/1811.10136.pdf)
+* Variational Bayesian inference
+    * [Bayesian Coherent Point Drift(2020)](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8985307)
 * Distance minimization of two probabilistic distributions
     * [GMMReg(2011)](https://ieeexplore.ieee.org/document/5674050)
     * [Support Vector Registration(2015)](https://arxiv.org/pdf/1511.04240.pdf)
@@ -29,10 +31,10 @@ This package implements several algorithms using stochastic models and provides 
 
 ### Transformations
 
-| type | CPD | SVR, GMMReg | GMMTree | FilterReg |
-|------|-----|-------------|---------|-----------|
-|Rigid | **Scale + 6D pose** | **6D pose** | **6D pose** | **6D pose** </br> (Point-to-point,</br> Point-to-plane,</br> FPFH-based)|
-|NonRigid | **Affine**, **MCT** | **TPS** | - | **Deformable Kinematic** </br> (experimental) |
+| type | CPD | SVR, GMMReg | GMMTree | FilterReg | BCPD |
+|------|-----|-------------|---------|-----------|------|
+|Rigid | **Scale + 6D pose** | **6D pose** | **6D pose** | **6D pose** </br> (Point-to-point,</br> Point-to-plane,</br> FPFH-based)| - |
+|NonRigid | **Affine**, **MCT** | **TPS** | - | **Deformable Kinematic** </br> (experimental) | **Combined model** </br> (Rigid + Scale + NonRigid-term)
 
 ## Installation
 
