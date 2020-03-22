@@ -85,16 +85,19 @@ class CoherentPointDrift():
 
 
 class RigidCPD(CoherentPointDrift):
-    def __init__(self, source=None, update_scale=True):
+    def __init__(self, source=None, update_scale=True, tf_init_params={}):
         super(RigidCPD, self).__init__(source)
         self._tf_type = tf.RigidTransformation
         self._update_scale = update_scale
+        self._tf_init_params = tf_init_params
 
     def _initialize(self, target):
         dim = self._source.shape[1]
         sigma2 = mu.squared_kernel_sum(self._source, target)
         q = 1.0 + target.shape[0] * dim * 0.5 * np.log(sigma2)
-        return MstepResult(self._tf_type(np.identity(dim), np.zeros(dim)), sigma2, q)
+        if len(self._tf_init_params) == 0:
+            self._tf_init_params = {"rot": np.identity(dim), "t": np.zeros(dim)}
+        return MstepResult(self._tf_type(**self._tf_init_params), sigma2, q)
 
     def maximization_step(self, target, estep_res, sigma2_p=None):
         return self._maximization_step(self._source, target, estep_res,
@@ -130,16 +133,18 @@ class RigidCPD(CoherentPointDrift):
 
 
 class AffineCPD(CoherentPointDrift):
-    def __init__(self, source=None):
+    def __init__(self, source=None, tf_init_params={}):
         super(AffineCPD, self).__init__(source)
         self._tf_type = tf.AffineTransformation
+        self._tf_init_params = tf_init_params
 
     def _initialize(self, target):
         dim = self._source.shape[1]
         sigma2 = mu.squared_kernel_sum(self._source, target)
         q = 1.0 + target.shape[0] * dim * 0.5 * np.log(sigma2)
-        return MstepResult(self._tf_type(np.identity(dim), np.zeros(dim)),
-                           sigma2, q)
+        if len(self._tf_init_params) == 0:
+            self._tf_init_params = {"b": np.identity(dim), "t": np.zeros(dim)}
+        return MstepResult(self._tf_type(**self._tf_init_params), sigma2, q)
 
     @staticmethod
     def _maximization_step(source, target, estep_res, sigma2_p=None):
@@ -220,6 +225,7 @@ def registration_cpd(source, target, tf_type_name='rigid',
     Kwargs:
         update_scale (bool, optional): If this flag is true and tf_type is rigid transformation,
             then the scale is treated. The default is true.
+        tf_init_params (dict, optional): Parameters to initialize transformation (for rigid or affine).
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     if tf_type_name == 'rigid':

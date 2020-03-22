@@ -19,12 +19,13 @@ class GMMTree():
         tree_level (int, optional): Maximum depth level of GMM tree.
         lambda_c (float, optional): Parameter that determine the pruning of GMM tree
     """
-    def __init__(self, source=None, tree_level=2, lambda_c=0.01):
+    def __init__(self, source=None, tree_level=2, lambda_c=0.01,
+                 tf_init_params={}):
         self._source = source
         self._tree_level = tree_level
         self._lambda_c = lambda_c
         self._tf_type = tf.RigidTransformation
-        self._tf_result = self._tf_type()
+        self._tf_result = self._tf_type(**tf_init_params)
         self._callbacks = []
         if not self._source is None:
             self._nodes = _gmmtree.build_gmmtree(self._source,
@@ -90,6 +91,9 @@ def registration_gmmtree(source, target, maxiter=20, tol=1.0e-4,
         tol (float, optional): Tolerance for termination.
         callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
             `callback(probreg.Transformation)`
+
+    Kwargs:
+        tf_init_params (dict, optional): Parameters to initialize transformation.
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     gt = GMMTree(cv(source), **kargs)

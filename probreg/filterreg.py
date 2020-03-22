@@ -264,7 +264,7 @@ def registration_filterreg(source, target, target_normals=None,
             `callback(probreg.Transformation)`
 
     Kwargs:
-        tf_init_params (dict, optional): Parameters to initialize transformation.
+        tf_init_params (dict, optional): Parameters to initialize transformation (for rigid).
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     frg = RigidFilterReg(cv(source), cv(target_normals), sigma2, update_sigma2, **kargs)

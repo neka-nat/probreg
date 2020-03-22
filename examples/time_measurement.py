@@ -14,7 +14,7 @@ source, target = utils.prepare_source_and_target_rigid_3d('bunny.pcd',  n_random
                                                           orientation=np.deg2rad([0.0, 0.0, 10.0]))
 
 start = timer()
-res = o3.registration.registration_icp(source, target, threshold,
+res = o3.registration.registration_icp(source, target, 0.5,
                                        np.identity(4), o3.registration.TransformationEstimationPointToPoint(),
                                        o3.registration.ICPConvergenceCriteria(max_iteration=max_iteration))
 end = timer()
