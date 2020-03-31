@@ -44,10 +44,7 @@ class CoherentPointDrift():
         """Expectation step for CPD
         """
         assert t_source.ndim == 2 and target.ndim == 2, "source and target must have 2 dimensions."
-        pmat = np.zeros((t_source.shape[0], target.shape[0]))
-        for i in range(t_source.shape[0]):
-            pmat[i, :] = np.sum(np.square(target - np.tile(t_source[i, :], (target.shape[0], 1))),
-                                axis=1)
+        pmat = np.stack([np.sum(np.square(target - ts), axis=1) for ts in t_source])
         pmat = np.exp(-pmat / (2.0 * sigma2))
 
         c = (2.0 * np.pi * sigma2) ** (t_source.shape[1] * 0.5)

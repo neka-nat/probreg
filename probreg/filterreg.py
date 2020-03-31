@@ -241,7 +241,7 @@ class DeformableKinematicFilterReg(FilterReg):
 
 
 def registration_filterreg(source, target, target_normals=None,
-                           sigma2=None, objective_type='pt2pt', maxiter=50,
+                           sigma2=None, w=0, objective_type='pt2pt', maxiter=50,
                            tol=0.001, min_sigma2=1.0e-4, feature_fn=lambda x: x,
                            callbacks=[], **kargs):
     """FilterReg registration
@@ -251,6 +251,7 @@ def registration_filterreg(source, target, target_normals=None,
         target (numpy.ndarray): Target point cloud data.
         target_normals (numpy.ndarray, optional): Normal vectors of target point cloud.
         sigma2 (float, optional): Variance of GMM. If `sigma2` is `None`, `sigma2` is automatically updated.
+        w (float, optional): Weight of the uniform distribution, 0 < `w` < 1.
         objective_type (str, optional): The type of objective function selected by 'pt2pt' or 'pt2pl'.
         maxitr (int, optional): Maximum number of iterations to EM algorithm.
         tol (float, optional): Tolerance for termination.
@@ -262,5 +263,5 @@ def registration_filterreg(source, target, target_normals=None,
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     frg = RigidFilterReg(cv(source), cv(target_normals), sigma2, **kargs)
     frg.set_callbacks(callbacks)
-    return frg.registration(cv(target), objective_type=objective_type, maxiter=maxiter,
+    return frg.registration(cv(target), w=w, objective_type=objective_type, maxiter=maxiter,
                             tol=tol, min_sigma2=min_sigma2, feature_fn=feature_fn)

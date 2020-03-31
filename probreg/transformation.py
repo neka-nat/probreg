@@ -78,17 +78,11 @@ class CombinedTransformation(Transformation):
     def __init__(self, rot=np.identity(3),
                  t=np.zeros(3), scale=1.0, v=0.0):
         super(CombinedTransformation, self).__init__()
-        self.rot = rot
-        self.t = t
-        self.scale = scale
+        self.rigid_trans = RigidTransformation(rot, t, scale)
         self.v = v
 
     def _transform(self, points):
-        return self.scale * np.dot((points + self.v), self.rot.T) + self.t
-
-    def inverse(self):
-        return CombinedTransformation(self.rot.T, -self.v,
-                                      1.0 / self.scale, -self.t)
+        return self.rigid_trans._transform(points + self.v)
 
 
 class TPSTransformation(Transformation):
