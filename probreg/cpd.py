@@ -217,6 +217,9 @@ def registration_cpd(source, target, tf_type_name='rigid',
         tol (float, optional): Tolerance for termination.
         callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
             `callback(probreg.Transformation)`
+    Kwargs:
+        update_scale (bool, optional): If this flag is true and tf_type is rigid transformation,
+            then the scale is treated. The default is true.
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     if tf_type_name == 'rigid':

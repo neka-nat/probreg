@@ -81,6 +81,16 @@ class GMMTree():
 
 def registration_gmmtree(source, target, maxiter=20, tol=1.0e-4,
                          callbacks=[], **kargs):
+    """GMMTree registration
+
+    Args:
+        source (numpy.ndarray): Source point cloud data.
+        target (numpy.ndarray): Target point cloud data.
+        maxitr (int, optional): Maximum number of iterations to EM algorithm.
+        tol (float, optional): Tolerance for termination.
+        callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
+            `callback(probreg.Transformation)`
+    """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     gt = GMMTree(cv(source), **kargs)
     gt.set_callbacks(callbacks)

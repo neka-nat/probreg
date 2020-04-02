@@ -8,3 +8,8 @@ tmp/*
 .vscode/*
 *.lock
 docs/build/html
+probreg_*
+work
+linux-64
+git_cache
+noarch

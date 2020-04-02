@@ -8,6 +8,7 @@ namespace py = pybind11;
 
 PYBIND11_MODULE(_kabsch, m) {
     m.def("kabsch", &computeKabsch);
+    m.def("kabsch2d", &computeKabsch2d);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = VERSION_INFO;

@@ -137,17 +137,17 @@ class FilterReg():
 
 class RigidFilterReg(FilterReg):
     def __init__(self, source=None, target_normals=None,
-                 sigma2=None):
+                 sigma2=None, tf_init_params={}):
         super(RigidFilterReg, self).__init__(source, target_normals, sigma2)
         self._tf_type = tf.RigidTransformation
-        self._tf_result = self._tf_type()
+        self._tf_result = self._tf_type(**tf_init_params)
 
     @staticmethod
     def _maximization_step(t_source, target, estep_res, trans_p, sigma2, w=0.0,
                            objective_type='pt2pt', maxiter=10, tol=1.0e-4):
         m, dim = t_source.shape
         n = target.shape[0]
-        assert dim == 3, "dim must be 3."
+        assert dim == 2 or dim == 3, "dim must be 2 or 3."
         m0, m1, m2, nx = estep_res
         tw = np.zeros(dim * 2)
         c = w / (1.0 - w) * n / m
@@ -156,7 +156,10 @@ class RigidFilterReg(FilterReg):
         m0m0 = m0 / (m0 + c)
         drxdx = np.sqrt(m0m0 * 1.0 / sigma2)
         if objective_type == 'pt2pt':
-            dr, dt = kabsch.kabsch(t_source, m1m0, drxdx)
+            if dim == 2:
+                dr, dt = kabsch.kabsch2d(t_source, m1m0, drxdx)
+            else:
+                dr, dt = kabsch.kabsch(t_source, m1m0, drxdx)
             rx = np.multiply(drxdx, (t_source - m1m0).T).T.sum(axis=1)
             rot, t = np.dot(dr, trans_p.rot), np.dot(trans_p.t, dr.T) + dt
             q = np.dot(rx.T, rx).sum()
@@ -259,6 +262,9 @@ def registration_filterreg(source, target, target_normals=None,
         feature_fn (function, optional): Feature function. If you use FPFH feature, set `feature_fn=probreg.feature.FPFH()`.
         callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
             `callback(probreg.Transformation)`
+
+    Kwargs:
+        tf_init_params (dict, optional): Parameters to initialize transformation.
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     frg = RigidFilterReg(cv(source), cv(target_normals), sigma2, **kargs)
