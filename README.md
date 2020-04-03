@@ -1,6 +1,6 @@
 # ![logo](https://raw.githubusercontent.com/neka-nat/probreg/master/images/logo.png)
 [![Build Status](https://travis-ci.org/neka-nat/probreg.svg?branch=master)](https://travis-ci.org/neka-nat/probreg)
-[![Build status](https://ci.appveyor.com/api/projects/status/mdoohms52gnq6law?svg=true)](https://ci.appveyor.com/project/neka-nat/probreg)
+[![Financial Contributors on Open Collective](https://opencollective.com/probreg/all/badge.svg?label=financial+contributors)](https://opencollective.com/probreg) [![Build status](https://ci.appveyor.com/api/projects/status/mdoohms52gnq6law?svg=true)](https://ci.appveyor.com/project/neka-nat/probreg)
 [![PyPI version](https://badge.fury.io/py/probreg.svg)](https://badge.fury.io/py/probreg)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 [![Documentation Status](https://readthedocs.org/projects/probreg/badge/?version=latest)](https://probreg.readthedocs.io/en/latest/?badge=latest)
@@ -141,3 +141,32 @@ OMP_NUM_THREADS=1 python time_measurement.py
     date = {2019-9-29},
 }
 ```
+## Contributors
+
+### Code Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+<a href="https://github.com/neka-nat/probreg/graphs/contributors"><img src="https://opencollective.com/probreg/contributors.svg?width=890&button=false" /></a>
+
+### Financial Contributors
+
+Become a financial contributor and help us sustain our community. [[Contribute](https://opencollective.com/probreg/contribute)]
+
+#### Individuals
+
+<a href="https://opencollective.com/probreg"><img src="https://opencollective.com/probreg/individuals.svg?width=890"></a>
+
+#### Organizations
+
+Support this project with your organization. Your logo will show up here with a link to your website. [[Contribute](https://opencollective.com/probreg/contribute)]
+
+<a href="https://opencollective.com/probreg/organization/0/website"><img src="https://opencollective.com/probreg/organization/0/avatar.svg"></a>
+<a href="https://opencollective.com/probreg/organization/1/website"><img src="https://opencollective.com/probreg/organization/1/avatar.svg"></a>
+<a href="https://opencollective.com/probreg/organization/2/website"><img src="https://opencollective.com/probreg/organization/2/avatar.svg"></a>
+<a href="https://opencollective.com/probreg/organization/3/website"><img src="https://opencollective.com/probreg/organization/3/avatar.svg"></a>
+<a href="https://opencollective.com/probreg/organization/4/website"><img src="https://opencollective.com/probreg/organization/4/avatar.svg"></a>
+<a href="https://opencollective.com/probreg/organization/5/website"><img src="https://opencollective.com/probreg/organization/5/avatar.svg"></a>
+<a href="https://opencollective.com/probreg/organization/6/website"><img src="https://opencollective.com/probreg/organization/6/avatar.svg"></a>
+<a href="https://opencollective.com/probreg/organization/7/website"><img src="https://opencollective.com/probreg/organization/7/avatar.svg"></a>
+<a href="https://opencollective.com/probreg/organization/8/website"><img src="https://opencollective.com/probreg/organization/8/avatar.svg"></a>
+<a href="https://opencollective.com/probreg/organization/9/website"><img src="https://opencollective.com/probreg/organization/9/avatar.svg"></a>
