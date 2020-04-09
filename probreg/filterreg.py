@@ -42,11 +42,11 @@ class FilterReg():
             the variance is updated in Mstep.
     """
     def __init__(self, source=None, target_normals=None,
-                 sigma2=None):
+                 sigma2=None, update_sigma2=False):
         self._source = source
         self._target_normals = target_normals
         self._sigma2 = sigma2
-        self._update_sigma2 = self._sigma2 is None
+        self._update_sigma2 = update_sigma2
         self._tf_type = None
         self._tf_result = None
         self._callbacks = []
@@ -60,7 +60,7 @@ class FilterReg():
     def set_callbacks(self, callbacks):
         self._callbacks = callbacks
 
-    def expectation_step(self, t_source, target, y, sigma2,
+    def expectation_step(self, t_source, target, y, sigma2, update_sigma2,
                          objective_type='pt2pt', alpha=0.015):
         """Expectation step
         """
@@ -80,7 +80,7 @@ class FilterReg():
         vin1 = np.r_[zeros_md, y]
         m0 = ph.filter(vin0, m).flatten()[:m]
         m1 = ph.filter(vin1, m)[:m]
-        if self._update_sigma2:
+        if update_sigma2:
             vin2 = np.r_[zero_m1,
                          np.expand_dims(np.square(y).sum(axis=1), axis=1)]
             m2 = ph.filter(vin2, m).flatten()[:m]
@@ -103,7 +103,7 @@ class FilterReg():
 
     @staticmethod
     @abc.abstractmethod
-    def _maximization_step(t_source, target, estep_res, sigma2, w=0.0,
+    def _maximization_step(t_source, target, estep_res, trans_p, sigma2, w=0.0,
                            objective_type='pt2pt'):
         return None
 
@@ -115,16 +115,15 @@ class FilterReg():
         assert not self._tf_type is None, "transformation type is None."
         q = None
         ftarget = feature_fn(target)
-        if self._update_sigma2:
+        if self._sigma2 is None:
             fsource = feature_fn(self._source)
             self._sigma2 = max(mu.squared_kernel_sum(fsource, ftarget), min_sigma2)
         for _ in range(maxiter):
             t_source = self._tf_result.transform(self._source)
             fsource = feature_fn(t_source)
-            estep_res = self.expectation_step(fsource, ftarget, target,
-                                              self._sigma2, objective_type)
-            res = self.maximization_step(t_source, target, estep_res, w=w,
-                                         objective_type=objective_type)
+            estep_res = self.expectation_step(fsource, ftarget, target, self._sigma2, self._update_sigma2,
+                                              objective_type)
+            res = self.maximization_step(t_source, target, estep_res, w=w, objective_type=objective_type)
             self._tf_result = res.transformation
             self._sigma2 = max(res.sigma2, min_sigma2)
             for c in self._callbacks:
@@ -137,8 +136,9 @@ class FilterReg():
 
 class RigidFilterReg(FilterReg):
     def __init__(self, source=None, target_normals=None,
-                 sigma2=None, tf_init_params={}):
-        super(RigidFilterReg, self).__init__(source, target_normals, sigma2)
+                 sigma2=None, update_sigma2=False, tf_init_params={}):
+        super(RigidFilterReg, self).__init__(source=source, target_normals=target_normals,
+                                             sigma2=sigma2, update_sigma2=update_sigma2)
         self._tf_type = tf.RigidTransformation
         self._tf_result = self._tf_type(**tf_init_params)
 
@@ -244,7 +244,7 @@ class DeformableKinematicFilterReg(FilterReg):
 
 
 def registration_filterreg(source, target, target_normals=None,
-                           sigma2=None, w=0, objective_type='pt2pt', maxiter=50,
+                           sigma2=None, update_sigma2=False, w=0, objective_type='pt2pt', maxiter=50,
                            tol=0.001, min_sigma2=1.0e-4, feature_fn=lambda x: x,
                            callbacks=[], **kargs):
     """FilterReg registration
@@ -267,7 +267,7 @@ def registration_filterreg(source, target, target_normals=None,
         tf_init_params (dict, optional): Parameters to initialize transformation.
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
-    frg = RigidFilterReg(cv(source), cv(target_normals), sigma2, **kargs)
+    frg = RigidFilterReg(cv(source), cv(target_normals), sigma2, update_sigma2, **kargs)
     frg.set_callbacks(callbacks)
     return frg.registration(cv(target), w=w, objective_type=objective_type, maxiter=maxiter,
                             tol=tol, min_sigma2=min_sigma2, feature_fn=feature_fn)
