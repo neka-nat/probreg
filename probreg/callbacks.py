@@ -51,9 +51,10 @@ class Open3dVisualizerCallback(object):
             each iteration image is saved in a sequential number.
         keep_window (bool, optional): If this flag is True,
             the drawing window blocks after registration is finished.
+        fov: Field of view (degree).
     """
     def __init__(self, source, target, save=False,
-                 keep_window=True):
+                 keep_window=True, fov=None):
         self._vis = o3.visualization.Visualizer()
         self._vis.create_window()
         self._source = source
@@ -67,6 +68,9 @@ class Open3dVisualizerCallback(object):
         self._vis.add_geometry(self._source)
         self._vis.add_geometry(self._target)
         self._vis.add_geometry(self._result)
+        if not fov is None:
+            ctr = self._vis.get_view_control()
+            ctr.change_field_of_view(step=fov)
         self._cnt = 0
 
     def __del__(self):
