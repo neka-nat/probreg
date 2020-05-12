@@ -108,6 +108,8 @@ class RigidCPD(CoherentPointDrift):
         q = 1.0 + target.shape[0] * dim * 0.5 * np.log(sigma2)
         if len(self._tf_init_params) == 0:
             self._tf_init_params = {"rot": self.xp.identity(dim), "t": self.xp.zeros(dim)}
+        if not "xp" in self._tf_init_params:
+            self._tf_init_params["xp"] = self.xp
         return MstepResult(self._tf_type(**self._tf_init_params), sigma2, q)
 
     def maximization_step(self, target, estep_res, sigma2_p=None):
@@ -123,13 +125,13 @@ class RigidCPD(CoherentPointDrift):
         mu_y = xp.dot(source.T, p1) / n_p
         target_hat = target - mu_x
         source_hat = source - mu_y
-        a = xp.dot(px.T, source_hat) - xp.outer(mu_x, np.dot(p1.T, source_hat))
-        u, _, vh = xp.linalg.svd(a, full_matrices=True)
+        a = xp.dot(px.T, source_hat) - xp.outer(mu_x, xp.dot(p1.T, source_hat))
+        u, _, vh = np.linalg.svd(a, full_matrices=True)
         c = xp.ones(dim)
-        c[-1] = xp.linalg.det(np.dot(u, vh))
+        c[-1] = xp.linalg.det(xp.dot(u, vh))
         rot = xp.dot(u * c, vh)
-        tr_atr = xp.trace(np.dot(a.T, rot))
-        tr_yp1y = xp.trace(np.dot(source_hat.T * p1, source_hat))
+        tr_atr = np.trace(xp.dot(a.T, rot))
+        tr_yp1y = np.trace(xp.dot(source_hat.T * p1, source_hat))
         scale = tr_atr / tr_yp1y if update_scale else 1.0
         t = mu_x - scale * xp.dot(rot, mu_y)
         tr_xp1x = xp.trace(xp.dot(target_hat.T * pt1, target_hat))
@@ -140,7 +142,7 @@ class RigidCPD(CoherentPointDrift):
         sigma2 = max(sigma2, np.finfo(np.float32).eps)
         q = (tr_xp1x - 2.0 * scale * tr_atr + (scale ** 2) * tr_yp1y) / (2.0 * sigma2)
         q += dim * n_p * 0.5 * np.log(sigma2)
-        return MstepResult(tf.RigidTransformation(rot, t, scale), sigma2, q)
+        return MstepResult(tf.RigidTransformation(rot, t, scale, xp=xp), sigma2, q)
 
 
 class AffineCPD(CoherentPointDrift):

@@ -35,6 +35,11 @@ This package implements several algorithms using stochastic models and provides 
 |NonRigid | **Affine**, **MCT** | **TPS** | - | **Deformable Kinematic** </br> (experimental) |
 
 ### CUDA support
+You need to install cupy.
+
+```
+pip install cupy
+```
 
 * [Rigid CPD](https://github.com/neka-nat/probreg/blob/master/examples/cpd_rigid_cuda.py)
 

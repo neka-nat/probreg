@@ -3,6 +3,7 @@ use_cuda = True
 if use_cuda:
     import cupy as cp
     to_cpu = cp.asnumpy
+    cp.cuda.set_allocator(cp.cuda.MemoryPool().malloc)
 else:
     cp = np
     to_cpu = lambda x: x

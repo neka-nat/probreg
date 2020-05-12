@@ -25,6 +25,6 @@ def squared_kernel_sum(x, y):
     ny = yc.shape[0]
     dim = xc.shape[1]
     res = cp.array((nx, ny), dtype=cp.float32, order='C')
-    grid = (nx * ny) // _BLOCK_SIZE
+    grid = (nx * ny) // _BLOCK_SIZE + 1
     squard_norm_outer_kernel((grid,), (_BLOCK_SIZE,), (xc, yc, nx, ny, dim, res))
     return (res**2).sum() / (nx * ny * dim)

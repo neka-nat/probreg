@@ -12,8 +12,8 @@ except:
 
 @six.add_metaclass(abc.ABCMeta)
 class Transformation():
-    def __init__(self):
-        pass
+    def __init__(self, xp=np):
+        self.xp = xp
 
     def transform(self, points,
                   array_type=o3.utility.Vector3dVector):
@@ -34,14 +34,14 @@ class RigidTransformation(Transformation):
         scale (Float, optional): Scale factor.
     """
     def __init__(self, rot=np.identity(3),
-                 t=np.zeros(3), scale=1.0):
-        super(RigidTransformation, self).__init__()
+                 t=np.zeros(3), scale=1.0, xp=np):
+        super(RigidTransformation, self).__init__(xp)
         self.rot = rot
         self.t = t
         self.scale = scale
 
     def _transform(self, points):
-        return self.scale * np.dot(points, self.rot.T) + self.t
+        return self.scale * self.xp.dot(points, self.rot.T) + self.t
 
     def inverse(self):
         return RigidTransformation(self.rot.T, -np.dot(self.rot.T, self.t) / self.scale,
