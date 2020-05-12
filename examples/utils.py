@@ -14,9 +14,10 @@ def prepare_source_and_target_rigid_3d(source_filename,
                                        n_random=500,
                                        orientation=np.deg2rad([0.0, 0.0, 30.0]),
                                        translation=np.zeros(3),
+                                       voxel_size=0.005,
                                        normals=False):
     source = o3.io.read_point_cloud(source_filename)
-    source = source.voxel_down_sample(voxel_size=0.005)
+    source = source.voxel_down_sample(voxel_size=voxel_size)
     print(source)
     target = copy.deepcopy(source)
     tp = np.asarray(target.points)

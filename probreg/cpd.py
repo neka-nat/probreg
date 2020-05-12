@@ -25,10 +25,17 @@ class CoherentPointDrift():
     Args:
         source (numpy.ndarray, optional): Source point cloud data.
     """
-    def __init__(self, source=None):
+    def __init__(self, source=None, use_cuda=False):
         self._source = source
         self._tf_type = None
         self._callbacks = []
+        if use_cuda:
+            import cupy as cp
+            from . import cupy_utils
+            self.xp = cp
+            self.cupy_utils = cupy_utils
+        else:
+            self.xp = np
 
     def set_source(self, source):
         self._source = source
@@ -44,19 +51,19 @@ class CoherentPointDrift():
         """Expectation step for CPD
         """
         assert t_source.ndim == 2 and target.ndim == 2, "source and target must have 2 dimensions."
-        pmat = np.stack([np.sum(np.square(target - ts), axis=1) for ts in t_source])
-        pmat = np.exp(-pmat / (2.0 * sigma2))
+        pmat = self.xp.stack([self.xp.sum(self.xp.square(target - ts), axis=1) for ts in t_source])
+        pmat = self.xp.exp(-pmat / (2.0 * sigma2))
 
         c = (2.0 * np.pi * sigma2) ** (t_source.shape[1] * 0.5)
         c *= w / (1.0 - w) * t_source.shape[0] / target.shape[0]
-        den = np.sum(pmat, axis=0)
-        den[den==0] = np.finfo(np.float32).eps
+        den = self.xp.sum(pmat, axis=0)
+        den[den==0] = self.xp.finfo(np.float32).eps
         den += c
 
-        pmat  = np.divide(pmat, den)
-        pt1 = np.sum(pmat, axis=0)
-        p1  = np.sum(pmat, axis=1)
-        px = np.dot(pmat, target)
+        pmat  = self.xp.divide(pmat, den)
+        pt1 = self.xp.sum(pmat, axis=0)
+        p1  = self.xp.sum(pmat, axis=1)
+        px = self.xp.dot(pmat, target)
         return EstepResult(pt1, p1, px, np.sum(p1))
 
     def maximization_step(self, target, estep_res, sigma2_p=None):
@@ -85,43 +92,47 @@ class CoherentPointDrift():
 
 
 class RigidCPD(CoherentPointDrift):
-    def __init__(self, source=None, update_scale=True, tf_init_params={}):
-        super(RigidCPD, self).__init__(source)
+    def __init__(self, source=None, update_scale=True,
+                 tf_init_params={}, use_cuda=False):
+        super(RigidCPD, self).__init__(source, use_cuda)
         self._tf_type = tf.RigidTransformation
         self._update_scale = update_scale
         self._tf_init_params = tf_init_params
 
     def _initialize(self, target):
         dim = self._source.shape[1]
-        sigma2 = mu.squared_kernel_sum(self._source, target)
+        if self.xp == np:
+            sigma2 = mu.squared_kernel_sum(self._source, target)
+        else:
+            sigma2 = self.cupy_utils.squared_kernel_sum(self._source, target)
         q = 1.0 + target.shape[0] * dim * 0.5 * np.log(sigma2)
         if len(self._tf_init_params) == 0:
-            self._tf_init_params = {"rot": np.identity(dim), "t": np.zeros(dim)}
+            self._tf_init_params = {"rot": self.xp.identity(dim), "t": self.xp.zeros(dim)}
         return MstepResult(self._tf_type(**self._tf_init_params), sigma2, q)
 
     def maximization_step(self, target, estep_res, sigma2_p=None):
         return self._maximization_step(self._source, target, estep_res,
-                                       sigma2_p, self._update_scale)
+                                       sigma2_p, self._update_scale, self.xp)
 
     @staticmethod
     def _maximization_step(source, target, estep_res,
-                           sigma2_p=None, update_scale=True):
+                           sigma2_p=None, update_scale=True, xp=np):
         pt1, p1, px, n_p = estep_res
         dim = source.shape[1]
-        mu_x = np.sum(px, axis=0) / n_p
-        mu_y = np.dot(source.T, p1) / n_p
+        mu_x = xp.sum(px, axis=0) / n_p
+        mu_y = xp.dot(source.T, p1) / n_p
         target_hat = target - mu_x
         source_hat = source - mu_y
-        a = np.dot(px.T, source_hat) - np.outer(mu_x, np.dot(p1.T, source_hat))
-        u, _, vh = np.linalg.svd(a, full_matrices=True)
-        c = np.ones(dim)
-        c[-1] = np.linalg.det(np.dot(u, vh))
-        rot = np.dot(u * c, vh)
-        tr_atr = np.trace(np.dot(a.T, rot))
-        tr_yp1y = np.trace(np.dot(source_hat.T * p1, source_hat))
+        a = xp.dot(px.T, source_hat) - xp.outer(mu_x, np.dot(p1.T, source_hat))
+        u, _, vh = xp.linalg.svd(a, full_matrices=True)
+        c = xp.ones(dim)
+        c[-1] = xp.linalg.det(np.dot(u, vh))
+        rot = xp.dot(u * c, vh)
+        tr_atr = xp.trace(np.dot(a.T, rot))
+        tr_yp1y = xp.trace(np.dot(source_hat.T * p1, source_hat))
         scale = tr_atr / tr_yp1y if update_scale else 1.0
-        t = mu_x - scale * np.dot(rot, mu_y)
-        tr_xp1x = np.trace(np.dot(target_hat.T * pt1, target_hat))
+        t = mu_x - scale * xp.dot(rot, mu_y)
+        tr_xp1x = xp.trace(xp.dot(target_hat.T * pt1, target_hat))
         if update_scale:
             sigma2 = (tr_xp1x - scale * tr_atr) / (n_p * dim)
         else:

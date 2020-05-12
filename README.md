@@ -34,6 +34,10 @@ This package implements several algorithms using stochastic models and provides 
 |Rigid | **Scale + 6D pose** | **6D pose** | **6D pose** | **6D pose** </br> (Point-to-point,</br> Point-to-plane,</br> FPFH-based)|
 |NonRigid | **Affine**, **MCT** | **TPS** | - | **Deformable Kinematic** </br> (experimental) |
 
+### CUDA support
+
+* [Rigid CPD](https://github.com/neka-nat/probreg/blob/master/examples/cpd_rigid_cuda.py)
+
 ## Installation
 
 You can install probreg using `pip`.
