@@ -27,4 +27,16 @@ def squared_kernel_sum(x, y):
     res = cp.array((nx, ny), dtype=cp.float32, order='C')
     grid = (nx * ny) // _BLOCK_SIZE + 1
     squard_norm_outer_kernel((grid,), (_BLOCK_SIZE,), (xc, yc, nx, ny, dim, res))
-    return (res**2).sum() / (nx * ny * dim)
+    return res.sum() / (nx * ny * dim)
+
+
+def rbf_kernel(x, y, gamma):
+    xc = cp.asarray(x, dtype=cp.float32, order='C')
+    yc = cp.asarray(y, dtype=cp.float32, order='C')
+    nx = xc.shape[0]
+    ny = yc.shape[0]
+    dim = xc.shape[1]
+    res = cp.array((nx, ny), dtype=cp.float32, order='C')
+    grid = (nx * ny) // _BLOCK_SIZE + 1
+    squard_norm_outer_kernel((grid,), (_BLOCK_SIZE,), (xc, yc, nx, ny, dim, res))
+    return (-res / (2.0 * gamma)).exp()

@@ -32,6 +32,7 @@ class RigidTransformation(Transformation):
         rot (numpy.ndarray, optional): Rotation matrix.
         t (numpy.ndarray, optional): Translation vector.
         scale (Float, optional): Scale factor.
+        xp (module, optional): Numpy or Cupy.
     """
     def __init__(self, rot=np.identity(3),
                  t=np.zeros(3), scale=1.0, xp=np):
@@ -54,24 +55,36 @@ class RigidTransformation(Transformation):
 
 
 class AffineTransformation(Transformation):
+    """Affine Transformation
+    Args:
+        b (numpy.ndarray, optional): Affine matrix.
+        t (numpy.ndarray, optional): Translation vector.
+        xp (module, optional): Numpy or Cupy.
+    """
     def __init__(self, b=np.identity(3),
-                 t=np.zeros(3)):
-        super(AffineTransformation, self).__init__()
+                 t=np.zeros(3), xp=np):
+        super(AffineTransformation, self).__init__(xp)
         self.b = b
         self.t = t
 
     def _transform(self, points):
-        return np.dot(points, self.b.T) + self.t
+        return self.xp.dot(points, self.b.T) + self.t
 
 
 class NonRigidTransformation(Transformation):
-    def __init__(self, w, points, beta=2.0):
-        super(NonRigidTransformation, self).__init__()
-        self.g = mu.rbf_kernel(points, points, beta)
+    """Nonrigid Transformation
+    """
+    def __init__(self, w, points, beta=2.0, xp=np):
+        super(NonRigidTransformation, self).__init__(xp)
+        if xp == np:
+            self.g = mu.rbf_kernel(points, points, beta)
+        else:
+            import cupy_utils
+            self.g = cupy_utils.rbf_kernel(points, points, beta)
         self.w = w
 
     def _transform(self, points):
-        return points + np.dot(self.g, self.w)
+        return points + self.xp.dot(self.g, self.w)
 
 
 class CombinedTransformation(Transformation):

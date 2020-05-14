@@ -14,8 +14,9 @@ from . import _pt2pl as pt2pl
 from . import math_utils as mu
 try:
     from dq3d import dualquat, quat
+    _imp_dq = True
 except:
-    print("No dq3d python package, filterreg deformation model not available.")
+    _imp_dq = False
 
 EstepResult = namedtuple('EstepResult', ['m0', 'm1', 'm2', 'nx'])
 MstepResult = namedtuple('MstepResult', ['transformation', 'sigma2', 'q'])
@@ -179,6 +180,8 @@ class RigidFilterReg(FilterReg):
 class DeformableKinematicFilterReg(FilterReg):
     def __init__(self, source=None, skinning_weight=None,
                  sigma2=None):
+        if not _imp_dq:
+            raise RuntimeError("No dq3d python package, filterreg deformation model not available.")
         super(DeformableKinematicFilterReg, self).__init__(source, sigma2=sigma2)
         self._tf_type = tf.DeformableKinematicModel
         self._skinning_weight = skinning_weight

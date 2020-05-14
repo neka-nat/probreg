@@ -42,6 +42,7 @@ pip install cupy
 ```
 
 * [Rigid CPD](https://github.com/neka-nat/probreg/blob/master/examples/cpd_rigid_cuda.py)
+* [Affine CPD](https://github.com/neka-nat/probreg/blob/master/examples/cpd_affine3d_cuda.py)
 
 ## Installation
 
