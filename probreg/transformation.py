@@ -79,7 +79,7 @@ class NonRigidTransformation(Transformation):
         if xp == np:
             self.g = mu.rbf_kernel(points, points, beta)
         else:
-            import cupy_utils
+            from . import cupy_utils
             self.g = cupy_utils.rbf_kernel(points, points, beta)
         self.w = w
 
