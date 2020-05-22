@@ -17,6 +17,7 @@ nbformat = "==4.4.0"
 sphinx = "*"
 "flake8" = "*"
 sphinx-rtd-theme = "*"
+twine = "*"
 
 [scripts]
 lint = "flake8 ."

@@ -8,7 +8,7 @@ import utils
 source, target = utils.prepare_source_and_target_nonrigid_3d('bunny-x.txt',
                                                              'bunny-y.txt', 0.1)
 
-cbs = [callbacks.Open3dVisualizerCallback(source, target, save=True)]
+cbs = [callbacks.Open3dVisualizerCallback(source, target)]
 tf_param = bcpd.registration_bcpd(source, target,
                                   callbacks=cbs)
 rot = trans.identity_matrix()
