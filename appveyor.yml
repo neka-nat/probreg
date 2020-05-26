@@ -11,12 +11,12 @@ environment:
     DISTUTILS_USE_SDK: 1
     MSSdk: 1
   matrix:
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7"
-      CPP: 14
-      CONFIG: Release
     - PYTHON: "C:\\Python36"
       PYTHON_VERSION: "3.6"
+      CPP: 14
+      CONFIG: Release
+    - PYTHON: "C:\\Python37"
+      PYTHON_VERSION: "3.7"
       CPP: 14
       CONFIG: Release
 install:
