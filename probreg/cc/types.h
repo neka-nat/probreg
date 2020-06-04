@@ -30,6 +30,11 @@ typedef Eigen::Matrix<Float, Eigen::Dynamic, 3> MatrixX3;
 typedef Eigen::Matrix<Float, Eigen::Dynamic, 2> MatrixX2;
 typedef Eigen::Vector<Float, 6> Vector6;
 typedef Eigen::Matrix<Float, 6, 6> Matrix6;
+typedef Eigen::Matrix<Float, 3, 6> Matrix3x6;
+typedef Eigen::Matrix<Float, 18, 6> Matrix18x6;
+typedef Eigen::Matrix<Float, 3, 18> Matrix3x18;
+typedef Eigen::Matrix<Float, 18, 18> Matrix18;
+typedef Eigen::Vector3i Vector3i;
 }  // namespace probreg
 
 #endif

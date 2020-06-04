@@ -25,6 +25,7 @@ This package implements several algorithms using stochastic models and provides 
     * [Bayesian Coherent Point Drift(2020)](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8985307)
 * Distance minimization of two probabilistic distributions
     * [GMMReg(2011)](https://ieeexplore.ieee.org/document/5674050)
+    * [NDT-D2D(ICRA2012)](https://ieeexplore.ieee.org/document/6224717)
     * [Support Vector Registration(2015)](https://arxiv.org/pdf/1511.04240.pdf)
 * Hierarchical Stocastic model
     * [GMMTree(ECCV2018)](https://arxiv.org/pdf/1807.02587.pdf)

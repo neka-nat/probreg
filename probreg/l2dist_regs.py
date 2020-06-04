@@ -51,7 +51,8 @@ class L2DistRegistration(object):
         self._sigma = np.power(np.linalg.det(np.dot(data_hat.T, data_hat) / (ndata - 1)), 1.0 / (2.0 * dim))
 
     def _annealing(self):
-        self._sigma *= self._delta
+        if not self._sigma is None:
+            self._sigma *= self._delta
 
     def optimization_cb(self, x):
         tf_result = self._cost_fn.to_transformation(x)
@@ -145,6 +146,14 @@ class TPSSVR(L2DistRegistration):
         self._feature_gen._gamma = 1.0 / (2.0 * np.square(self._sigma))
 
 
+class RigidNDTD2D(L2DistRegistration):
+    def __init__(self, source, resolution, d1=1.0, d2=0.05):
+        super(RigidNDTD2D, self).__init__(source,
+                                          ft.NDT(resolution),
+                                          cf.RigidCostFunctionWithCovariance(d1, d2),
+                                          None, None, False)
+
+
 def registration_gmmreg(source, target, tf_type_name='rigid',
                         callbacks=[], **kargs):
     """GMMReg.
@@ -193,3 +202,13 @@ def registration_svr(source, target, tf_type_name='rigid',
         raise ValueError('Unknown transform type %s' % tf_type_name)
     svr.set_callbacks(callbacks)
     return svr.registration(cv(target), maxiter, tol, opt_maxiter, opt_tol)
+
+
+def registration_ndtd2d(source, target, resolution,
+                        maxiter=1, tol=1.0e-3,
+                        opt_maxiter=50, opt_tol=1.0e-3,
+                        callbacks=[], **kargs):
+    cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
+    ndtd2d = RigidNDTD2D(cv(source), resolution, **kargs)
+    ndtd2d.set_callbacks(callbacks)
+    return ndtd2d.registration(cv(target), maxiter, tol, opt_maxiter, opt_tol)

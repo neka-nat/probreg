@@ -7,6 +7,7 @@ import transforms3d as t3d
 from . import transformation as tf
 from . import gauss_transform as gt
 from . import se3_op as so
+from . import _ndt
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -60,6 +61,28 @@ class RigidCostFunction(CostFunction):
         gtm0 = np.dot(g.T, mu_source)
         grad = np.concatenate([(gtm0 * d_rot).sum(axis=(1, 2)), g.sum(axis=0)])
         return f, grad
+
+
+class RigidCostFunctionWithCovariance(CostFunction):
+    def __init__(self, d1=1.0, d2=0.05):
+        self._tf_type = tf.RigidTransformation
+        self._d1 = d1
+        self._d2 = d2
+
+    def to_transformation(self, theta):
+        rot = t3d.euler.euler2mat(*theta[3:])
+        return self._tf_type(rot, theta[:3])
+
+    def initial(self):
+        x0 = np.zeros(6)
+        return x0
+
+    def __call__(self, theta, *args):
+        mu_source, sigma_source, mu_target, sigma_target, _ = args
+        obj = _ndt.compute_objective_function(mu_source, sigma_source,
+                                              mu_target, sigma_target,
+                                              theta, self._d1, self._d2)
+        return obj[0], obj[1], obj[2]
 
 
 class TPSCostFunction(CostFunction):

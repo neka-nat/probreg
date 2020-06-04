@@ -6,6 +6,7 @@ import numpy as np
 import open3d as o3
 from sklearn import mixture
 from sklearn import svm
+from . import _ndt
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -96,3 +97,16 @@ class OneClassSVM(Feature):
 
     def annealing(self):
         self._gamma *= self._delta
+
+
+class NDT(Feature):
+    def __init__(self, resolution):
+        self._resolution = resolution
+
+    def init(self):
+        pass
+
+    def compute(self, data):
+        res = _ndt.compute_ndt(data, self._resolution).values()
+        mean, cov, _ = list(zip(*res))
+        return mean, cov
