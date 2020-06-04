@@ -61,7 +61,8 @@ class L2DistRegistration(object):
         self._sigma = np.power(np.linalg.det(np.dot(data_hat.T, data_hat) / (ndata - 1)), 1.0 / (2.0 * dim))
 
     def _annealing(self):
-        self._sigma *= self._delta
+        if not self._sigma is None:
+            self._sigma *= self._delta
 
     def optimization_cb(self, x: np.ndarray):
         tf_result = self._cost_fn.to_transformation(x)
@@ -78,12 +79,14 @@ class L2DistRegistration(object):
             mu_source, phi_source = self._feature_gen.compute(self._source)
             mu_target, phi_target = self._feature_gen.compute(target)
             args = (mu_source, phi_source, mu_target, phi_target, self._sigma)
+            has_hess = hasattr(self._cost_fn, "hessian")
             res = minimize(
                 self._cost_fn,
                 x_ini,
                 args=args,
-                method="BFGS",
+                method="Newton-CG" if has_hess else "BFGS",
                 jac=True,
+                hess=self._cost_fn.hessian if has_hess else None,
                 tol=opt_tol,
                 options={"maxiter": opt_maxiter, "disp": log.level == logging.DEBUG},
                 callback=self.optimization_cb,
@@ -155,6 +158,18 @@ class TPSSVR(L2DistRegistration):
         self._feature_gen._gamma = 1.0 / (2.0 * np.square(self._sigma))
 
 
+class RigidNDTD2D(L2DistRegistration):
+    def __init__(self, source, resolution, outlier_ratio=0.55):
+        super(RigidNDTD2D, self).__init__(
+            source,
+            ft.NDT(resolution),
+            cf.RigidCostFunctionWithCovariance(resolution, outlier_ratio),
+            None,
+            None,
+            False
+        )
+
+
 def registration_gmmreg(
     source: np.ndarray, target: np.ndarray, tf_type_name: str = "rigid", callbacks: List = [], **kargs
 ):
@@ -217,3 +232,20 @@ def registration_svr(
         raise ValueError("Unknown transform type %s" % tf_type_name)
     svr.set_callbacks(callbacks)
     return svr.registration(cv(target), maxiter, tol, opt_maxiter, opt_tol)
+
+
+def registration_ndtd2d(
+    source: Union[np.ndarray, o3.geometry.PointCloud],
+    target: Union[np.ndarray, o3.geometry.PointCloud],
+    resolution,
+    maxiter: int = 1,
+    tol: float = 1.0e-3,
+    opt_maxiter: int = 50,
+    opt_tol: float = 1.0e-3,
+    callbacks: List[Callable] = [],
+    **kargs: Any,
+):
+    cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
+    ndtd2d = RigidNDTD2D(cv(source), resolution, **kargs)
+    ndtd2d.set_callbacks(callbacks)
+    return ndtd2d.registration(cv(target), maxiter, tol, opt_maxiter, opt_tol)

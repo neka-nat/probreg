@@ -7,6 +7,7 @@ import numpy as np
 import six
 import transforms3d as t3d
 
+from . import _ndt
 from . import gauss_transform as gt
 from . import se3_op as so
 from . import transformation as tf
@@ -63,6 +64,37 @@ class RigidCostFunction(CostFunction):
         gtm0 = np.dot(g.T, mu_source)
         grad = np.concatenate([(gtm0 * d_rot).sum(axis=(1, 2)), g.sum(axis=0)])
         return f, grad
+
+
+class RigidCostFunctionWithCovariance(CostFunction):
+    def __init__(self, resolution, outlier_ratio=0.55):
+        self._tf_type = tf.RigidTransformation
+        self._resolution = resolution
+        self._outlier_ratio = outlier_ratio
+        self._cache = [None, None]
+
+    def to_transformation(self, theta):
+        rot = t3d.euler.euler2mat(*theta[3:])
+        return self._tf_type(rot, theta[:3])
+
+    def initial(self):
+        x0 = np.zeros(6)
+        return x0
+
+    def hessian(self, theta, *args):
+        if (theta == self._cache[0]).all():
+            return self._cache[1]
+        obj = self(theta, *args)
+        return obj[2]
+
+    def __call__(self, theta, *args):
+        mu_source, sigma_source, mu_target, sigma_target, _ = args
+        obj = _ndt.compute_objective_function(mu_source, sigma_source,
+                                              mu_target, sigma_target,
+                                              theta,
+                                              self._outlier_ratio, self._resolution)
+        self._cache = [theta, obj[2]]
+        return obj[0], obj[1]
 
 
 class TPSCostFunction(CostFunction):
