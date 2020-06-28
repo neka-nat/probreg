@@ -161,9 +161,9 @@ class RigidFilterReg(FilterReg):
                 dr, dt = kabsch.kabsch2d(t_source, m1m0, drxdx)
             else:
                 dr, dt = kabsch.kabsch(t_source, m1m0, drxdx)
-            rx = np.multiply(drxdx, (t_source - m1m0).T).T.sum(axis=1)
+            rx = np.multiply(drxdx, (t_source - m1m0).T).T
             rot, t = np.dot(dr, trans_p.rot), np.dot(trans_p.t, dr.T) + dt
-            q = np.dot(rx.T, rx).sum()
+            q = np.linalg.norm(rx, ord=2, axis=1).sum()
         elif objective_type == 'pt2pl':
             nxm0 = (nx.T / m0).T
             tw, q = pt2pl.compute_twist_for_pt2pl(t_source, m1m0, nxm0, drxdx)
