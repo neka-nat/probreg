@@ -145,7 +145,7 @@ class RigidFilterReg(FilterReg):
 
     @staticmethod
     def _maximization_step(t_source, target, estep_res, trans_p, sigma2, w=0.0,
-                           objective_type='pt2pt', maxiter=10, tol=1.0e-4):
+                           objective_type='pt2pt'):
         m, dim = t_source.shape
         n = target.shape[0]
         assert dim == 2 or dim == 3, "dim must be 2 or 3."

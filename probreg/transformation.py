@@ -6,9 +6,9 @@ import open3d as o3
 from . import math_utils as mu
 try:
     from dq3d import op
+    _imp_dq = True
 except:
-    print("No dq3d python package, filterreg deformation model not available.")
-
+    _imp_dq = False
 
 @six.add_metaclass(abc.ABCMeta)
 class Transformation():
@@ -169,6 +169,8 @@ class DeformableKinematicModel(Transformation):
         return weights
 
     def __init__(self, dualquats, weights):
+        if not _imp_dq:
+            raise RuntimeError("No dq3d python package, deformable kinematic model not available.")
         super(DeformableKinematicModel, self).__init__()
         self.weights = weights
         self.dualquats = dualquats
