@@ -21,6 +21,15 @@ def squared_kernel_sum(x, y):
     return _math.squared_kernel(x, y).sum() / (x.shape[0] * x.shape[1] * y.shape[0])
 
 
+def compute_rmse(source, target_tree):
+    rmse = 0.0
+    for pt in source:
+        d, i = target_tree.query(pt)
+        rmse += d
+    rmse /= source.shape[0]
+    return rmse
+
+
 def rbf_kernel(x, y, beta):
     return _math.rbf_kernel(x, y, beta)
 

@@ -5,6 +5,7 @@ from collections import namedtuple
 import six
 import numpy as np
 import scipy.special as spsp
+from scipy.spatial import KDTree
 import open3d as o3
 from . import transformation as tf
 from . import math_utils as mu
@@ -66,9 +67,11 @@ class BayesianCoherentPointDrift():
     def _maximization_step(source, target, estep_res, sigma2_p=None):
         return None
 
-    def registration(self, target, w=0.0, maxiter=30):
+    def registration(self, target, w=0.0, maxiter=50, tol=0.001):
         assert not self._tf_type is None, "transformation type is None."
         res = self._initialize(target)
+        target_tree = KDTree(target, leafsize=10)
+        rmse = None
         for _ in range(maxiter):
             t_source = res.transformation.transform(self._source)
             estep_res = self.expectation_step(t_source, target, res.transformation.rigid_trans.scale,
@@ -76,6 +79,10 @@ class BayesianCoherentPointDrift():
             res = self.maximization_step(target, res.transformation.rigid_trans, estep_res, res.sigma2)
             for c in self._callbacks:
                 c(res.transformation)
+            tmp_rmse = mu.compute_rmse(t_source, target_tree)
+            if not rmse is None and  abs(rmse - tmp_rmse) < tol:
+                break
+            rmse = tmp_rmse
         return res.transformation
 
 
@@ -135,7 +142,7 @@ class CombinedBCPD(BayesianCoherentPointDrift):
         return MstepResult(tf.CombinedTransformation(rot, t, scale, v_hat), u_hat, sigma_mat, alpha, sigma2)
 
 
-def registration_bcpd(source, target, w=0.0, maxiter=30, callbacks=[], **kargs):
+def registration_bcpd(source, target, w=0.0, maxiter=50, tol=0.001, callbacks=[], **kargs):
     """BCPD Registraion.
 
     Args:
@@ -143,6 +150,7 @@ def registration_bcpd(source, target, w=0.0, maxiter=30, callbacks=[], **kargs):
         target (numpy.ndarray): Target point cloud data.
         w (float, optional): Weight of the uniform distribution, 0 < `w` < 1.
         maxitr (int, optional): Maximum number of iterations to EM algorithm.
+        tol (float, optional) : Tolerance for termination.
         callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
             `callback(probreg.Transformation)`
     """
