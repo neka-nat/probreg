@@ -165,8 +165,9 @@ NodeParamArray probreg::gmmTreeRegEstep(const MatrixX3& points,
     for (Integer i = 0; i < points.rows(); ++i) {
         Integer search_id = -1;
         Vector gamma = Vector::Zero(N_NODE);
+        Integer j0 = 0;
         for (Integer l = 0; l < max_tree_level; ++l) {
-            const Integer j0 = child(search_id);
+            j0 = child(search_id);
             for (Integer j = j0; j < j0 + N_NODE; ++j) {
                 gamma[j - j0] = std::get<0>(nodes[j]) *
                                 gaussianPdf(points.row(i), std::get<1>(nodes[j]), std::get<2>(nodes[j]));
@@ -180,8 +181,8 @@ NodeParamArray probreg::gmmTreeRegEstep(const MatrixX3& points,
             gamma.maxCoeff(&search_id);
             search_id += j0;
             if (complexity(std::get<2>(nodes[search_id])) <= lambda_c) break;
-            accumulate(moments[search_id], gamma[search_id - j0], points.row(i));
         }
+        accumulate(moments[search_id], gamma[search_id - j0], points.row(i));
     }
     return moments;
 }
