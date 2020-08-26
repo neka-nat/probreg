@@ -144,6 +144,15 @@ class TPSSVR(L2DistRegistration):
 
 def registration_gmmreg(source, target, tf_type_name='rigid',
                         callbacks=[], **kargs):
+    """GMMReg.
+
+    Args:
+        source (numpy.ndarray): Source point cloud data.
+        target (numpy.ndarray): Target point cloud data.
+        tf_type_name (str, optional): Transformation type('rigid', 'nonrigid')
+        callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
+            `callback(probreg.Transformation)`
+    """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     if tf_type_name == 'rigid':
         gmmreg = RigidGMMReg(cv(source), **kargs)
@@ -159,6 +168,19 @@ def registration_svr(source, target, tf_type_name='rigid',
                      maxiter=1, tol=1.0e-3,
                      opt_maxiter=50, opt_tol=1.0e-3,
                      callbacks=[], **kargs):
+    """Support Vector Registration.
+
+    Args:
+        source (numpy.ndarray): Source point cloud data.
+        target (numpy.ndarray): Target point cloud data.
+        tf_type_name (str, optional): Transformation type('rigid', 'nonrigid')
+        maxitr (int, optional): Maximum number of iterations for outer loop.
+        tol (float, optional): Tolerance for termination of outer loop.
+        opt_maxitr (int, optional): Maximum number of iterations for inner loop.
+        opt_tol (float, optional): Tolerance for termination of inner loop.
+        callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
+            `callback(probreg.Transformation)`
+    """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     if tf_type_name == 'rigid':
         svr = RigidSVR(cv(source), **kargs)
