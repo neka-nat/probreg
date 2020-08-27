@@ -17,26 +17,29 @@ class GMMTree():
     Args:
         source (numpy.ndarray, optional): Source point cloud data.
         tree_level (int, optional): Maximum depth level of GMM tree.
-        lambda_c (float, optional): Parameter that determine the pruning of GMM tree
+        lambda_c (float, optional): Parameter that determine the pruning of GMM tree.
+        lambda_s (float, optional): Parameter that tolerance for building GMM tree.
+        tf_init_params (dict, optional): Parameters to initialize transformation.
     """
     def __init__(self, source=None, tree_level=2, lambda_c=0.01,
-                 tf_init_params={}):
+                 lambda_s = 0.001, tf_init_params={}):
         self._source = source
         self._tree_level = tree_level
         self._lambda_c = lambda_c
+        self._lambda_s = lambda_s
         self._tf_type = tf.RigidTransformation
         self._tf_result = self._tf_type(**tf_init_params)
         self._callbacks = []
         if not self._source is None:
             self._nodes = _gmmtree.build_gmmtree(self._source,
                                                  self._tree_level,
-                                                 0.001, 1.0e-4)
+                                                 self._lambda_s, 1.0e-4)
 
     def set_source(self, source):
         self._source = source
         self._nodes = _gmmtree.build_gmmtree(self._source,
                                              self._tree_level,
-                                             0.001, 1.0e-4)
+                                             self._lambda_s, 1.0e-4)
 
     def set_callbacks(self, callbacks):
         self._callbacks = callbacks
@@ -93,6 +96,9 @@ def registration_gmmtree(source, target, maxiter=20, tol=1.0e-4,
             `callback(probreg.Transformation)`
 
     Kwargs:
+        tree_level (int, optional): Maximum depth level of GMM tree.
+        lambda_c (float, optional): Parameter that determine the pruning of GMM tree.
+        lambda_s (float, optional): Parameter that tolerance for building GMM tree.
         tf_init_params (dict, optional): Parameters to initialize transformation.
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)

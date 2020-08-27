@@ -72,16 +72,12 @@ NodeParamArray probreg::buildGmmTree(const MatrixX3& points,
                                      Float lambda_d) {
     const Integer n_total = N_NODE * (1 - std::pow(N_NODE, max_tree_level)) / (1 - N_NODE);
     NodeParamArray nodes(n_total);
-    auto idxs = (n_total * Vector::Random(n_total)).array().abs().cast<Integer>();
-    Float sig2 = 0.0;
-    for (Integer i = 0; i < points.rows(); ++i) {
-        sig2 += (points.rowwise() - points.row(i)).rowwise().squaredNorm().sum();
-    }
-    sig2 /= points.rows() * points.rows() * points.cols() * N_NODE;
+    const auto idxs = (points.rows() * Vector::Random(n_total)).array().abs().cast<Integer>();
     for (Integer j = 0; j < n_total; ++j) {
         std::get<0>(nodes[j]) = 1.0 / N_NODE;
         std::get<1>(nodes[j]) = points.row(idxs[j]);
-        std::get<2>(nodes[j]) = Matrix3::Identity() * sig2;
+        const Vector3 diff = (points.rowwise() - points.row(idxs[j])).array().pow(2).colwise().sum();
+        std::get<2>(nodes[j]) = diff * diff.transpose() / points.rows();
     }
     VectorXi parent_idx = -VectorXi::Ones(points.rows());
     VectorXi current_idx = VectorXi::Zero(points.rows());
