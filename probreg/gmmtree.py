@@ -22,7 +22,7 @@ class GMMTree():
         tf_init_params (dict, optional): Parameters to initialize transformation.
     """
     def __init__(self, source=None, tree_level=2, lambda_c=0.01,
-                 lambda_s = 0.001, tf_init_params={}):
+                 lambda_s=0.001, tf_init_params={}):
         self._source = source
         self._tree_level = tree_level
         self._lambda_c = lambda_c
@@ -68,7 +68,7 @@ class GMMTree():
         rot, t = so.twist_mul(x, trans_p.rot, trans_p.t)
         return MstepResult(tf.RigidTransformation(rot, t), q)
 
-    def registration(self, target, maxiter=20, tol=1.0e-4):
+    def registration(self, target, maxiter=30, tol=1.0e-4):
         q = None
         for _ in range(maxiter):
             t_target = self._tf_result.transform(target)
@@ -83,7 +83,7 @@ class GMMTree():
         return MstepResult(self._tf_result.inverse(), res.q)
 
 
-def registration_gmmtree(source, target, maxiter=20, tol=1.0e-4,
+def registration_gmmtree(source, target, maxiter=30, tol=1.0e-4,
                          callbacks=[], **kargs):
     """GMMTree registration
 

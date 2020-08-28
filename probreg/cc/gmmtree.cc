@@ -42,6 +42,35 @@ Integer child(Integer j) { return (j + 1) * N_NODE; }
 
 Integer level(Integer l) { return N_NODE * (std::pow(N_NODE, l) - 1) / (N_NODE - 1); }
 
+void initializeNodes(NodeParamArray& nodes, const MatrixX3& points, Integer max_tree_level) {
+    const auto idxs = (points.rows() * Vector::Random(max_tree_level * N_NODE)).array().abs().cast<Integer>();
+    const Integer lf_idx = level(max_tree_level - 1);
+    for (Integer j = 0; j < max_tree_level * N_NODE; ++j) {
+        std::get<0>(nodes[lf_idx + j]) = 1.0 / N_NODE;
+        std::get<1>(nodes[lf_idx + j]) = points.row(idxs[j]);
+        const MatrixX3 diff = (points.rowwise() - points.row(idxs[j])).matrix();
+        std::get<2>(nodes[lf_idx + j]) = diff.transpose() * diff / points.rows();
+    }
+    for (Integer l = max_tree_level - 2; l >= 0; --l) {
+        const Integer pidx = level(l);
+        for (Integer j = 0; j < N_NODE * (l + 1); ++j) {
+            std::get<0>(nodes[pidx + j]) = 1.0 / N_NODE;
+            std::get<1>(nodes[pidx + j]).fill(0.0);
+            std::get<2>(nodes[pidx + j]).fill(0.0);
+            const Integer cidx = level(l + 1);
+            for (Integer k = 0; k < N_NODE; ++k) {
+                const Vector3& cm = std::get<1>(nodes[cidx + j * N_NODE + k]);
+                std::get<1>(nodes[pidx + j]).noalias() += cm;
+                std::get<2>(nodes[pidx + j]).noalias() += std::get<2>(nodes[cidx + j * N_NODE + k]) + cm * cm.transpose();
+            }
+            Vector3& pm = std::get<1>(nodes[pidx + j]);
+            pm /= N_NODE;
+            std::get<2>(nodes[pidx + j]) /= N_NODE;
+            std::get<2>(nodes[pidx + j]).noalias() -= pm * pm.transpose();
+        }
+    }
+}
+
 void accumulate(NodeParam& moments, Float gamma, const Vector& z) {
     if (gamma < eps) return;
     std::get<0>(moments) += gamma;
@@ -72,13 +101,7 @@ NodeParamArray probreg::buildGmmTree(const MatrixX3& points,
                                      Float lambda_d) {
     const Integer n_total = N_NODE * (1 - std::pow(N_NODE, max_tree_level)) / (1 - N_NODE);
     NodeParamArray nodes(n_total);
-    const auto idxs = (points.rows() * Vector::Random(n_total)).array().abs().cast<Integer>();
-    for (Integer j = 0; j < n_total; ++j) {
-        std::get<0>(nodes[j]) = 1.0 / N_NODE;
-        std::get<1>(nodes[j]) = points.row(idxs[j]);
-        const Vector3 diff = (points.rowwise() - points.row(idxs[j])).array().pow(2).colwise().sum();
-        std::get<2>(nodes[j]) = diff * diff.transpose() / points.rows();
-    }
+    initializeNodes(nodes, points, max_tree_level);
     VectorXi parent_idx = -VectorXi::Ones(points.rows());
     VectorXi current_idx = VectorXi::Zero(points.rows());
 
