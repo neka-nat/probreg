@@ -266,7 +266,7 @@ def registration_filterreg(source, target, target_normals=None,
         callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
             `callback(probreg.Transformation)`
 
-    Kwargs:
+    Keyword Args:
         tf_init_params (dict, optional): Parameters to initialize transformation (for rigid).
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)

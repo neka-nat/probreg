@@ -260,7 +260,8 @@ def registration_cpd(source, target, tf_type_name='rigid',
         tol (float, optional): Tolerance for termination.
         callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
             `callback(probreg.Transformation)`
-    Kwargs:
+
+    Keyword Args:
         update_scale (bool, optional): If this flag is true and tf_type is rigid transformation,
             then the scale is treated. The default is true.
         tf_init_params (dict, optional): Parameters to initialize transformation (for rigid or affine).

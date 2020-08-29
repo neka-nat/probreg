@@ -95,7 +95,7 @@ def registration_gmmtree(source, target, maxiter=30, tol=1.0e-4,
         callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
             `callback(probreg.Transformation)`
 
-    Kwargs:
+    Keyword Args:
         tree_level (int, optional): Maximum depth level of GMM tree.
         lambda_c (float, optional): Parameter that determine the pruning of GMM tree.
         lambda_s (float, optional): Parameter that tolerance for building GMM tree.
