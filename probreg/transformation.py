@@ -28,6 +28,7 @@ class Transformation():
 
 class RigidTransformation(Transformation):
     """Rigid Transformation
+
     Args:
         rot (numpy.ndarray, optional): Rotation matrix.
         t (numpy.ndarray, optional): Translation vector.
@@ -56,6 +57,7 @@ class RigidTransformation(Transformation):
 
 class AffineTransformation(Transformation):
     """Affine Transformation
+
     Args:
         b (numpy.ndarray, optional): Affine matrix.
         t (numpy.ndarray, optional): Translation vector.
@@ -73,6 +75,7 @@ class AffineTransformation(Transformation):
 
 class NonRigidTransformation(Transformation):
     """Nonrigid Transformation
+
     Args:
         w (numpy.array): Weights for kernel.
         points (numpy.array): Source point cloud data.
@@ -94,6 +97,7 @@ class NonRigidTransformation(Transformation):
 
 class CombinedTransformation(Transformation):
     """Combined Transformation
+
     Args:
         rot (numpy.array, optional): Rotation matrix.
         t (numpy.array, optional): Translation vector.
@@ -112,6 +116,7 @@ class CombinedTransformation(Transformation):
 
 class TPSTransformation(Transformation):
     """Thin Plate Spline transformaion.
+
     Args:
         a (numpy.array): Affine matrix.
         v (numpy.array): Translation vector.
@@ -150,6 +155,7 @@ class TPSTransformation(Transformation):
 
 class DeformableKinematicModel(Transformation):
     """Deformable Kinematic Transformation
+
     Args:
         dualquats (:obj:`list` of :obj:`dq3d.dualquat`): Transformations for each link.
         weights (DeformableKinematicModel.SkinningWeight): Skinning weight.
