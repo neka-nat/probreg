@@ -4,6 +4,12 @@ from . import _math
 
 
 class Normalizer(object):
+    """Normalizer
+
+    Args:
+        scale (float, optional): Scale factor.
+        centroid (numpy.array, optional): Central point.
+    """
     def __init__(self, scale=1.0, centroid=0.0):
         self._scale = scale
         self._centroid = centroid
@@ -16,8 +22,6 @@ class Normalizer(object):
 
 
 def squared_kernel_sum(x, y):
-    """
-    """
     return _math.squared_kernel(x, y).sum() / (x.shape[0] * x.shape[1] * y.shape[0])
 
 

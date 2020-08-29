@@ -41,6 +41,7 @@ class FilterReg():
         target_normals (numpy.ndarray, optional): Normals of target points.
         sigma2 (Float, optional): Variance parameter. If this variable is None,
             the variance is updated in Mstep.
+        update_sigma2 (bool, optional): If this variable is True, Update sigma2 in the registration iteration.
     """
     def __init__(self, source=None, target_normals=None,
                  sigma2=None, update_sigma2=False):

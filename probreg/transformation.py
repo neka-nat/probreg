@@ -73,6 +73,11 @@ class AffineTransformation(Transformation):
 
 class NonRigidTransformation(Transformation):
     """Nonrigid Transformation
+    Args:
+        w (numpy.array): Weights for kernel.
+        points (numpy.array): Source point cloud data.
+        beta (float, optional): Parameter for gaussian kernel.
+        xp (module): Numpy or Cupy.
     """
     def __init__(self, w, points, beta=2.0, xp=np):
         super(NonRigidTransformation, self).__init__(xp)
@@ -88,6 +93,13 @@ class NonRigidTransformation(Transformation):
 
 
 class CombinedTransformation(Transformation):
+    """Combined Transformation
+    Args:
+        rot (numpy.array, optional): Rotation matrix.
+        t (numpy.array, optional): Translation vector.
+        scale (float, optional): Scale factor.
+        v (numpy.array, optional): Nonrigid term.
+    """
     def __init__(self, rot=np.identity(3),
                  t=np.zeros(3), scale=1.0, v=0.0):
         super(CombinedTransformation, self).__init__()
@@ -100,6 +112,11 @@ class CombinedTransformation(Transformation):
 
 class TPSTransformation(Transformation):
     """Thin Plate Spline transformaion.
+    Args:
+        a (numpy.array): Affine matrix.
+        v (numpy.array): Translation vector.
+        control_pts (numpy.array): Control points.
+        kernel (function, optional): Kernel function.
     """
     def __init__(self, a, v, control_pts,
                  kernel=mu.tps_kernel):
