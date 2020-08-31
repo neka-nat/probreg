@@ -145,6 +145,7 @@ ext_modules = [
             get_pybind_include(user=True),
             find_eigen(['third_party/eigen'])
         ],
+        extra_link_args=['-lgomp'] if use_omp else [],
         language='c++'
     ),
     Extension(
@@ -156,6 +157,7 @@ ext_modules = [
             get_pybind_include(user=True),
             find_eigen(['third_party/eigen'])
         ],
+        extra_link_args=['-lgomp'] if use_omp else [],
         language='c++'
     ),
     Extension(

@@ -7,6 +7,8 @@ namespace py = pybind11;
 using namespace probreg;
 
 PYBIND11_MODULE(_gmmtree, m) {
+    Eigen::initParallel();
+
     m.def("build_gmmtree", buildGmmTree);
     m.def("gmmtree_reg_estep", gmmTreeRegEstep);
 

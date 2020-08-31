@@ -19,6 +19,7 @@ Float gaussianPdf(const Vector3& x, const Vector3& mu, const Matrix3& cov) {
 
 Float logLikelihood(const NodeParamArray& nodes, const MatrixX3& points, Integer j0, Integer jn) {
     Float q = 0.0;
+    #pragma omp parallel for reduction(+:q)
     for (Integer i = 0; i < points.rows(); ++i) {
         Float tmp = 0.0;
         for (Integer j = j0; j < jn; ++j) {
@@ -72,7 +73,6 @@ void initializeNodes(NodeParamArray& nodes, const MatrixX3& points, Integer max_
 }
 
 void accumulate(NodeParam& moments, Float gamma, const Vector& z) {
-    if (gamma < eps) return;
     std::get<0>(moments) += gamma;
     std::get<1>(moments) += gamma * z;
     std::get<2>(moments) += gamma * z * z.transpose();
@@ -129,12 +129,14 @@ NodeParamArray probreg::gmmTreeEstep(const MatrixX3& points,
                                      Integer max_tree_level) {
     const Integer n_total = N_NODE * (1 - std::pow(N_NODE, max_tree_level)) / (1 - N_NODE);
     NodeParamArray moments(n_total);
+    #pragma omp parallel for
     for (Integer j = 0; j < n_total; ++j) {
         std::get<0>(moments[j]) = 0.0;
         std::get<1>(moments[j]).fill(0.0);
         std::get<2>(moments[j]).fill(0.0);
     }
 
+    #pragma omp parallel for
     for (Integer i = 0; i < points.rows(); ++i) {
         const Integer j0 = child(parent_idx[i]);
         Vector gamma = Vector::Zero(N_NODE);
@@ -149,6 +151,7 @@ NodeParamArray probreg::gmmTreeEstep(const MatrixX3& points,
         else {
             gamma.fill(0.0);
         }
+        #pragma omp critical
         for (Integer j = j0; j < j0 + N_NODE; ++j) {
             accumulate(moments[j], gamma[j - j0], points.row(i));
         }
@@ -175,12 +178,14 @@ NodeParamArray probreg::gmmTreeRegEstep(const MatrixX3& points,
                                         Float lambda_c) {
     const Integer n_total = N_NODE * (1 - std::pow(N_NODE, max_tree_level)) / (1 - N_NODE);
     NodeParamArray moments(n_total);
+    #pragma omp parallel for
     for (Integer j = 0; j < n_total; ++j) {
         std::get<0>(moments[j]) = 0.0;
         std::get<1>(moments[j]).fill(0.0);
         std::get<2>(moments[j]).fill(0.0);
     }
 
+    #pragma omp parallel for
     for (Integer i = 0; i < points.rows(); ++i) {
         Integer search_id = -1;
         Vector gamma = Vector::Zero(N_NODE);
@@ -201,7 +206,10 @@ NodeParamArray probreg::gmmTreeRegEstep(const MatrixX3& points,
             search_id += j0;
             if (complexity(std::get<2>(nodes[search_id])) <= lambda_c) break;
         }
-        accumulate(moments[search_id], gamma[search_id - j0], points.row(i));
+        #pragma omp critical
+        {
+            accumulate(moments[search_id], gamma[search_id - j0], points.row(i));
+        }
     }
     return moments;
 }

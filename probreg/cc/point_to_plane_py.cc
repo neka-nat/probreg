@@ -6,6 +6,7 @@ using namespace probreg;
 namespace py = pybind11;
 
 PYBIND11_MODULE(_pt2pl, m) {
+    Eigen::initParallel();
     m.def("compute_twist_for_pt2pl", &computeTwistForPointToPlane);
 
 #ifdef VERSION_INFO

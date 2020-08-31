@@ -7,6 +7,8 @@ using namespace probreg;
 namespace py = pybind11;
 
 PYBIND11_MODULE(_kabsch, m) {
+    Eigen::initParallel();
+
     m.def("kabsch", &computeKabsch);
     m.def("kabsch2d", &computeKabsch2d);
 
