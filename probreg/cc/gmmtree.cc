@@ -45,7 +45,7 @@ Integer level(Integer l) { return N_NODE * (std::pow(N_NODE, l) - 1) / (N_NODE -
 void initializeNodes(NodeParamArray& nodes, const MatrixX3& points, Integer max_tree_level) {
     const auto idxs = (points.rows() * Vector::Random(max_tree_level * N_NODE)).array().abs().cast<Integer>();
     const Integer lf_idx = level(max_tree_level - 1);
-    for (Integer j = 0; j < max_tree_level * N_NODE; ++j) {
+    for (Integer j = 0; j < std::pow(N_NODE, max_tree_level); ++j) {
         std::get<0>(nodes[lf_idx + j]) = 1.0 / N_NODE;
         std::get<1>(nodes[lf_idx + j]) = points.row(idxs[j]);
         const MatrixX3 diff = (points.rowwise() - points.row(idxs[j])).matrix();
@@ -53,7 +53,7 @@ void initializeNodes(NodeParamArray& nodes, const MatrixX3& points, Integer max_
     }
     for (Integer l = max_tree_level - 2; l >= 0; --l) {
         const Integer pidx = level(l);
-        for (Integer j = 0; j < N_NODE * (l + 1); ++j) {
+        for (Integer j = 0; j < std::pow(N_NODE, l + 1); ++j) {
             std::get<0>(nodes[pidx + j]) = 1.0 / N_NODE;
             std::get<1>(nodes[pidx + j]).fill(0.0);
             std::get<2>(nodes[pidx + j]).fill(0.0);

@@ -7,7 +7,7 @@ import utils
 source, target = utils.prepare_source_and_target_rigid_3d('bunny.pcd', n_random=0)
 
 cbs = [callbacks.Open3dVisualizerCallback(source, target)]
-tf_param, _ = gmmtree.registration_gmmtree(source, target, tree_level=3, callbacks=cbs)
+tf_param, _ = gmmtree.registration_gmmtree(source, target, callbacks=cbs)
 rot = trans.identity_matrix()
 rot[:3, :3] = tf_param.rot
 print("result: ", np.rad2deg(trans.euler_from_matrix(rot)),
