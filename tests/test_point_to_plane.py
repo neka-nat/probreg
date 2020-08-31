@@ -31,9 +31,9 @@ class Point2PlaneTest(unittest.TestCase):
         r0[:3, :3] = r
         r1 = np.identity(4)
         r1[:3, :3] = self._tf.rot
-        self.assertTrue(np.allclose(trans.euler_from_matrix(r0),
-                                    trans.euler_from_matrix(r1), atol=5.0e-2, rtol=1.0e-2))
-        self.assertTrue(np.allclose(t, self._tf.t, atol=5.0e-2, rtol=1.0e-3))
+        self.assertTrue(np.allclose(r0 * r1.transpose(),
+                                    np.identity(4), atol=5.0e-2, rtol=1.0e-2))
+        self.assertTrue(np.allclose(t, self._tf.t, atol=5.0e-1, rtol=1.0e-2))
 
 if __name__ == "__main__":
     unittest.main()

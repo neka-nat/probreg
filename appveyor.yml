@@ -11,12 +11,8 @@ environment:
     DISTUTILS_USE_SDK: 1
     MSSdk: 1
   matrix:
-    - PYTHON: "C:\\Python36"
-      PYTHON_VERSION: "3.6"
-      CPP: 14
-      CONFIG: Release
-    - PYTHON: "C:\\Python37"
-      PYTHON_VERSION: "3.7"
+    - PYTHON: "C:\\Python38"
+      PYTHON_VERSION: "3.8"
       CPP: 14
       CONFIG: Release
 install:
@@ -27,7 +23,7 @@ install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "python --version"
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
-  - "python -m pip install --upgrade pip setuptools"
+  - "python -m pip install --upgrade pip setuptools virtualenv"
   - "pip install pipenv"
 
 build_script:
