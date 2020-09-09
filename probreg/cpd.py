@@ -7,6 +7,7 @@ import numpy as np
 import open3d as o3
 from . import transformation as tf
 from . import math_utils as mu
+from .log import log
 
 
 EstepResult = namedtuple('EstepResult', ['pt1', 'p1', 'px', 'n_p'])
@@ -82,12 +83,13 @@ class CoherentPointDrift():
         assert not self._tf_type is None, "transformation type is None."
         res = self._initialize(target)
         q = res.q
-        for _ in range(maxiter):
+        for i in range(maxiter):
             t_source = res.transformation.transform(self._source)
             estep_res = self.expectation_step(t_source, target, res.sigma2, w)
             res = self.maximization_step(target, estep_res, res.sigma2)
             for c in self._callbacks:
                 c(res.transformation)
+            log.debug("Iteration: {}, Criteria: {}".format(i, res.q))
             if abs(res.q - q) < tol:
                 break
             q = res.q

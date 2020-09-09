@@ -12,6 +12,7 @@ from . import se3_op as so
 from . import _kabsch as kabsch
 from . import _pt2pl as pt2pl
 from . import math_utils as mu
+from .log import log
 try:
     from dq3d import dualquat, quat
     _imp_dq = True
@@ -120,7 +121,7 @@ class FilterReg():
         if self._sigma2 is None:
             fsource = feature_fn(self._source)
             self._sigma2 = max(mu.squared_kernel_sum(fsource, ftarget), min_sigma2)
-        for _ in range(maxiter):
+        for i in range(maxiter):
             t_source = self._tf_result.transform(self._source)
             fsource = feature_fn(t_source)
             estep_res = self.expectation_step(fsource, ftarget, target, self._sigma2, self._update_sigma2,
@@ -130,6 +131,7 @@ class FilterReg():
             self._sigma2 = max(res.sigma2, min_sigma2)
             for c in self._callbacks:
                 c(self._tf_result)
+            log.debug("Iteration: {}, Criteria: {}".format(i, res.q))
             if not q is None and abs(res.q - q) < tol:
                 break
             q = res.q

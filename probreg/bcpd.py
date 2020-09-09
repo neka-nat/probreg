@@ -9,6 +9,7 @@ from scipy.spatial import KDTree
 import open3d as o3
 from . import transformation as tf
 from . import math_utils as mu
+from .log import log
 
 
 EstepResult = namedtuple('EstepResult', ['nu_d', 'nu', 'n_p', 'px', 'x_hat'])
@@ -72,7 +73,7 @@ class BayesianCoherentPointDrift():
         res = self._initialize(target)
         target_tree = KDTree(target, leafsize=10)
         rmse = None
-        for _ in range(maxiter):
+        for i in range(maxiter):
             t_source = res.transformation.transform(self._source)
             estep_res = self.expectation_step(t_source, target, res.transformation.rigid_trans.scale,
                                               res.alpha, res.sigma_mat, res.sigma2, w)
@@ -80,6 +81,7 @@ class BayesianCoherentPointDrift():
             for c in self._callbacks:
                 c(res.transformation)
             tmp_rmse = mu.compute_rmse(t_source, target_tree)
+            log.debug("Iteration: {}, Criteria: {}".format(i, tmp_rmse))
             if not rmse is None and  abs(rmse - tmp_rmse) < tol:
                 break
             rmse = tmp_rmse

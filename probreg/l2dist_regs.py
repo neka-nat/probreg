@@ -1,11 +1,13 @@
 from __future__ import print_function
 from __future__ import division
 from collections import namedtuple
+import logging
 import numpy as np
 from scipy.optimize import minimize
 import open3d as o3
 from . import features as ft
 from . import cost_functions as cf
+from .log import log
 
 
 class L2DistRegistration(object):
@@ -71,7 +73,8 @@ class L2DistRegistration(object):
                            args=args,
                            method='BFGS', jac=True,
                            tol=opt_tol,
-                           options={'maxiter': opt_maxiter},
+                           options={'maxiter': opt_maxiter,
+                                    'disp': log.level == logging.DEBUG},
                            callback=self.optimization_cb)
             self._annealing()
             self._feature_gen.annealing()

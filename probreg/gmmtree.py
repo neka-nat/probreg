@@ -6,6 +6,7 @@ import open3d as o3
 from . import _gmmtree
 from . import transformation as tf
 from . import se3_op as so
+from .log import log
 
 EstepResult = namedtuple('EstepResult', ['moments'])
 MstepResult = namedtuple('MstepResult', ['transformation', 'q'])
@@ -70,13 +71,14 @@ class GMMTree():
 
     def registration(self, target, maxiter=20, tol=1.0e-4):
         q = None
-        for _ in range(maxiter):
+        for i in range(maxiter):
             t_target = self._tf_result.transform(target)
             estep_res = self.expectation_step(t_target)
             res = self.maximization_step(estep_res, self._tf_result)
             self._tf_result = res.transformation
             for c in self._callbacks:
                 c(self._tf_result.inverse())
+            log.debug("Iteration: {}, Criteria: {}".format(i, res.q))
             if not q is None and abs(res.q - q) < tol:
                 break
             q = res.q

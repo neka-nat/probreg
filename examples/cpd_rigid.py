@@ -4,6 +4,9 @@ import transformations as trans
 from probreg import cpd
 from probreg import callbacks
 import utils
+import logging
+log = logging.getLogger('probreg')
+log.setLevel(logging.DEBUG)
 
 source, target = utils.prepare_source_and_target_rigid_3d('bunny.pcd')
 
