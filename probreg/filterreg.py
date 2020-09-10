@@ -127,6 +127,9 @@ class FilterReg():
             estep_res = self.expectation_step(fsource, ftarget, target, self._sigma2, self._update_sigma2,
                                               objective_type)
             res = self.maximization_step(t_source, target, estep_res, w=w, objective_type=objective_type)
+            if res.q is None:
+                res.q = q
+                break
             self._tf_result = res.transformation
             self._sigma2 = max(res.sigma2, min_sigma2)
             for c in self._callbacks:
@@ -155,27 +158,33 @@ class RigidFilterReg(FilterReg):
         m0, m1, m2, nx = estep_res
         tw = np.zeros(dim * 2)
         c = w / (1.0 - w) * n / m
-        m0[m0==0] = np.finfo(np.float32).eps
+        nonzero_idx = (m0 != 0)
+        if not nonzero_idx.any():
+            return MstepResult(trans_p, sigma2, None)
+        m0 = m0[nonzero_idx]
+        m1 = m1[nonzero_idx]
+        t_source_e = t_source[nonzero_idx]
         m1m0 = np.divide(m1.T, m0).T
         m0m0 = m0 / (m0 + c)
         drxdx = np.sqrt(m0m0 * 1.0 / sigma2)
         if objective_type == 'pt2pt':
             if dim == 2:
-                dr, dt = kabsch.kabsch2d(t_source, m1m0, drxdx)
+                dr, dt = kabsch.kabsch2d(t_source_e, m1m0, drxdx)
             else:
-                dr, dt = kabsch.kabsch(t_source, m1m0, drxdx)
-            rx = np.multiply(drxdx, (t_source - m1m0).T).T
+                dr, dt = kabsch.kabsch(t_source_e, m1m0, drxdx)
+            rx = np.multiply(drxdx, (t_source_e - m1m0).T).T
             rot, t = np.dot(dr, trans_p.rot), np.dot(trans_p.t, dr.T) + dt
             q = np.linalg.norm(rx, ord=2, axis=1).sum()
         elif objective_type == 'pt2pl':
-            nxm0 = (nx.T / m0).T
-            tw, q = pt2pl.compute_twist_for_pt2pl(t_source, m1m0, nxm0, drxdx)
+            nxm0 = (nx[nonzero_idx].T / m0).T
+            tw, q = pt2pl.compute_twist_for_pt2pl(t_source_e, m1m0, nxm0, drxdx)
             rot, t = so.twist_mul(tw, trans_p.rot, trans_p.t)
         else:
             raise ValueError('Unknown objective_type: %s.' % objective_type)
 
         if not m2 is None:
-            sigma2 = (m0 * (np.square(t_source).sum(axis=1) - 2.0 * (t_source * m1).sum(axis=1) + m2) / (m0 + c)).sum()
+            m2 = m2[nonzero_idx]
+            sigma2 = (m0 * (np.square(t_source_e).sum(axis=1) - 2.0 * (t_source_e * m1).sum(axis=1) + m2) / (m0 + c)).sum()
             sigma2 /= (3.0 * m0m0.sum())
         return MstepResult(tf.RigidTransformation(rot, t), sigma2, q)
 
