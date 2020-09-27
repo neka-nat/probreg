@@ -184,7 +184,7 @@ class RigidFilterReg(FilterReg):
 
         if not m2 is None:
             m2 = m2[nonzero_idx]
-            sigma2 = (m0 * (np.square(t_source_e).sum(axis=1) - 2.0 * (t_source_e * m1).sum(axis=1) + m2) / (m0 + c)).sum()
+            sigma2 = ((m0 * np.square(t_source_e).sum(axis=1) - 2.0 * (t_source_e * m1).sum(axis=1) + m2) / (m0 + c)).sum()
             sigma2 /= (3.0 * m0m0.sum())
         return MstepResult(tf.RigidTransformation(rot, t), sigma2, q)
 
@@ -252,7 +252,7 @@ class DeformableKinematicFilterReg(FilterReg):
 
         dualquats = [dualquat_from_twist(tw[idx_6d(i)]) * dq for i, dq in enumerate(trans_p.dualquats)]
         if not m2 is None:
-            sigma2 = (m0 * (np.square(t_source).sum(axis=1) - 2.0 * (t_source * m1).sum(axis=1) + m2) / (m0 + c)).sum()
+            sigma2 = ((m0 * np.square(t_source).sum(axis=1) - 2.0 * (t_source * m1).sum(axis=1) + m2) / (m0 + c)).sum()
             sigma2 /= (3.0 * m0m0.sum())
         q = np.dot(rx.T, rx).sum()
         return MstepResult(tf.DeformableKinematicModel(dualquats, trans_p.weights), sigma2, q)
