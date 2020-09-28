@@ -157,7 +157,7 @@ class RigidFilterReg(FilterReg):
         assert dim == 2 or dim == 3, "dim must be 2 or 3."
         m0, m1, m2, nx = estep_res
         tw = np.zeros(dim * 2)
-        c = w / (1.0 - w) * n / m
+        c = w / (1.0 - w) * n / m * (2.0 * sigma2 * np.pi)**(dim / 2.0)
         nonzero_idx = (m0 != 0)
         if not nonzero_idx.any():
             return MstepResult(trans_p, sigma2, None)
