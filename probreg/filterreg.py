@@ -128,7 +128,7 @@ class FilterReg():
                                               objective_type)
             res = self.maximization_step(t_source, target, estep_res, w=w, objective_type=objective_type)
             if res.q is None:
-                res.q = q
+                res = res._replace(q=q)
                 break
             self._tf_result = res.transformation
             self._sigma2 = max(res.sigma2, min_sigma2)
