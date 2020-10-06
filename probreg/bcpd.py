@@ -49,7 +49,7 @@ class BayesianCoherentPointDrift():
         pmat = pmat.T
         pmat *= np.exp(-scale**2 / (2 * sigma2) * np.diag(sigma_mat) * dim)
         pmat *= (1.0 - w) * alpha
-        den = w / target.shape[0] + (1.0 - w) * np.sum(pmat * alpha, axis=1)
+        den = w / target.shape[0] + np.sum(pmat, axis=1)
         den[den==0] = np.finfo(np.float32).eps
         pmat = np.divide(pmat.T, den)
 
@@ -99,6 +99,7 @@ class CombinedBCPD(BayesianCoherentPointDrift):
     def _initialize(self, target):
         m, dim = self._source.shape
         self.gmat = mu.inverse_multiquadric_kernel(self._source, self._source)
+        self.gmat_inv = np.linalg.inv(self.gmat)
         sigma2 = self.gamma * mu.squared_kernel_sum(self._source, target)
         q = 1.0 + target.shape[0] * dim * 0.5 * np.log(sigma2)
         return MstepResult(self._tf_type(np.identity(dim), np.zeros(dim)), None,
@@ -106,16 +107,16 @@ class CombinedBCPD(BayesianCoherentPointDrift):
 
     def maximization_step(self, target, rigid_trans, estep_res, sigma2_p=None):
         return self._maximization_step(self._source, target, rigid_trans, estep_res,
-                                       self.gmat, self.lmd, self.k, sigma2_p)
+                                       self.gmat_inv, self.lmd, self.k, sigma2_p)
 
     @staticmethod
     def _maximization_step(source, target, rigid_trans, estep_res,
-                           gmat, lmd, k, sigma2_p=None):
+                           gmat_inv, lmd, k, sigma2_p=None):
         nu_d, nu, n_p, px, x_hat = estep_res
         dim = source.shape[1]
         m = source.shape[0]
         s2s2 = rigid_trans.scale**2 / (sigma2_p**2)
-        sigma_mat_inv = lmd * gmat + s2s2 * np.diag(nu)
+        sigma_mat_inv = lmd * gmat_inv + s2s2 * np.diag(nu)
         sigma_mat = np.linalg.inv(sigma_mat_inv)
         residual = rigid_trans.inverse().transform(x_hat) - source
         v_hat = s2s2 * np.matmul(np.multiply(np.kron(sigma_mat, np.identity(dim)),
