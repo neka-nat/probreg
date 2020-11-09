@@ -11,6 +11,7 @@ objective_type = 'pt2pt'
 tf_param, _, _ = filterreg.registration_filterreg(source, target,
                                                   objective_type=objective_type,
                                                   sigma2=None,
+                                                  update_sigma2=True,
                                                   callbacks=cbs)
 rot = trans.identity_matrix()
 rot[:3, :3] = tf_param.rot

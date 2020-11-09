@@ -77,7 +77,7 @@ class FilterReg():
         zeros_md = np.zeros((m, y.shape[1]))
         fin = np.r_[fx, fy]
         ph = gf.Permutohedral(fin)
-        if ph.get_lattice_size() < n * alpha:
+        if ph.get_lattice_size() > n * alpha:
             ph = gf.Permutohedral(fin, False)
         vin0 = np.r_[zero_m1, np.ones((n, 1))]
         vin1 = np.r_[zeros_md, y]
