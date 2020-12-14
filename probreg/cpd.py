@@ -250,7 +250,7 @@ class NonRigidCPD(CoherentPointDrift):
 
 def registration_cpd(source, target, tf_type_name='rigid',
                      w=0.0, maxiter=50, tol=0.001,
-                     callbacks=[], **kargs):
+                     callbacks=[], use_cuda=False, **kargs):
     """CPD Registraion.
 
     Args:
@@ -262,19 +262,24 @@ def registration_cpd(source, target, tf_type_name='rigid',
         tol (float, optional): Tolerance for termination.
         callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
             `callback(probreg.Transformation)`
+        use_cuda (bool, optional): Use CUDA.
 
     Keyword Args:
         update_scale (bool, optional): If this flag is true and tf_type is rigid transformation,
             then the scale is treated. The default is true.
         tf_init_params (dict, optional): Parameters to initialize transformation (for rigid or affine).
     """
-    cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
+    xp = np
+    if use_cuda:
+        import cupy as cp
+        xp = cp
+    cv = lambda x: xp.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     if tf_type_name == 'rigid':
-        cpd = RigidCPD(cv(source), **kargs)
+        cpd = RigidCPD(cv(source), use_cuda=use_cuda, **kargs)
     elif tf_type_name == 'affine':
-        cpd = AffineCPD(cv(source), **kargs)
+        cpd = AffineCPD(cv(source), use_cuda=use_cuda, **kargs)
     elif tf_type_name == 'nonrigid':
-        cpd = NonRigidCPD(cv(source), **kargs)
+        cpd = NonRigidCPD(cv(source), use_cuda=use_cuda, **kargs)
     else:
         raise ValueError('Unknown transformation type %s' % tf_type_name)
     cpd.set_callbacks(callbacks)
