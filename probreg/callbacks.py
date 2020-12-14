@@ -2,6 +2,13 @@ import copy
 import open3d as o3
 import matplotlib.pyplot as plt
 
+try:
+    import cupy as cp
+    asnumpy = cp.asnumpy
+except:
+    def asnumpy(x):
+        return x
+
 
 class Plot2DCallback(object):
     """Display the 2D registration result of each iteration.
@@ -20,9 +27,12 @@ class Plot2DCallback(object):
         self._save = save
         self._cnt = 0
         plt.axis('equal')
-        plt.plot(self._source[:, 0], self._source[:, 1], 'ro', label='source')
-        plt.plot(self._target[:, 0], self._target[:, 1], 'g^', label='taget')
-        plt.plot(self._result[:, 0], self._result[:, 1], 'bo', label='result')
+        source = asnumpy(self._source)
+        target = asnumpy(self._target)
+        result = asnumpy(self._result)
+        plt.plot(source[:, 0], source[:, 1], 'ro', label='source')
+        plt.plot(target[:, 0], target[:, 1], 'g^', label='target')
+        plt.plot(result[:, 0], result[:, 1], 'bo', label='result')
         plt.legend()
         plt.draw()
 
@@ -30,9 +40,12 @@ class Plot2DCallback(object):
         self._result = transformation.transform(self._source)
         plt.cla()
         plt.axis('equal')
-        plt.plot(self._source[:, 0], self._source[:, 1], 'ro', label='source')
-        plt.plot(self._target[:, 0], self._target[:, 1], 'g^', label='taget')
-        plt.plot(self._result[:, 0], self._result[:, 1], 'bo', label='result')
+        source = asnumpy(self._source)
+        target = asnumpy(self._target)
+        result = asnumpy(self._result)
+        plt.plot(source[:, 0], source[:, 1], 'ro', label='source')
+        plt.plot(target[:, 0], target[:, 1], 'g^', label='target')
+        plt.plot(result[:, 0], result[:, 1], 'bo', label='result')
         plt.legend()
         if self._save:
             plt.savefig('image_%04d.png' % self._cnt)
