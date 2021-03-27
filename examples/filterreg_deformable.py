@@ -1,6 +1,5 @@
 import copy
 import numpy as np
-import transformations as trans
 import open3d as o3
 from probreg import filterreg
 from probreg import callbacks

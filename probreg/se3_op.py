@@ -1,7 +1,7 @@
 from __future__ import print_function
 from __future__ import division
 import numpy as np
-import transformations as trans
+import transforms3d as t3d
 
 
 def skew(x):
@@ -69,7 +69,7 @@ def diff_rot_from_quaternion(q):
     Args:
         q (numpy.ndarray): Quaternion.
     """
-    rot = trans.quaternion_matrix(q)[:3, :3]
+    rot = t3d.quaternions.quat2mat(q)
     q2 = np.square(q)
     z = np.sum(q2)
     z2 = z * z

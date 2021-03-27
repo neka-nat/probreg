@@ -3,7 +3,7 @@ from __future__ import division
 import abc
 import six
 import numpy as np
-import transformations as trans
+import transforms3d as t3d
 from . import transformation as tf
 from . import gauss_transform as gt
 from . import se3_op as so
@@ -42,7 +42,7 @@ class RigidCostFunction(CostFunction):
         self._tf_type = tf.RigidTransformation
 
     def to_transformation(self, theta):
-        rot = trans.quaternion_matrix(theta[:4])[:3, :3]
+        rot = t3d.quaternions.quat2mat(theta[:4])
         return self._tf_type(rot, theta[4:7])
 
     def initial(self):

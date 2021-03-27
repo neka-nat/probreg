@@ -1,7 +1,7 @@
 import copy
 import numpy as np
 import open3d as o3
-import transformations as trans
+import transforms3d as t3d
 
 
 def estimate_normals(pcd, params):
@@ -25,7 +25,8 @@ def prepare_source_and_target_rigid_3d(source_filename,
     rg = 1.5 * (tp.max(axis=0) - tp.min(axis=0))
     rands = (np.random.rand(n_random, 3) - 0.5) * rg + tp.mean(axis=0)
     target.points = o3.utility.Vector3dVector(np.r_[tp + noise_amp * np.random.randn(*tp.shape), rands])
-    ans = trans.euler_matrix(*orientation)
+    ans = np.identity(4)
+    ans[:3, :3] = t3d.euler.euler2mat(*orientation)
     ans[:3, 3] = translation
     target.transform(ans)
     if normals:

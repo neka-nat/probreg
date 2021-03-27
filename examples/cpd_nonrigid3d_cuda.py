@@ -8,7 +8,6 @@ else:
     cp = np
     to_cpu = lambda x: x
 import open3d as o3
-import transformations as trans
 from probreg import cpd
 from probreg import callbacks
 import utils

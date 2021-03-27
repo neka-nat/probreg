@@ -8,7 +8,7 @@ else:
     cp = np
     to_cpu = lambda x: x
 import open3d as o3
-import transformations as trans
+import transforms3d as trans
 from probreg import cpd
 from probreg import callbacks
 import utils
@@ -24,7 +24,5 @@ tf_param, _, _ = rcpd.registration(target)
 elapsed = time.time() - start
 print("time: ", elapsed)
 
-rot = trans.identity_matrix()
-rot[:3, :3] = to_cpu(tf_param.rot)
-print("result: ", np.rad2deg(trans.euler_from_matrix(rot)),
+print("result: ", np.rad2deg(t3d.euler.mat2euler(to_cpu(tf_param.rot))),
       tf_param.scale, to_cpu(tf_param.t))

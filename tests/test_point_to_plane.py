@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-import transformations as trans
+import transforms3d as t3d
 import open3d as o3
 from probreg import _pt2pl as pt2pl
 from probreg import se3_op as so
@@ -18,8 +18,8 @@ class Point2PlaneTest(unittest.TestCase):
                  points.append(np.array([-0.5 + i * resolution, -0.5 + j * resolution, -0.5]))
                  normals.append(np.array([0.0, 0.0, 1.0]))
         self._source = np.array(points)
-        rot = trans.euler_matrix(np.deg2rad(10.0), 0.0, 0.0)
-        self._tf = tf.RigidTransformation(rot[:3, :3], np.zeros(3))
+        rot = t3d.euler.euler2mat(np.deg2rad(10.0), 0.0, 0.0)
+        self._tf = tf.RigidTransformation(rot, np.zeros(3))
         self._target = self._tf.transform(self._source)
         self._target_normals = np.dot(np.array(normals), self._tf.rot.T)
 
