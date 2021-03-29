@@ -19,9 +19,9 @@ icp_iteration = 100
 save_image = False
 
 for i in range(icp_iteration):
-    reg_p2p = o3.registration.registration_icp(result, target, threshold,
-                np.identity(4), o3.registration.TransformationEstimationPointToPoint(),
-                o3.registration.ICPConvergenceCriteria(max_iteration=1))
+    reg_p2p = o3.pipelines.registration.registration_icp(result, target, threshold,
+                np.identity(4), o3.pipelines.registration.TransformationEstimationPointToPoint(),
+                o3.pipelines.registration.ICPConvergenceCriteria(max_iteration=1))
     result.transform(reg_p2p.transformation)
     vis.update_geometry(source)
     vis.update_geometry(target)
