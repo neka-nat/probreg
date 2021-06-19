@@ -5,7 +5,7 @@ from collections import namedtuple
 import six
 import numpy as np
 import scipy.special as spsp
-from scipy.spatial import KDTree
+from scipy.spatial import cKDTree
 import open3d as o3
 from . import transformation as tf
 from . import math_utils as mu
@@ -71,7 +71,7 @@ class BayesianCoherentPointDrift():
     def registration(self, target, w=0.0, maxiter=50, tol=0.001):
         assert not self._tf_type is None, "transformation type is None."
         res = self._initialize(target)
-        target_tree = KDTree(target, leafsize=10)
+        target_tree = cKDTree(target, leafsize=10)
         rmse = None
         for i in range(maxiter):
             t_source = res.transformation.transform(self._source)
