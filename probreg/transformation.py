@@ -46,12 +46,12 @@ class RigidTransformation(Transformation):
         return self.scale * self.xp.dot(points, self.rot.T) + self.t
 
     def inverse(self):
-        return RigidTransformation(self.rot.T, -np.dot(self.rot.T, self.t) / self.scale,
+        return RigidTransformation(self.rot.T, -self.xp.dot(self.rot.T, self.t) / self.scale,
                                    1.0 / self.scale)
 
     def __mul__(self, other):
-        return RigidTransformation(np.dot(self.rot, other.rot),
-                                   self.t + self.scale * np.dot(self.rot, other.t),
+        return RigidTransformation(self.xp.dot(self.rot, other.rot),
+                                   self.t + self.scale * self.xp.dot(self.rot, other.t),
                                    self.scale * other.scale)
 
 
