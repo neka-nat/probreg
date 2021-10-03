@@ -14,6 +14,8 @@ transforms3d = "^0.3.1"
 scikit-learn = "0.23.1"
 matplotlib = "^3.3.3"
 open3d = "^0.11.0"
+dq3d = {version = "^0.3.6", optional = true}
+cupy = {version = "^9.5.0", optional = true}
 
 [tool.poetry.dev-dependencies]
 Sphinx = "^3.4.3"
@@ -25,3 +27,7 @@ setuptools = "^52.0.0"
 [build-system]
 requires = ["poetry-core>=1.0.0", "setuptools", "pybind11"]
 build-backend = "setuptools.build_meta"
+
+[tool.poetry.extras]
+experimental = ["dq3d"]
+gpu = ["cupy"]
