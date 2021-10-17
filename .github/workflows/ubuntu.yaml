@@ -1,0 +1,36 @@
+name: Ubuntu CI
+
+on:
+  push:
+    branches: [ master ]
+    tags: ['v*']
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8]
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y curl
+    - name: Install poetry
+      run: |
+        curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+        echo "$HOME/.poetry/bin" >> $GITHUB_PATH
+    - name: Setup
+      run: make setup
+    - name: Test
+      run: make test

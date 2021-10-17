@@ -1,8 +1,7 @@
 setup:
-	pip install pipenv
-	pipenv run pip install pip==18.0
-	pipenv install --dev
-	pipenv run pip install -e .
+	poetry self update
+	poetry install --no-interaction
+	poetry run pip install -e .
 
 test:
-	pipenv run python -m unittest discover
+	poetry run python -m unittest discover

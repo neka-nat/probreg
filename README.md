@@ -1,5 +1,5 @@
 # ![logo](https://raw.githubusercontent.com/neka-nat/probreg/master/images/logo.png)
-[![Build Status](https://travis-ci.org/neka-nat/probreg.svg?branch=master)](https://travis-ci.org/neka-nat/probreg)
+[![Build status](https://github.com/neka-nat/probreg/actions/workflows/ubuntu.yaml/badge.svg)](https://github.com/neka-nat/probreg/actions/workflows/ubuntu.yaml/badge.svg)
 [![Build status](https://ci.appveyor.com/api/projects/status/mdoohms52gnq6law?svg=true)](https://ci.appveyor.com/project/neka-nat/probreg)
 [![PyPI version](https://badge.fury.io/py/probreg.svg)](https://badge.fury.io/py/probreg)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
