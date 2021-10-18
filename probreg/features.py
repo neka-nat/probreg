@@ -9,7 +9,7 @@ from sklearn import mixture, svm
 
 
 @six.add_metaclass(abc.ABCMeta)
-class Feature():
+class Feature:
     @abc.abstractmethod
     def init(self):
         pass
@@ -32,6 +32,7 @@ class FPFH(Feature):
         radius_normal (float): Radius search parameter for computing normal vectors
         radius_feature (float): Radius search parameter for computing FPFH.
     """
+
     def __init__(self, radius_normal=0.1, radius_feature=0.5):
         self._param_normal = o3.geometry.KDTreeSearchParamHybrid(radius=radius_normal, max_nn=30)
         self._param_feature = o3.geometry.KDTreeSearchParamHybrid(radius=radius_feature, max_nn=100)
@@ -56,12 +57,12 @@ class GMM(Feature):
     Args:
         n_gmm_components (int): The number of mixture components.
     """
+
     def __init__(self, n_gmm_components=800):
         self._n_gmm_components = n_gmm_components
 
     def init(self):
-        self._clf = mixture.GaussianMixture(n_components=self._n_gmm_components,
-                                            covariance_type='spherical')
+        self._clf = mixture.GaussianMixture(n_components=self._n_gmm_components, covariance_type="spherical")
 
     def compute(self, data):
         self._clf.fit(data)
@@ -79,6 +80,7 @@ class OneClassSVM(Feature):
             and a lower bound of the fraction of support vectors.
         delta (float, optional): Anealing parameter for optimization.
     """
+
     def __init__(self, dim, sigma, gamma=0.5, nu=0.05, delta=10.0):
         self._dim = dim
         self._sigma = sigma
@@ -91,7 +93,7 @@ class OneClassSVM(Feature):
 
     def compute(self, data):
         self._clf.fit(data)
-        z = np.power(2.0 * np.pi * self._sigma**2, self._dim * 0.5)
+        z = np.power(2.0 * np.pi * self._sigma ** 2, self._dim * 0.5)
         return self._clf.support_vectors_, self._clf.dual_coef_[0] * z
 
     def annealing(self):

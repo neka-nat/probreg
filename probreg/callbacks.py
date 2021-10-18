@@ -5,8 +5,10 @@ import open3d as o3
 
 try:
     import cupy as cp
+
     asnumpy = cp.asnumpy
 except:
+
     def asnumpy(x):
         return x
 
@@ -20,36 +22,36 @@ class Plot2DCallback(object):
         save (bool, optional): If this flag is True,
             each iteration image is saved in a sequential number.
     """
-    def __init__(self, source, target, save=False,
-                 keep_window=True):
+
+    def __init__(self, source, target, save=False, keep_window=True):
         self._source = source
         self._target = target
         self._result = copy.deepcopy(self._source)
         self._save = save
         self._cnt = 0
-        plt.axis('equal')
+        plt.axis("equal")
         source = asnumpy(self._source)
         target = asnumpy(self._target)
         result = asnumpy(self._result)
-        plt.plot(source[:, 0], source[:, 1], 'ro', label='source')
-        plt.plot(target[:, 0], target[:, 1], 'g^', label='target')
-        plt.plot(result[:, 0], result[:, 1], 'bo', label='result')
+        plt.plot(source[:, 0], source[:, 1], "ro", label="source")
+        plt.plot(target[:, 0], target[:, 1], "g^", label="target")
+        plt.plot(result[:, 0], result[:, 1], "bo", label="result")
         plt.legend()
         plt.draw()
 
     def __call__(self, transformation):
         self._result = transformation.transform(self._source)
         plt.cla()
-        plt.axis('equal')
+        plt.axis("equal")
         source = asnumpy(self._source)
         target = asnumpy(self._target)
         result = asnumpy(self._result)
-        plt.plot(source[:, 0], source[:, 1], 'ro', label='source')
-        plt.plot(target[:, 0], target[:, 1], 'g^', label='target')
-        plt.plot(result[:, 0], result[:, 1], 'bo', label='result')
+        plt.plot(source[:, 0], source[:, 1], "ro", label="source")
+        plt.plot(target[:, 0], target[:, 1], "g^", label="target")
+        plt.plot(result[:, 0], result[:, 1], "bo", label="result")
         plt.legend()
         if self._save:
-            plt.savefig('image_%04d.png' % self._cnt)
+            plt.savefig("image_%04d.png" % self._cnt)
         plt.draw()
         plt.pause(0.001)
         self._cnt += 1
@@ -67,8 +69,8 @@ class Open3dVisualizerCallback(object):
             the drawing window blocks after registration is finished.
         fov: Field of view (degree).
     """
-    def __init__(self, source, target, save=False,
-                 keep_window=True, fov=None):
+
+    def __init__(self, source, target, save=False, keep_window=True, fov=None):
         self._vis = o3.visualization.Visualizer()
         self._vis.create_window()
         self._source = source

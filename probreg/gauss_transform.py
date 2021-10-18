@@ -13,6 +13,7 @@ def _gauss_transform_direct(source, target, weights, h):
     fn = lambda t: np.dot(weights, np.exp(-np.sum(np.square(t - source), axis=1) / h2))
     return np.apply_along_axis(fn, 1, target)
 
+
 class Direct(object):
     def __init__(self, source, h):
         self._source = source
@@ -32,6 +33,7 @@ class GaussTransform(object):
         sw_h (float): Value of the bandwidth parameter to
             switch between direct method and IFGT.
     """
+
     def __init__(self, source, h, eps=1.0e-4, sw_h=0.01):
         self._m = source.shape[0]
         if h < sw_h:

@@ -14,9 +14,7 @@ def skew(x):
     Returns:
         3x3 skew-symmetric matrix.
     """
-    return np.array([[0.0, -x[2], x[1]],
-                     [x[2], 0.0, -x[0]],
-                     [-x[1], x[0], 0.0]])
+    return np.array([[0.0, -x[2], x[1]], [x[2], 0.0, -x[0]], [-x[1], x[0], 0.0]])
 
 
 def twist_trans(tw, linear=False):
@@ -56,9 +54,9 @@ def twist_mul(tw, rot, t, linear=False):
 
 
 def diff_x_from_twist(x):
-    return np.array([[0.0, x[2], -x[1], 1.0, 0.0, 0.0],
-                     [-x[2], 0.0, x[0], 0.0, 1.0, 0.0],
-                     [x[1], -x[0], 0.0, 0.0, 0.0, 1.0]])
+    return np.array(
+        [[0.0, x[2], -x[1], 1.0, 0.0, 0.0], [-x[2], 0.0, x[0], 0.0, 1.0, 0.0], [x[1], -x[0], 0.0, 0.0, 0.0, 1.0]]
+    )
 
 
 def diff_rot_from_quaternion(q):

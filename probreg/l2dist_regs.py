@@ -26,9 +26,8 @@ class L2DistRegistration(object):
         use_estimated_sigma (float, optional): If this flag is True,
             sigma estimates from the source point cloud.
     """
-    def __init__(self, source, feature_gen, cost_fn,
-                 sigma=1.0, delta=0.9,
-                 use_estimated_sigma=True):
+
+    def __init__(self, source, feature_gen, cost_fn, sigma=1.0, delta=0.9, use_estimated_sigma=True):
         self._source = source
         self._feature_gen = feature_gen
         self._cost_fn = cost_fn
@@ -60,24 +59,24 @@ class L2DistRegistration(object):
         for c in self._callbacks:
             c(tf_result)
 
-    def registration(self, target, maxiter=1, tol=1.0e-3,
-                     opt_maxiter=50, opt_tol=1.0e-3):
+    def registration(self, target, maxiter=1, tol=1.0e-3, opt_maxiter=50, opt_tol=1.0e-3):
         f = None
         x_ini = self._cost_fn.initial()
         for _ in range(maxiter):
             self._feature_gen.init()
             mu_source, phi_source = self._feature_gen.compute(self._source)
             mu_target, phi_target = self._feature_gen.compute(target)
-            args = (mu_source, phi_source,
-                    mu_target, phi_target, self._sigma)
-            res = minimize(self._cost_fn,
-                           x_ini,
-                           args=args,
-                           method='BFGS', jac=True,
-                           tol=opt_tol,
-                           options={'maxiter': opt_maxiter,
-                                    'disp': log.level == logging.DEBUG},
-                           callback=self.optimization_cb)
+            args = (mu_source, phi_source, mu_target, phi_target, self._sigma)
+            res = minimize(
+                self._cost_fn,
+                x_ini,
+                args=args,
+                method="BFGS",
+                jac=True,
+                tol=opt_tol,
+                options={"maxiter": opt_maxiter, "disp": log.level == logging.DEBUG},
+                callback=self.optimization_cb,
+            )
             self._annealing()
             self._feature_gen.annealing()
             if not f is None and abs(res.fun - f) < tol:
@@ -88,38 +87,36 @@ class L2DistRegistration(object):
 
 
 class RigidGMMReg(L2DistRegistration):
-    def __init__(self, source, sigma=1.0, delta=0.9,
-                 n_gmm_components=800, use_estimated_sigma=True):
+    def __init__(self, source, sigma=1.0, delta=0.9, n_gmm_components=800, use_estimated_sigma=True):
         n_gmm_components = min(n_gmm_components, int(source.shape[0] * 0.8))
-        super(RigidGMMReg, self).__init__(source, ft.GMM(n_gmm_components),
-                                          cf.RigidCostFunction(),
-                                          sigma, delta,
-                                          use_estimated_sigma)
+        super(RigidGMMReg, self).__init__(
+            source, ft.GMM(n_gmm_components), cf.RigidCostFunction(), sigma, delta, use_estimated_sigma
+        )
 
 
 class TPSGMMReg(L2DistRegistration):
-    def __init__(self, source, sigma=1.0, delta=0.9,
-                 n_gmm_components=800, alpha=1.0, beta=0.1,
-                 use_estimated_sigma=True):
+    def __init__(
+        self, source, sigma=1.0, delta=0.9, n_gmm_components=800, alpha=1.0, beta=0.1, use_estimated_sigma=True
+    ):
         n_gmm_components = min(n_gmm_components, int(source.shape[0] * 0.8))
-        super(TPSGMMReg, self).__init__(source, ft.GMM(n_gmm_components),
-                                        cf.TPSCostFunction([], alpha, beta),
-                                        sigma, delta,
-                                        use_estimated_sigma)
+        super(TPSGMMReg, self).__init__(
+            source, ft.GMM(n_gmm_components), cf.TPSCostFunction([], alpha, beta), sigma, delta, use_estimated_sigma
+        )
         self._feature_gen.init()
         control_pts, _ = self._feature_gen.compute(source)
         self._cost_fn._control_pts = control_pts
 
 
 class RigidSVR(L2DistRegistration):
-    def __init__(self, source, sigma=1.0, delta=0.9,
-                 gamma=0.5, nu=0.1, use_estimated_sigma=True):
-        super(RigidSVR, self).__init__(source,
-                                       ft.OneClassSVM(source.shape[1],
-                                                      sigma, gamma, nu),
-                                       cf.RigidCostFunction(),
-                                       sigma, delta,
-                                       use_estimated_sigma)
+    def __init__(self, source, sigma=1.0, delta=0.9, gamma=0.5, nu=0.1, use_estimated_sigma=True):
+        super(RigidSVR, self).__init__(
+            source,
+            ft.OneClassSVM(source.shape[1], sigma, gamma, nu),
+            cf.RigidCostFunction(),
+            sigma,
+            delta,
+            use_estimated_sigma,
+        )
 
     def _estimate_sigma(self, data):
         super(RigidSVR, self)._estimate_sigma(data)
@@ -128,15 +125,15 @@ class RigidSVR(L2DistRegistration):
 
 
 class TPSSVR(L2DistRegistration):
-    def __init__(self, source, sigma=1.0, delta=0.9,
-                 gamma=0.5, nu=0.1, alpha=1.0, beta=0.1,
-                 use_estimated_sigma=True):
-        super(TPSSVR, self).__init__(source,
-                                     ft.OneClassSVM(source.shape[1],
-                                                    sigma, gamma, nu),
-                                     cf.TPSCostFunction([], alpha, beta),
-                                     sigma, delta,
-                                     use_estimated_sigma)
+    def __init__(self, source, sigma=1.0, delta=0.9, gamma=0.5, nu=0.1, alpha=1.0, beta=0.1, use_estimated_sigma=True):
+        super(TPSSVR, self).__init__(
+            source,
+            ft.OneClassSVM(source.shape[1], sigma, gamma, nu),
+            cf.TPSCostFunction([], alpha, beta),
+            sigma,
+            delta,
+            use_estimated_sigma,
+        )
         self._feature_gen.init()
         control_pts, _ = self._feature_gen.compute(source)
         self._cost_fn._control_pts = control_pts
@@ -147,8 +144,7 @@ class TPSSVR(L2DistRegistration):
         self._feature_gen._gamma = 1.0 / (2.0 * np.square(self._sigma))
 
 
-def registration_gmmreg(source, target, tf_type_name='rigid',
-                        callbacks=[], **kargs):
+def registration_gmmreg(source, target, tf_type_name="rigid", callbacks=[], **kargs):
     """GMMReg.
 
     Args:
@@ -159,20 +155,19 @@ def registration_gmmreg(source, target, tf_type_name='rigid',
             `callback(probreg.Transformation)`
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
-    if tf_type_name == 'rigid':
+    if tf_type_name == "rigid":
         gmmreg = RigidGMMReg(cv(source), **kargs)
-    elif tf_type_name == 'nonrigid':
+    elif tf_type_name == "nonrigid":
         gmmreg = TPSGMMReg(cv(source), **kargs)
     else:
-        raise ValueError('Unknown transform type %s' % tf_type_name)
+        raise ValueError("Unknown transform type %s" % tf_type_name)
     gmmreg.set_callbacks(callbacks)
     return gmmreg.registration(cv(target))
 
 
-def registration_svr(source, target, tf_type_name='rigid',
-                     maxiter=1, tol=1.0e-3,
-                     opt_maxiter=50, opt_tol=1.0e-3,
-                     callbacks=[], **kargs):
+def registration_svr(
+    source, target, tf_type_name="rigid", maxiter=1, tol=1.0e-3, opt_maxiter=50, opt_tol=1.0e-3, callbacks=[], **kargs
+):
     """Support Vector Registration.
 
     Args:
@@ -187,11 +182,11 @@ def registration_svr(source, target, tf_type_name='rigid',
             `callback(probreg.Transformation)`
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
-    if tf_type_name == 'rigid':
+    if tf_type_name == "rigid":
         svr = RigidSVR(cv(source), **kargs)
-    elif tf_type_name == 'nonrigid':
+    elif tf_type_name == "nonrigid":
         svr = TPSSVR(cv(source), **kargs)
     else:
-        raise ValueError('Unknown transform type %s' % tf_type_name)
+        raise ValueError("Unknown transform type %s" % tf_type_name)
     svr.set_callbacks(callbacks)
     return svr.registration(cv(target), maxiter, tol, opt_maxiter, opt_tol)

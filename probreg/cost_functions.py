@@ -12,7 +12,7 @@ from . import transformation as tf
 
 
 @six.add_metaclass(abc.ABCMeta)
-class CostFunction():
+class CostFunction:
     def __init__(self, tf_type):
         self._tf_type = tf_type
 
@@ -29,13 +29,12 @@ class CostFunction():
         return None, None
 
 
-def compute_l2_dist(mu_source, phi_source,
-                    mu_target, phi_target, sigma):
-    z = np.power(2.0 * np.pi * sigma**2, mu_source.shape[1] * 0.5)
+def compute_l2_dist(mu_source, phi_source, mu_target, phi_target, sigma):
+    z = np.power(2.0 * np.pi * sigma ** 2, mu_source.shape[1] * 0.5)
     gtrans = gt.GaussTransform(mu_target, np.sqrt(2.0) * sigma)
     phi_j_e = gtrans.compute(mu_source, phi_target / z)
     phi_mu_j_e = gtrans.compute(mu_source, phi_target * mu_target.T / z).T
-    g = (phi_source * phi_j_e * mu_source.T - phi_source * phi_mu_j_e.T).T / (2.0 * sigma**2)
+    g = (phi_source * phi_j_e * mu_source.T - phi_source * phi_mu_j_e.T).T / (2.0 * sigma ** 2)
     return -np.dot(phi_source, phi_j_e), g
 
 
@@ -56,8 +55,7 @@ class RigidCostFunction(CostFunction):
         mu_source, phi_source, mu_target, phi_target, sigma = args
         tf_obj = self.to_transformation(theta)
         t_mu_source = tf_obj.transform(mu_source)
-        f, g = compute_l2_dist(t_mu_source, phi_source,
-                               mu_target, phi_target, sigma)
+        f, g = compute_l2_dist(t_mu_source, phi_source, mu_target, phi_target, sigma)
         d_rot = so.diff_rot_from_quaternion(theta[:4])
         gtm0 = np.dot(g.T, mu_source)
         grad = np.concatenate([(gtm0 * d_rot).sum(axis=(1, 2)), g.sum(axis=0)])
@@ -65,8 +63,7 @@ class RigidCostFunction(CostFunction):
 
 
 class TPSCostFunction(CostFunction):
-    def __init__(self, control_pts,
-                 alpha=1.0, beta=0.1):
+    def __init__(self, control_pts, alpha=1.0, beta=0.1):
         self._tf_type = tf.TPSTransformation
         self._alpha = alpha
         self._beta = beta
@@ -93,12 +90,10 @@ class TPSCostFunction(CostFunction):
         basis, kernel = tf_obj.prepare(mu_source)
         t_mu_source = tf_obj.transform_basis(basis)
         bending = np.trace(np.dot(tf_obj.v.T, np.dot(kernel, tf_obj.v)))
-        f1, g1 = compute_l2_dist(t_mu_source, phi_source,
-                                 t_mu_source, phi_source, sigma)
-        f2, g2 = compute_l2_dist(t_mu_source, phi_source,
-                                 mu_target, phi_target, sigma)
+        f1, g1 = compute_l2_dist(t_mu_source, phi_source, t_mu_source, phi_source, sigma)
+        f2, g2 = compute_l2_dist(t_mu_source, phi_source, mu_target, phi_target, sigma)
         f = -f1 + 2.0 * f2
         g = -2.0 * g1 + 2.0 * g2
         grad = self._alpha * np.dot(basis.T, g)
-        grad[dim + 1:, :] += 2.0 * self._beta * np.dot(kernel, tf_obj.v)
+        grad[dim + 1 :, :] += 2.0 * self._beta * np.dot(kernel, tf_obj.v)
         return self._alpha * f + self._beta * bending, grad.flatten()

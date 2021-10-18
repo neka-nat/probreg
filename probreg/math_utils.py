@@ -10,6 +10,7 @@ class Normalizer(object):
         scale (float, optional): Scale factor.
         centroid (numpy.array, optional): Central point.
     """
+
     def __init__(self, scale=1.0, centroid=0.0):
         self._scale = scale
         self._centroid = centroid
@@ -40,7 +41,7 @@ def tps_kernel(x, y):
     elif x.shape[1] == 3:
         return _math.tps_kernel_3d(x, y)
     else:
-        raise ValueError('Invalid dimension of x: %d.' % x.shape[1])
+        raise ValueError("Invalid dimension of x: %d." % x.shape[1])
 
 
 def inverse_multiquadric_kernel(x, y, c=1.0):

@@ -9,17 +9,18 @@ from . import math_utils as mu
 
 try:
     from dq3d import op
+
     _imp_dq = True
 except:
     _imp_dq = False
 
+
 @six.add_metaclass(abc.ABCMeta)
-class Transformation():
+class Transformation:
     def __init__(self, xp=np):
         self.xp = xp
 
-    def transform(self, points,
-                  array_type=o3.utility.Vector3dVector):
+    def transform(self, points, array_type=o3.utility.Vector3dVector):
         if isinstance(points, array_type):
             return array_type(self._transform(self.xp.asarray(points)))
         return self._transform(points)
@@ -38,8 +39,8 @@ class RigidTransformation(Transformation):
         scale (Float, optional): Scale factor.
         xp (module, optional): Numpy or Cupy.
     """
-    def __init__(self, rot=np.identity(3),
-                 t=np.zeros(3), scale=1.0, xp=np):
+
+    def __init__(self, rot=np.identity(3), t=np.zeros(3), scale=1.0, xp=np):
         super(RigidTransformation, self).__init__(xp)
         self.rot = rot
         self.t = t
@@ -49,13 +50,14 @@ class RigidTransformation(Transformation):
         return self.scale * self.xp.dot(points, self.rot.T) + self.t
 
     def inverse(self):
-        return RigidTransformation(self.rot.T, -self.xp.dot(self.rot.T, self.t) / self.scale,
-                                   1.0 / self.scale)
+        return RigidTransformation(self.rot.T, -self.xp.dot(self.rot.T, self.t) / self.scale, 1.0 / self.scale)
 
     def __mul__(self, other):
-        return RigidTransformation(self.xp.dot(self.rot, other.rot),
-                                   self.t + self.scale * self.xp.dot(self.rot, other.t),
-                                   self.scale * other.scale)
+        return RigidTransformation(
+            self.xp.dot(self.rot, other.rot),
+            self.t + self.scale * self.xp.dot(self.rot, other.t),
+            self.scale * other.scale,
+        )
 
 
 class AffineTransformation(Transformation):
@@ -66,8 +68,8 @@ class AffineTransformation(Transformation):
         t (numpy.ndarray, optional): Translation vector.
         xp (module, optional): Numpy or Cupy.
     """
-    def __init__(self, b=np.identity(3),
-                 t=np.zeros(3), xp=np):
+
+    def __init__(self, b=np.identity(3), t=np.zeros(3), xp=np):
         super(AffineTransformation, self).__init__(xp)
         self.b = b
         self.t = t
@@ -85,12 +87,14 @@ class NonRigidTransformation(Transformation):
         beta (float, optional): Parameter for gaussian kernel.
         xp (module): Numpy or Cupy.
     """
+
     def __init__(self, w, points, beta=2.0, xp=np):
         super(NonRigidTransformation, self).__init__(xp)
         if xp == np:
             self.g = mu.rbf_kernel(points, points, beta)
         else:
             from . import cupy_utils
+
             self.g = cupy_utils.rbf_kernel(points, points, beta)
         self.w = w
 
@@ -107,8 +111,8 @@ class CombinedTransformation(Transformation):
         scale (float, optional): Scale factor.
         v (numpy.array, optional): Nonrigid term.
     """
-    def __init__(self, rot=np.identity(3),
-                 t=np.zeros(3), scale=1.0, v=0.0):
+
+    def __init__(self, rot=np.identity(3), t=np.zeros(3), scale=1.0, v=0.0):
         super(CombinedTransformation, self).__init__()
         self.rigid_trans = RigidTransformation(rot, t, scale)
         self.v = v
@@ -126,8 +130,8 @@ class TPSTransformation(Transformation):
         control_pts (numpy.array): Control points.
         kernel (function, optional): Kernel function.
     """
-    def __init__(self, a, v, control_pts,
-                 kernel=mu.tps_kernel):
+
+    def __init__(self, a, v, control_pts, kernel=mu.tps_kernel):
         super(TPSTransformation, self).__init__()
         self.a = a
         self.v = v
@@ -141,7 +145,7 @@ class TPSTransformation(Transformation):
         pm = np.c_[np.ones((m, 1)), landmarks]
         pn = np.c_[np.ones((n, 1)), control_pts]
         u, _, _ = np.linalg.svd(pn)
-        pp = u[:, d + 1:]
+        pp = u[:, d + 1 :]
         kk = self._kernel(control_pts, control_pts)
         uu = self._kernel(landmarks, control_pts)
         basis = np.c_[pm, np.dot(uu, pp)]
@@ -163,20 +167,22 @@ class DeformableKinematicModel(Transformation):
         dualquats (:obj:`list` of :obj:`dq3d.dualquat`): Transformations for each link.
         weights (DeformableKinematicModel.SkinningWeight): Skinning weight.
     """
+
     class SkinningWeight(np.ndarray):
         """SkinningWeight
-        Transformations and weights for each point.
+                Transformations and weights for each point.
 
-.       tf = SkinningWeight['val'][0] * dualquats[SkinningWeight['pair'][0]] + SkinningWeight['val'][1] * dualquats[SkinningWeight['pair'][1]] 
+        .       tf = SkinningWeight['val'][0] * dualquats[SkinningWeight['pair'][0]] + SkinningWeight['val'][1] * dualquats[SkinningWeight['pair'][1]]
         """
+
         def __new__(cls, n_points):
-            return super(DeformableKinematicModel.SkinningWeight, cls).__new__(cls, n_points,
-                                                                               dtype=[('pair', 'i4', 2),
-                                                                                      ('val', 'f4', 2)])
+            return super(DeformableKinematicModel.SkinningWeight, cls).__new__(
+                cls, n_points, dtype=[("pair", "i4", 2), ("val", "f4", 2)]
+            )
 
         @property
         def n_nodes(self):
-            return self['pair'].max() + 1
+            return self["pair"].max() + 1
 
         def pairs_set(self):
             return itertools.permutations(range(self.n_nodes), 2)
@@ -185,13 +191,13 @@ class DeformableKinematicModel(Transformation):
             """
             Return indices of the pairs equal to the given pair.
             """
-            return np.argwhere((self['pair']==pair).all(1)).flatten()
+            return np.argwhere((self["pair"] == pair).all(1)).flatten()
 
     @classmethod
     def make_weight(cls, pairs, vals):
         weights = cls.SkinningWeight(pairs.shape[0])
-        weights['pair'] = pairs
-        weights['val'] = vals
+        weights["pair"] = pairs
+        weights["val"] = vals
         return weights
 
     def __init__(self, dualquats, weights):

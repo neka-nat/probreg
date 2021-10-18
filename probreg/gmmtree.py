@@ -10,11 +10,11 @@ from . import se3_op as so
 from . import transformation as tf
 from .log import log
 
-EstepResult = namedtuple('EstepResult', ['moments'])
-MstepResult = namedtuple('MstepResult', ['transformation', 'q'])
+EstepResult = namedtuple("EstepResult", ["moments"])
+MstepResult = namedtuple("MstepResult", ["transformation", "q"])
 
 
-class GMMTree():
+class GMMTree:
     """GMM Tree
 
     Args:
@@ -24,8 +24,8 @@ class GMMTree():
         lambda_s (float, optional): Parameter that tolerance for building GMM tree.
         tf_init_params (dict, optional): Parameters to initialize transformation.
     """
-    def __init__(self, source=None, tree_level=2, lambda_c=0.01,
-                 lambda_s=0.001, tf_init_params={}):
+
+    def __init__(self, source=None, tree_level=2, lambda_c=0.01, lambda_s=0.001, tf_init_params={}):
         self._source = source
         self._tree_level = tree_level
         self._lambda_c = lambda_c
@@ -34,22 +34,17 @@ class GMMTree():
         self._tf_result = self._tf_type(**tf_init_params)
         self._callbacks = []
         if not self._source is None:
-            self._nodes = _gmmtree.build_gmmtree(self._source,
-                                                 self._tree_level,
-                                                 self._lambda_s, 1.0e-4)
+            self._nodes = _gmmtree.build_gmmtree(self._source, self._tree_level, self._lambda_s, 1.0e-4)
 
     def set_source(self, source):
         self._source = source
-        self._nodes = _gmmtree.build_gmmtree(self._source,
-                                             self._tree_level,
-                                             self._lambda_s, 1.0e-4)
+        self._nodes = _gmmtree.build_gmmtree(self._source, self._tree_level, self._lambda_s, 1.0e-4)
 
     def set_callbacks(self, callbacks):
         self._callbacks = callbacks
 
     def expectation_step(self, target):
-        res = _gmmtree.gmmtree_reg_estep(target, self._nodes,
-                                         self._tree_level, self._lambda_c)
+        res = _gmmtree.gmmtree_reg_estep(target, self._nodes, self._tree_level, self._lambda_c)
         return EstepResult(res)
 
     def maximization_step(self, estep_res, trans_p):
@@ -87,8 +82,7 @@ class GMMTree():
         return MstepResult(self._tf_result.inverse(), res.q)
 
 
-def registration_gmmtree(source, target, maxiter=20, tol=1.0e-4,
-                         callbacks=[], **kargs):
+def registration_gmmtree(source, target, maxiter=20, tol=1.0e-4, callbacks=[], **kargs):
     """GMMTree registration
 
     Args:

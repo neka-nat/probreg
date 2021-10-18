@@ -11,12 +11,12 @@ from . import math_utils as mu
 from . import transformation as tf
 from .log import log
 
-EstepResult = namedtuple('EstepResult', ['pt1', 'p1', 'px', 'n_p'])
-MstepResult = namedtuple('MstepResult', ['transformation', 'sigma2', 'q'])
+EstepResult = namedtuple("EstepResult", ["pt1", "p1", "px", "n_p"])
+MstepResult = namedtuple("MstepResult", ["transformation", "sigma2", "q"])
 
 
 @six.add_metaclass(abc.ABCMeta)
-class CoherentPointDrift():
+class CoherentPointDrift:
     """Coherent Point Drift algorithm.
     This is an abstract class.
     Based on this class, it is inherited by rigid, affine, nonrigid classes
@@ -28,14 +28,15 @@ class CoherentPointDrift():
         source (numpy.ndarray, optional): Source point cloud data.
         use_cuda (bool, optional): Use CUDA.
     """
+
     def __init__(self, source=None, use_cuda=False):
         self._source = source
         self._tf_type = None
         self._callbacks = []
         if use_cuda:
             import cupy as cp
-
             from . import cupy_utils
+
             self.xp = cp
             self.cupy_utils = cupy_utils
             self._squared_kernel_sum = cupy_utils.squared_kernel_sum
@@ -54,8 +55,7 @@ class CoherentPointDrift():
         return MstepResult(None, None, None)
 
     def expectation_step(self, t_source, target, sigma2, w=0.0):
-        """Expectation step for CPD
-        """
+        """Expectation step for CPD"""
         assert t_source.ndim == 2 and target.ndim == 2, "source and target must have 2 dimensions."
         pmat = self.xp.stack([self.xp.sum(self.xp.square(target - ts), axis=1) for ts in t_source])
         pmat = self.xp.exp(-pmat / (2.0 * sigma2))
@@ -63,12 +63,12 @@ class CoherentPointDrift():
         c = (2.0 * np.pi * sigma2) ** (t_source.shape[1] * 0.5)
         c *= w / (1.0 - w) * t_source.shape[0] / target.shape[0]
         den = self.xp.sum(pmat, axis=0)
-        den[den==0] = self.xp.finfo(np.float32).eps
+        den[den == 0] = self.xp.finfo(np.float32).eps
         den += c
 
-        pmat  = self.xp.divide(pmat, den)
+        pmat = self.xp.divide(pmat, den)
         pt1 = self.xp.sum(pmat, axis=0)
-        p1  = self.xp.sum(pmat, axis=1)
+        p1 = self.xp.sum(pmat, axis=1)
         px = self.xp.dot(pmat, target)
         return EstepResult(pt1, p1, px, np.sum(p1))
 
@@ -80,8 +80,7 @@ class CoherentPointDrift():
     def _maximization_step(source, target, estep_res, sigma2_p=None, xp=np):
         return None
 
-    def registration(self, target, w=0.0,
-                     maxiter=50, tol=0.001):
+    def registration(self, target, w=0.0, maxiter=50, tol=0.001):
         assert not self._tf_type is None, "transformation type is None."
         res = self._initialize(target)
         q = res.q
@@ -107,8 +106,8 @@ class RigidCPD(CoherentPointDrift):
         tf_init_params (dict, optional): Parameters to initialize transformation.
         use_cuda (bool, optional): Use CUDA.
     """
-    def __init__(self, source=None, update_scale=True,
-                 tf_init_params={}, use_cuda=False):
+
+    def __init__(self, source=None, update_scale=True, tf_init_params={}, use_cuda=False):
         super(RigidCPD, self).__init__(source, use_cuda)
         self._tf_type = tf.RigidTransformation
         self._update_scale = update_scale
@@ -125,12 +124,10 @@ class RigidCPD(CoherentPointDrift):
         return MstepResult(self._tf_type(**self._tf_init_params), sigma2, q)
 
     def maximization_step(self, target, estep_res, sigma2_p=None):
-        return self._maximization_step(self._source, target, estep_res,
-                                       sigma2_p, self._update_scale, self.xp)
+        return self._maximization_step(self._source, target, estep_res, sigma2_p, self._update_scale, self.xp)
 
     @staticmethod
-    def _maximization_step(source, target, estep_res,
-                           sigma2_p=None, update_scale=True, xp=np):
+    def _maximization_step(source, target, estep_res, sigma2_p=None, update_scale=True, xp=np):
         pt1, p1, px, n_p = estep_res
         dim = source.shape[1]
         mu_x = xp.sum(px, axis=0) / n_p
@@ -165,6 +162,7 @@ class AffineCPD(CoherentPointDrift):
         tf_init_params (dict, optional): Parameters to initialize transformation.
         use_cuda (bool, optional): Use CUDA.
     """
+
     def __init__(self, source=None, tf_init_params={}, use_cuda=False):
         super(AffineCPD, self).__init__(source, use_cuda)
         self._tf_type = tf.AffineTransformation
@@ -211,6 +209,7 @@ class NonRigidCPD(CoherentPointDrift):
         lmd (float, optional): Parameter for regularization term.
         use_cuda (bool, optional): Use CUDA.
     """
+
     def __init__(self, source=None, beta=2.0, lmd=2.0, use_cuda=False):
         super(NonRigidCPD, self).__init__(source, use_cuda)
         self._tf_type = tf.NonRigidTransformation
@@ -225,8 +224,7 @@ class NonRigidCPD(CoherentPointDrift):
         self._tf_obj = self._tf_type(None, self._source, self._beta)
 
     def maximization_step(self, target, estep_res, sigma2_p=None):
-        return self._maximization_step(self._source, target, estep_res,
-                                       sigma2_p, self._tf_obj, self._lmd, self.xp)
+        return self._maximization_step(self._source, target, estep_res, sigma2_p, self._tf_obj, self._lmd, self.xp)
 
     def _initialize(self, target):
         dim = self._source.shape[1]
@@ -239,8 +237,7 @@ class NonRigidCPD(CoherentPointDrift):
     def _maximization_step(source, target, estep_res, sigma2_p, tf_obj, lmd, xp=np):
         pt1, p1, px, n_p = estep_res
         dim = source.shape[1]
-        w = xp.linalg.solve((p1 * tf_obj.g).T + lmd * sigma2_p * xp.identity(source.shape[0]),
-                            px - (source.T * p1).T)
+        w = xp.linalg.solve((p1 * tf_obj.g).T + lmd * sigma2_p * xp.identity(source.shape[0]), px - (source.T * p1).T)
         t = source + xp.dot(tf_obj.g, w)
         tr_xp1x = xp.trace(xp.dot(target.T * pt1, target))
         tr_pxt = xp.trace(xp.dot(px.T, t))
@@ -250,9 +247,9 @@ class NonRigidCPD(CoherentPointDrift):
         return MstepResult(tf_obj, sigma2, sigma2)
 
 
-def registration_cpd(source, target, tf_type_name='rigid',
-                     w=0.0, maxiter=50, tol=0.001,
-                     callbacks=[], use_cuda=False, **kargs):
+def registration_cpd(
+    source, target, tf_type_name="rigid", w=0.0, maxiter=50, tol=0.001, callbacks=[], use_cuda=False, **kargs
+):
     """CPD Registraion.
 
     Args:
@@ -274,16 +271,16 @@ def registration_cpd(source, target, tf_type_name='rigid',
     xp = np
     if use_cuda:
         import cupy as cp
+
         xp = cp
     cv = lambda x: xp.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
-    if tf_type_name == 'rigid':
+    if tf_type_name == "rigid":
         cpd = RigidCPD(cv(source), use_cuda=use_cuda, **kargs)
-    elif tf_type_name == 'affine':
+    elif tf_type_name == "affine":
         cpd = AffineCPD(cv(source), use_cuda=use_cuda, **kargs)
-    elif tf_type_name == 'nonrigid':
+    elif tf_type_name == "nonrigid":
         cpd = NonRigidCPD(cv(source), use_cuda=use_cuda, **kargs)
     else:
-        raise ValueError('Unknown transformation type %s' % tf_type_name)
+        raise ValueError("Unknown transformation type %s" % tf_type_name)
     cpd.set_callbacks(callbacks)
-    return cpd.registration(cv(target),
-                            w, maxiter, tol)
+    return cpd.registration(cv(target), w, maxiter, tol)
