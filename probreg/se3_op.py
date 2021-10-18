@@ -1,5 +1,5 @@
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
+
 import numpy as np
 import transforms3d as t3d
 

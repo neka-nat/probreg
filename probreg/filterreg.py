@@ -1,18 +1,21 @@
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
+
 import abc
 from collections import namedtuple
-import six
+
 import numpy as np
 import open3d as o3
-from . import transformation as tf
-from . import gaussian_filtering as gf
-from . import gauss_transform as gt
-from . import se3_op as so
+import six
+
 from . import _kabsch as kabsch
 from . import _pt2pl as pt2pl
+from . import gauss_transform as gt
+from . import gaussian_filtering as gf
 from . import math_utils as mu
+from . import se3_op as so
+from . import transformation as tf
 from .log import log
+
 try:
     from dq3d import dualquat, quat
     _imp_dq = True

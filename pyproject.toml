@@ -23,6 +23,7 @@ flake8 = "^3.8.4"
 sphinx-rtd-theme = "^0.5.1"
 twine = "^3.3.0"
 setuptools = "^52.0.0"
+isort = "^5.9.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "setuptools", "pybind11"]

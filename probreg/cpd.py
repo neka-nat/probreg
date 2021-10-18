@@ -1,14 +1,15 @@
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
+
 import abc
 from collections import namedtuple
-import six
+
 import numpy as np
 import open3d as o3
-from . import transformation as tf
-from . import math_utils as mu
-from .log import log
+import six
 
+from . import math_utils as mu
+from . import transformation as tf
+from .log import log
 
 EstepResult = namedtuple('EstepResult', ['pt1', 'p1', 'px', 'n_p'])
 MstepResult = namedtuple('MstepResult', ['transformation', 'sigma2', 'q'])
@@ -33,6 +34,7 @@ class CoherentPointDrift():
         self._callbacks = []
         if use_cuda:
             import cupy as cp
+
             from . import cupy_utils
             self.xp = cp
             self.cupy_utils = cupy_utils

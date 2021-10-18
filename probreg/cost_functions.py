@@ -1,12 +1,14 @@
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
+
 import abc
-import six
+
 import numpy as np
+import six
 import transforms3d as t3d
-from . import transformation as tf
+
 from . import gauss_transform as gt
 from . import se3_op as so
+from . import transformation as tf
 
 
 @six.add_metaclass(abc.ABCMeta)

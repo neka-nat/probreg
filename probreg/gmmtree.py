@@ -1,11 +1,13 @@
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
+
 from collections import namedtuple
+
 import numpy as np
 import open3d as o3
+
 from . import _gmmtree
-from . import transformation as tf
 from . import se3_op as so
+from . import transformation as tf
 from .log import log
 
 EstepResult = namedtuple('EstepResult', ['moments'])

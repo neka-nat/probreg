@@ -1,11 +1,11 @@
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
+
 import abc
-import six
+
 import numpy as np
 import open3d as o3
-from sklearn import mixture
-from sklearn import svm
+import six
+from sklearn import mixture, svm
 
 
 @six.add_metaclass(abc.ABCMeta)

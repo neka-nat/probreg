@@ -1,12 +1,14 @@
-from __future__ import print_function
-from __future__ import division
-from collections import namedtuple
+from __future__ import division, print_function
+
 import logging
+from collections import namedtuple
+
 import numpy as np
-from scipy.optimize import minimize
 import open3d as o3
-from . import features as ft
+from scipy.optimize import minimize
+
 from . import cost_functions as cf
+from . import features as ft
 from .log import log
 
 

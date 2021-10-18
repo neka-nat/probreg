@@ -1,9 +1,12 @@
 import abc
 import itertools
-import six
+
 import numpy as np
 import open3d as o3
+import six
+
 from . import math_utils as mu
+
 try:
     from dq3d import op
     _imp_dq = True

@@ -1,6 +1,7 @@
 import copy
-import open3d as o3
+
 import matplotlib.pyplot as plt
+import open3d as o3
 
 try:
     import cupy as cp

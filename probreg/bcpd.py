@@ -1,16 +1,17 @@
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
+
 import abc
 from collections import namedtuple
-import six
-import numpy as np
-import scipy.special as spsp
-from scipy.spatial import cKDTree
-import open3d as o3
-from . import transformation as tf
-from . import math_utils as mu
-from .log import log
 
+import numpy as np
+import open3d as o3
+import scipy.special as spsp
+import six
+from scipy.spatial import cKDTree
+
+from . import math_utils as mu
+from . import transformation as tf
+from .log import log
 
 EstepResult = namedtuple('EstepResult', ['nu_d', 'nu', 'n_p', 'px', 'x_hat'])
 MstepResult = namedtuple('MstepResult', ['transformation', 'u_hat', 'sigma_mat', 'alpha', 'sigma2'])
