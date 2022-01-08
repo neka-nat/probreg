@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+from typing import Any, Callable, List, Union
 
 import abc
 from collections import namedtuple
@@ -248,7 +249,15 @@ class NonRigidCPD(CoherentPointDrift):
 
 
 def registration_cpd(
-    source, target, tf_type_name="rigid", w=0.0, maxiter=50, tol=0.001, callbacks=[], use_cuda=False, **kargs
+    source: Union[np.ndarray, o3.geometry.PointCloud],
+    target: Union[np.ndarray, o3.geometry.PointCloud],
+    tf_type_name: str = "rigid",
+    w: float = 0.0,
+    maxiter: int = 50,
+    tol: float = 0.001,
+    callbacks: List[Callable] = [],
+    use_cuda: bool = False,
+    **kwargs: Any,
 ):
     """CPD Registraion.
 
@@ -275,11 +284,11 @@ def registration_cpd(
         xp = cp
     cv = lambda x: xp.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     if tf_type_name == "rigid":
-        cpd = RigidCPD(cv(source), use_cuda=use_cuda, **kargs)
+        cpd = RigidCPD(cv(source), use_cuda=use_cuda, **kwargs)
     elif tf_type_name == "affine":
-        cpd = AffineCPD(cv(source), use_cuda=use_cuda, **kargs)
+        cpd = AffineCPD(cv(source), use_cuda=use_cuda, **kwargs)
     elif tf_type_name == "nonrigid":
-        cpd = NonRigidCPD(cv(source), use_cuda=use_cuda, **kargs)
+        cpd = NonRigidCPD(cv(source), use_cuda=use_cuda, **kwargs)
     else:
         raise ValueError("Unknown transformation type %s" % tf_type_name)
     cpd.set_callbacks(callbacks)

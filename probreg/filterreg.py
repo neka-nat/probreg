@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+from typing import Any, Callable, List, Optional, Union
 
 import abc
 from collections import namedtuple
@@ -259,19 +260,19 @@ class DeformableKinematicFilterReg(FilterReg):
 
 
 def registration_filterreg(
-    source,
-    target,
-    target_normals=None,
-    sigma2=None,
-    update_sigma2=False,
-    w=0,
-    objective_type="pt2pt",
-    maxiter=50,
-    tol=0.001,
-    min_sigma2=1.0e-4,
-    feature_fn=lambda x: x,
-    callbacks=[],
-    **kargs,
+    source: Union[np.ndarray, o3.geometry.PointCloud],
+    target: Union[np.ndarray, o3.geometry.PointCloud],
+    target_normals: Optional[np.ndarray] = None,
+    sigma2: Optional[float] = None,
+    update_sigma2: bool = False,
+    w: float = 0,
+    objective_type: str = "pt2pt",
+    maxiter: int = 50,
+    tol: float = 0.001,
+    min_sigma2: float = 1.0e-4,
+    feature_fn: Callable = lambda x: x,
+    callbacks: List[Callable] = [],
+    **kwargs: Any,
 ):
     """FilterReg registration
 
@@ -293,7 +294,7 @@ def registration_filterreg(
         tf_init_params (dict, optional): Parameters to initialize transformation (for rigid).
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
-    frg = RigidFilterReg(cv(source), cv(target_normals), sigma2, update_sigma2, **kargs)
+    frg = RigidFilterReg(cv(source), cv(target_normals), sigma2, update_sigma2, **kwargs)
     frg.set_callbacks(callbacks)
     return frg.registration(
         cv(target),

@@ -1,7 +1,7 @@
 from __future__ import division, print_function
+from typing import Any, Callable, List, Union
 
 import logging
-from collections import namedtuple
 
 import numpy as np
 import open3d as o3
@@ -166,7 +166,15 @@ def registration_gmmreg(source, target, tf_type_name="rigid", callbacks=[], **ka
 
 
 def registration_svr(
-    source, target, tf_type_name="rigid", maxiter=1, tol=1.0e-3, opt_maxiter=50, opt_tol=1.0e-3, callbacks=[], **kargs
+    source: Union[np.ndarray, o3.geometry.PointCloud],
+    target: Union[np.ndarray, o3.geometry.PointCloud],
+    tf_type_name: str = "rigid",
+    maxiter: int = 1,
+    tol: float = 1.0e-3,
+    opt_maxiter: int = 50,
+    opt_tol: float = 1.0e-3,
+    callbacks: List[Callable] = [],
+    **kwargs: Any,
 ):
     """Support Vector Registration.
 
@@ -183,9 +191,9 @@ def registration_svr(
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     if tf_type_name == "rigid":
-        svr = RigidSVR(cv(source), **kargs)
+        svr = RigidSVR(cv(source), **kwargs)
     elif tf_type_name == "nonrigid":
-        svr = TPSSVR(cv(source), **kargs)
+        svr = TPSSVR(cv(source), **kwargs)
     else:
         raise ValueError("Unknown transform type %s" % tf_type_name)
     svr.set_callbacks(callbacks)

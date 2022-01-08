@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+from typing import Any, Callable, List, Union
 
 import abc
 from collections import namedtuple
@@ -146,7 +147,15 @@ class CombinedBCPD(BayesianCoherentPointDrift):
         return MstepResult(tf.CombinedTransformation(rot, t, scale, v_hat), u_hat, sigma_mat, alpha, sigma2)
 
 
-def registration_bcpd(source, target, w=0.0, maxiter=50, tol=0.001, callbacks=[], **kargs):
+def registration_bcpd(
+    source: Union[np.ndarray, o3.geometry.PointCloud],
+    target: Union[np.ndarray, o3.geometry.PointCloud],
+    w: float = 0.0,
+    maxiter: int = 50,
+    tol: float = 0.001,
+    callbacks: List[Callable] = [],
+    **kwargs: Any,
+):
     """BCPD Registraion.
 
     Args:
@@ -159,6 +168,6 @@ def registration_bcpd(source, target, w=0.0, maxiter=50, tol=0.001, callbacks=[]
             `callback(probreg.Transformation)`
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
-    bcpd = CombinedBCPD(cv(source), **kargs)
+    bcpd = CombinedBCPD(cv(source), **kwargs)
     bcpd.set_callbacks(callbacks)
     return bcpd.registration(cv(target), w, maxiter)

@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+from typing import Any, Callable, List, Union
 
 from collections import namedtuple
 
@@ -82,7 +83,14 @@ class GMMTree:
         return MstepResult(self._tf_result.inverse(), res.q)
 
 
-def registration_gmmtree(source, target, maxiter=20, tol=1.0e-4, callbacks=[], **kargs):
+def registration_gmmtree(
+    source: Union[np.ndarray, o3.geometry.PointCloud],
+    target: Union[np.ndarray, o3.geometry.PointCloud],
+    maxiter: int = 20,
+    tol: float = 1.0e-4,
+    callbacks: List[Callable] = [],
+    **kwargs: Any,
+):
     """GMMTree registration
 
     Args:
@@ -100,6 +108,6 @@ def registration_gmmtree(source, target, maxiter=20, tol=1.0e-4, callbacks=[], *
         tf_init_params (dict, optional): Parameters to initialize transformation.
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
-    gt = GMMTree(cv(source), **kargs)
+    gt = GMMTree(cv(source), **kwargs)
     gt.set_callbacks(callbacks)
     return gt.registration(cv(target), maxiter, tol)

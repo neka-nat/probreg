@@ -122,6 +122,7 @@ ext_modules = [
             find_eigen(['third_party/eigen'])
         ],
         extra_link_args=['-lgomp'] if use_omp else [],
+        define_macros=[('VERSION_INFO', __version__)],
         language='c++'
     ),
     Extension(
@@ -134,6 +135,7 @@ ext_modules = [
             find_eigen(['third_party/eigen'])
         ],
         extra_link_args=['-lgomp'] if use_omp else [],
+        define_macros=[('VERSION_INFO', __version__)],
         language='c++'
     ),
     Extension(
@@ -146,6 +148,7 @@ ext_modules = [
             find_eigen(['third_party/eigen'])
         ],
         extra_link_args=['-lgomp'] if use_omp else [],
+        define_macros=[('VERSION_INFO', __version__)],
         language='c++'
     ),
     Extension(
@@ -158,6 +161,7 @@ ext_modules = [
             find_eigen(['third_party/eigen'])
         ],
         extra_link_args=['-lgomp'] if use_omp else [],
+        define_macros=[('VERSION_INFO', __version__)],
         language='c++'
     ),
     Extension(
@@ -170,6 +174,7 @@ ext_modules = [
             find_eigen(['third_party/eigen'])
         ],
         extra_link_args=['-lgomp'] if use_omp else [],
+        define_macros=[('VERSION_INFO', __version__)],
         language='c++'
     ),
     Extension(
@@ -182,6 +187,7 @@ ext_modules = [
             find_eigen(['third_party/eigen']),
             'third_party/permutohedral'
         ],
+        define_macros=[('VERSION_INFO', __version__)],
         language='c++'
     ),
 ]
@@ -230,14 +236,11 @@ class BuildExt(build_ext):
         ct = self.compiler.compiler_type
         opts = self.c_opts.get(ct, [])
         if ct == 'unix':
-            opts.append('-DVERSION_INFO="%s"' % self.distribution.get_version())
             opts.append(cpp_flag(self.compiler))
             if use_omp:
                 opts.append('-fopenmp')
             if has_flag(self.compiler, '-fvisibility=hidden'):
                 opts.append('-fvisibility=hidden')
-        elif ct == 'msvc':
-            opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
         for ext in self.extensions:
             ext.extra_compile_args = opts
         build_ext.build_extensions(self)
