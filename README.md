@@ -19,15 +19,16 @@ This package implements several algorithms using stochastic models and provides 
 ## Algorithms
 
 * Maximum likelihood when the target or source point cloud is observation data
-    * [Coherent Point Drift(2010)](https://arxiv.org/pdf/0905.2635.pdf)
-    * [FilterReg(CVPR2019)](https://arxiv.org/pdf/1811.10136.pdf)
+    * [Coherent Point Drift (2010)](https://arxiv.org/pdf/0905.2635.pdf)
+    * [Extended Coherent Point Drift (2016)](https://ieeexplore.ieee.org/abstract/document/7477719) (add correspondence priors to CPD)
+    * [FilterReg (CVPR2019)](https://arxiv.org/pdf/1811.10136.pdf)
 * Variational Bayesian inference
-    * [Bayesian Coherent Point Drift(2020)](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8985307)
+    * [Bayesian Coherent Point Drift (2020)](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8985307)
 * Distance minimization of two probabilistic distributions
-    * [GMMReg(2011)](https://ieeexplore.ieee.org/document/5674050)
-    * [Support Vector Registration(2015)](https://arxiv.org/pdf/1511.04240.pdf)
+    * [GMMReg (2011)](https://ieeexplore.ieee.org/document/5674050)
+    * [Support Vector Registration (2015)](https://arxiv.org/pdf/1511.04240.pdf)
 * Hierarchical Stocastic model
-    * [GMMTree(ECCV2018)](https://arxiv.org/pdf/1807.02587.pdf)
+    * [GMMTree (ECCV2018)](https://arxiv.org/pdf/1807.02587.pdf)
 
 ### Transformations
 
