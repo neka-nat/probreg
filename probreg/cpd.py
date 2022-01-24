@@ -247,6 +247,73 @@ class NonRigidCPD(CoherentPointDrift):
         tf_obj.w = w
         return MstepResult(tf_obj, sigma2, sigma2)
 
+class ConstrainedNonRigidCPD(CoherentPointDrift):
+    """
+       Extended Coherent Point Drift for nonrigid transformation.
+       Like CoherentPointDrift, but allows to add point correspondance constraints
+       See: https://people.mpi-inf.mpg.de/~golyanik/04_DRAFTS/ECPD2016.pdf
+
+    Args:
+        source (numpy.ndarray, optional): Source point cloud data.
+        beta (float, optional): Parameter of RBF kernel.
+        lmd (float, optional): Parameter for regularization term.
+        use_cuda (bool, optional): Use CUDA.
+        idx_source (numpy.ndarray of ints, optional): Indices in source matrix
+            for which a correspondance is known
+        idx_target (numpy.ndarray of ints, optional): Indices in target matrix
+            for which a correspondance is known
+        alpha (float): Degree of reliability of priors. 
+            Approximately between 1e-8 (highly reliable) and 1 (highly unreliable)
+    """
+    def __init__(self, source=None, beta=2.0, lmd=2.0, alpha=1e-8, use_cuda=False, 
+                 idx_source=None, idx_target=None):
+        super(ConstrainedNonRigidCPD, self).__init__(source, use_cuda)
+        self._tf_type = tf.NonRigidTransformation
+        self._beta = beta
+        self._lmd = lmd
+        self.alpha= alpha
+        self._tf_obj = None
+        self.idx_source, self.idx_target= idx_source, idx_target
+        if not self._source is None:
+            self._tf_obj = self._tf_type(None, self._source, self._beta, self.xp)
+
+    def set_source(self, source):
+        self._source = source
+        self._tf_obj = self._tf_type(None, self._source, self._beta)
+
+    def maximization_step(self, target, estep_res, sigma2_p=None):
+        return self._maximization_step(self._source, target, estep_res,
+                   sigma2_p, self._tf_obj, self._lmd,
+                   self.alpha, self.p1_tilde, self.px_tilde, self.xp)
+
+    def _initialize(self, target):
+        dim = self._source.shape[1]
+        sigma2 = self._squared_kernel_sum(self._source, target)
+        q = 1.0 + target.shape[0] * dim * 0.5 * np.log(sigma2)
+        self._tf_obj.w = self.xp.zeros_like(self._source)
+        self.p_tilde= self.xp.zeros((self._source.shape[0], target.shape[0]))
+        if self.idx_source is not None and self.idx_target is not None:
+            self.p_tilde[self.idx_source, self.idx_target]= 1
+        self.p1_tilde = self.xp.sum(self.p_tilde, axis=1)
+        self.px_tilde = self.xp.dot(self.p_tilde, target)
+        return MstepResult(self._tf_obj, sigma2, q)
+
+    @staticmethod
+    def _maximization_step(source, target, estep_res, sigma2_p, tf_obj, lmd, 
+                           alpha, p1_tilde, px_tilde, xp=np):
+        pt1, p1, px, n_p = estep_res
+        dim = source.shape[1]
+        w = xp.linalg.solve( (p1 * tf_obj.g).T + sigma2_p / alpha * (p1_tilde * tf_obj.g).T \
+                                               + lmd * sigma2_p * xp.identity(source.shape[0]),
+                             px - (source.T * p1).T + sigma2_p / alpha * ( px_tilde - (source.T * p1_tilde).T )
+                            )
+        t = source + xp.dot(tf_obj.g, w)
+        tr_xp1x = xp.trace(xp.dot(target.T * pt1, target))
+        tr_pxt = xp.trace(xp.dot(px.T, t))
+        tr_tpt = xp.trace(xp.dot(t.T * p1, t))
+        sigma2 = (tr_xp1x - 2.0 * tr_pxt + tr_tpt) / (n_p * dim)
+        tf_obj.w = w
+        return MstepResult(tf_obj, sigma2, sigma2)
 
 def registration_cpd(
     source: Union[np.ndarray, o3.geometry.PointCloud],
@@ -264,7 +331,7 @@ def registration_cpd(
     Args:
         source (numpy.ndarray): Source point cloud data.
         target (numpy.ndarray): Target point cloud data.
-        tf_type_name (str, optional): Transformation type('rigid', 'affine', 'nonrigid')
+        tf_type_name (str, optional): Transformation type('rigid', 'affine', 'nonrigid', 'nonrigid_constrained')
         w (float, optional): Weight of the uniform distribution, 0 < `w` < 1.
         maxitr (int, optional): Maximum number of iterations to EM algorithm.
         tol (float, optional): Tolerance for termination.
@@ -289,6 +356,8 @@ def registration_cpd(
         cpd = AffineCPD(cv(source), use_cuda=use_cuda, **kwargs)
     elif tf_type_name == "nonrigid":
         cpd = NonRigidCPD(cv(source), use_cuda=use_cuda, **kwargs)
+    elif tf_type_name == 'nonrigid_constrained':
+        cpd = ConstrainedNonRigidCPD(cv(source), use_cuda=use_cuda, **kwargs)
     else:
         raise ValueError("Unknown transformation type %s" % tf_type_name)
     cpd.set_callbacks(callbacks)
