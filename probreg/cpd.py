@@ -357,7 +357,7 @@ def registration_cpd(
     elif tf_type_name == "nonrigid":
         cpd = NonRigidCPD(cv(source), use_cuda=use_cuda, **kwargs)
     elif tf_type_name == 'nonrigid_constrained':
-        cpd = ConstrainedNonRigidCPD(cv(source), use_cuda=use_cuda, **kargs)
+        cpd = ConstrainedNonRigidCPD(cv(source), use_cuda=use_cuda, **kwargs)
     else:
         raise ValueError("Unknown transformation type %s" % tf_type_name)
     cpd.set_callbacks(callbacks)
