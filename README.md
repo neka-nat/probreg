@@ -76,6 +76,7 @@ from probreg import cpd
 
 # load source and target point cloud
 source = o3.io.read_point_cloud('bunny.pcd')
+source.remove_non_finite_points()
 target = copy.deepcopy(source)
 # transform target point cloud
 th = np.deg2rad(30.0)
