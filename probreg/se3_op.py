@@ -1,10 +1,10 @@
-from __future__ import division, print_function
+from __future__ import annotations, division, print_function
 
 import numpy as np
 import transforms3d as t3d
 
 
-def skew(x):
+def skew(x: np.ndarray) -> np.ndarray:
     """
     skew-symmetric matrix, that represent
     cross products as matrix multiplications.
@@ -17,7 +17,7 @@ def skew(x):
     return np.array([[0.0, -x[2], x[1]], [x[2], 0.0, -x[0]], [-x[1], x[0], 0.0]])
 
 
-def twist_trans(tw, linear=False):
+def twist_trans(tw: np.ndarray, linear: bool = False) -> tuple[np.ndarray, np.ndarray]:
     """
     Convert from twist representation to transformation matrix.
 
@@ -39,7 +39,7 @@ def twist_trans(tw, linear=False):
             return tr, tw[3:]
 
 
-def twist_mul(tw, rot, t, linear=False):
+def twist_mul(tw: np.ndarray, rot: np.ndarray, t: np.ndarray, linear: bool = False) -> tuple[np.ndarray, np.ndarray]:
     """
     Multiply twist vector and transformation matrix.
 
@@ -53,13 +53,13 @@ def twist_mul(tw, rot, t, linear=False):
     return np.dot(tr, rot), np.dot(t, tr.T) + tt
 
 
-def diff_x_from_twist(x):
+def diff_x_from_twist(x: np.ndarray) -> np.ndarray:
     return np.array(
         [[0.0, x[2], -x[1], 1.0, 0.0, 0.0], [-x[2], 0.0, x[0], 0.0, 1.0, 0.0], [x[1], -x[0], 0.0, 0.0, 0.0, 1.0]]
     )
 
 
-def diff_rot_from_quaternion(q):
+def diff_rot_from_quaternion(q: np.ndarray) -> np.ndarray:
     """Differencial rotation matrix from quaternion.
 
     dR(q)/dq = [dR(q)/dq0, dR(q)/dq1, dR(q)/dq2, dR(q)/dq3]
