@@ -1,7 +1,7 @@
 from __future__ import division, print_function
-from typing import Any, Callable, List, Union
 
 from collections import namedtuple
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import numpy as np
 import open3d as o3
@@ -26,7 +26,14 @@ class GMMTree:
         tf_init_params (dict, optional): Parameters to initialize transformation.
     """
 
-    def __init__(self, source=None, tree_level=2, lambda_c=0.01, lambda_s=0.001, tf_init_params={}):
+    def __init__(
+        self,
+        source: Optional[np.ndarray] = None,
+        tree_level: int = 2,
+        lambda_c: float = 0.01,
+        lambda_s: float = 0.001,
+        tf_init_params: Dict = {},
+    ):
         self._source = source
         self._tree_level = tree_level
         self._lambda_c = lambda_c
@@ -37,18 +44,18 @@ class GMMTree:
         if not self._source is None:
             self._nodes = _gmmtree.build_gmmtree(self._source, self._tree_level, self._lambda_s, 1.0e-4)
 
-    def set_source(self, source):
+    def set_source(self, source: np.ndarray) -> None:
         self._source = source
         self._nodes = _gmmtree.build_gmmtree(self._source, self._tree_level, self._lambda_s, 1.0e-4)
 
     def set_callbacks(self, callbacks):
         self._callbacks = callbacks
 
-    def expectation_step(self, target):
+    def expectation_step(self, target: np.ndarray) -> EstepResult:
         res = _gmmtree.gmmtree_reg_estep(target, self._nodes, self._tree_level, self._lambda_c)
         return EstepResult(res)
 
-    def maximization_step(self, estep_res, trans_p):
+    def maximization_step(self, estep_res: EstepResult, trans_p: tf.Transformation) -> MstepResult:
         moments = estep_res.moments
         n = len(moments)
         amat = np.zeros((n * 3, 6))
@@ -67,7 +74,7 @@ class GMMTree:
         rot, t = so.twist_mul(x, trans_p.rot, trans_p.t)
         return MstepResult(tf.RigidTransformation(rot, t), q)
 
-    def registration(self, target, maxiter=20, tol=1.0e-4):
+    def registration(self, target: np.ndarray, maxiter: int = 20, tol: float = 1.0e-4) -> MstepResult:
         q = None
         for i in range(maxiter):
             t_target = self._tf_result.transform(target)

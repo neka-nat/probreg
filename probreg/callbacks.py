@@ -1,6 +1,8 @@
 import copy
+from typing import Any
 
 import matplotlib.pyplot as plt
+import numpy as np
 import open3d as o3
 
 try:
@@ -13,6 +15,9 @@ except:
         return x
 
 
+from .transformation import Transformation
+
+
 class Plot2DCallback(object):
     """Display the 2D registration result of each iteration.
 
@@ -23,7 +28,7 @@ class Plot2DCallback(object):
             each iteration image is saved in a sequential number.
     """
 
-    def __init__(self, source, target, save=False, keep_window=True):
+    def __init__(self, source: np.ndarray, target: np.ndarray, save: bool = False, keep_window: bool = True):
         self._source = source
         self._target = target
         self._result = copy.deepcopy(self._source)
@@ -39,7 +44,7 @@ class Plot2DCallback(object):
         plt.legend()
         plt.draw()
 
-    def __call__(self, transformation):
+    def __call__(self, transformation: Transformation) -> None:
         self._result = transformation.transform(self._source)
         plt.cla()
         plt.axis("equal")
@@ -70,7 +75,9 @@ class Open3dVisualizerCallback(object):
         fov: Field of view (degree).
     """
 
-    def __init__(self, source, target, save=False, keep_window=True, fov=None):
+    def __init__(
+        self, source: np.ndarray, target: np.ndarray, save: bool = False, keep_window: bool = True, fov: Any = None
+    ):
         self._vis = o3.visualization.Visualizer()
         self._vis.create_window()
         self._source = source
@@ -94,7 +101,7 @@ class Open3dVisualizerCallback(object):
             self._vis.run()
         self._vis.destroy_window()
 
-    def __call__(self, transformation):
+    def __call__(self, transformation: Transformation) -> None:
         self._result.points = transformation.transform(self._source.points)
         self._vis.update_geometry(self._source)
         self._vis.update_geometry(self._target)

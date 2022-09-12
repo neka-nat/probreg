@@ -1,11 +1,13 @@
 from __future__ import division, print_function
 
+from typing import Optional
+
 import numpy as np
 
 from . import _ifgt
 
 
-def _gauss_transform_direct(source, target, weights, h):
+def _gauss_transform_direct(source: np.ndarray, target: np.ndarray, weights: np.ndarray, h: float) -> np.ndarray:
     """
     \sum_{j} weights[j] * \exp{ - \frac{||target[i] - source[j]||^2}{h^2} }
     """
@@ -19,7 +21,7 @@ class Direct(object):
         self._source = source
         self._h = h
 
-    def compute(self, target, weights):
+    def compute(self, target: np.ndarray, weights: np.ndarray) -> np.ndarray:
         return _gauss_transform_direct(self._source, target, weights, self._h)
 
 
@@ -34,14 +36,14 @@ class GaussTransform(object):
             switch between direct method and IFGT.
     """
 
-    def __init__(self, source, h, eps=1.0e-4, sw_h=0.01):
+    def __init__(self, source: np.ndarray, h: float, eps: float = 1.0e-4, sw_h: float = 0.01):
         self._m = source.shape[0]
         if h < sw_h:
             self._impl = Direct(source, h)
         else:
             self._impl = _ifgt.Ifgt(source, h, eps)
 
-    def compute(self, target, weights=None):
+    def compute(self, target: np.ndarray, weights: Optional[np.ndarray] = None):
         """Compute gauss transform
 
         Args:

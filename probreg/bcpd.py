@@ -1,8 +1,8 @@
 from __future__ import division, print_function
-from typing import Any, Callable, List, Union
 
 import abc
 from collections import namedtuple
+from typing import Any, Callable, List, Union
 
 import numpy as np
 import open3d as o3

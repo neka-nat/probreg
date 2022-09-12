@@ -1,7 +1,7 @@
 from __future__ import division, print_function
-from typing import Any, Callable, List, Union
 
 import logging
+from typing import Any, Callable, List, Union
 
 import numpy as np
 import open3d as o3
@@ -9,6 +9,7 @@ from scipy.optimize import minimize
 
 from . import cost_functions as cf
 from . import features as ft
+from . import transformation as tf
 from .log import log
 
 
@@ -27,7 +28,15 @@ class L2DistRegistration(object):
             sigma estimates from the source point cloud.
     """
 
-    def __init__(self, source, feature_gen, cost_fn, sigma=1.0, delta=0.9, use_estimated_sigma=True):
+    def __init__(
+        self,
+        source: np.ndarray,
+        feature_gen: ft.Feature,
+        cost_fn: cf.CostFunction,
+        sigma: float = 1.0,
+        delta: float = 0.9,
+        use_estimated_sigma: bool = True,
+    ):
         self._source = source
         self._feature_gen = feature_gen
         self._cost_fn = cost_fn
@@ -38,7 +47,7 @@ class L2DistRegistration(object):
         if not self._source is None and self._use_estimated_sigma:
             self._estimate_sigma(self._source)
 
-    def set_source(self, source):
+    def set_source(self, source: np.ndarray):
         self._source = source
         if self._use_estimated_sigma:
             self._estimate_sigma(self._source)
@@ -46,7 +55,7 @@ class L2DistRegistration(object):
     def set_callbacks(self, callbacks):
         self._callbacks.extend(callbacks)
 
-    def _estimate_sigma(self, data):
+    def _estimate_sigma(self, data: np.ndarray):
         ndata, dim = data.shape
         data_hat = data - np.mean(data, axis=0)
         self._sigma = np.power(np.linalg.det(np.dot(data_hat.T, data_hat) / (ndata - 1)), 1.0 / (2.0 * dim))
@@ -54,12 +63,14 @@ class L2DistRegistration(object):
     def _annealing(self):
         self._sigma *= self._delta
 
-    def optimization_cb(self, x):
+    def optimization_cb(self, x: np.ndarray):
         tf_result = self._cost_fn.to_transformation(x)
         for c in self._callbacks:
             c(tf_result)
 
-    def registration(self, target, maxiter=1, tol=1.0e-3, opt_maxiter=50, opt_tol=1.0e-3):
+    def registration(
+        self, target: np.ndarray, maxiter: int = 1, tol: float = 1.0e-3, opt_maxiter: int = 50, opt_tol: float = 1.0e-3
+    ) -> tf.Transformation:
         f = None
         x_ini = self._cost_fn.initial()
         for _ in range(maxiter):
@@ -144,7 +155,9 @@ class TPSSVR(L2DistRegistration):
         self._feature_gen._gamma = 1.0 / (2.0 * np.square(self._sigma))
 
 
-def registration_gmmreg(source, target, tf_type_name="rigid", callbacks=[], **kargs):
+def registration_gmmreg(
+    source: np.ndarray, target: np.ndarray, tf_type_name: str = "rigid", callbacks: List = [], **kargs
+):
     """GMMReg.
 
     Args:

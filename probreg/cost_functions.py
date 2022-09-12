@@ -1,6 +1,7 @@
 from __future__ import division, print_function
 
 import abc
+from typing import Tuple, Type
 
 import numpy as np
 import six
@@ -13,11 +14,11 @@ from . import transformation as tf
 
 @six.add_metaclass(abc.ABCMeta)
 class CostFunction:
-    def __init__(self, tf_type):
+    def __init__(self, tf_type: Type[tf.Transformation]):
         self._tf_type = tf_type
 
     @abc.abstractmethod
-    def to_transformation(self, theta):
+    def to_transformation(self, theta: np.ndarray):
         return None
 
     @abc.abstractmethod
@@ -25,11 +26,13 @@ class CostFunction:
         return None
 
     @abc.abstractmethod
-    def __call__(self, theta, *args):
+    def __call__(self, theta: np.ndarray, *args):
         return None, None
 
 
-def compute_l2_dist(mu_source, phi_source, mu_target, phi_target, sigma):
+def compute_l2_dist(
+    mu_source: np.ndarray, phi_source: np.ndarray, mu_target: np.ndarray, phi_target: np.ndarray, sigma: float
+):
     z = np.power(2.0 * np.pi * sigma ** 2, mu_source.shape[1] * 0.5)
     gtrans = gt.GaussTransform(mu_target, np.sqrt(2.0) * sigma)
     phi_j_e = gtrans.compute(mu_source, phi_target / z)
@@ -42,16 +45,16 @@ class RigidCostFunction(CostFunction):
     def __init__(self):
         self._tf_type = tf.RigidTransformation
 
-    def to_transformation(self, theta):
+    def to_transformation(self, theta: np.ndarray) -> tf.Transformation:
         rot = t3d.quaternions.quat2mat(theta[:4])
         return self._tf_type(rot, theta[4:7])
 
-    def initial(self):
+    def initial(self) -> np.ndarray:
         x0 = np.zeros(7)
         x0[0] = 1.0
         return x0
 
-    def __call__(self, theta, *args):
+    def __call__(self, theta: np.ndarray, *args) -> Tuple[float, np.ndarray]:
         mu_source, phi_source, mu_target, phi_target, sigma = args
         tf_obj = self.to_transformation(theta)
         t_mu_source = tf_obj.transform(mu_source)
@@ -63,13 +66,13 @@ class RigidCostFunction(CostFunction):
 
 
 class TPSCostFunction(CostFunction):
-    def __init__(self, control_pts, alpha=1.0, beta=0.1):
+    def __init__(self, control_pts: np.ndarray, alpha: float = 1.0, beta: float = 0.1):
         self._tf_type = tf.TPSTransformation
         self._alpha = alpha
         self._beta = beta
         self._control_pts = control_pts
 
-    def to_transformation(self, theta):
+    def to_transformation(self, theta: np.ndarray) -> tf.Transformation:
         dim = self._control_pts.shape[1]
         n_data = theta.shape[0] // dim
         n_a = dim * (dim + 1)
@@ -77,13 +80,13 @@ class TPSCostFunction(CostFunction):
         v = theta[n_a:].reshape(n_data - dim - 1, dim)
         return self._tf_type(a, v, self._control_pts)
 
-    def initial(self):
+    def initial(self) -> np.ndarray:
         dim = self._control_pts.shape[1]
         a = np.r_[np.zeros((1, dim)), np.identity(dim)]
         v = np.zeros((self._control_pts.shape[0] - dim - 1, dim))
         return np.r_[a, v].flatten()
 
-    def __call__(self, theta, *args):
+    def __call__(self, theta: np.ndarray, *args) -> Tuple[float, np.ndarray]:
         dim = self._control_pts.shape[1]
         mu_source, phi_source, mu_target, phi_target, sigma = args
         tf_obj = self.to_transformation(theta)
