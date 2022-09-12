@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "probreg"
-version = "0.3.5"
+version = "0.3.6"
 description = ""
 authors = ["nekanat <nekanat.stock@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = ">=3.8,<4.0"
 pybind11 = "^2.6.2"
 six = "^1.15.0"
 scipy = "^1.6.0"
