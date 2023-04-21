@@ -97,7 +97,7 @@ def registration_gmmtree(
     tol: float = 1.0e-4,
     callbacks: List[Callable] = [],
     **kwargs: Any,
-):
+) -> MstepResult:
     """GMMTree registration
 
     Args:
@@ -113,6 +113,9 @@ def registration_gmmtree(
         lambda_c (float, optional): Parameter that determine the pruning of GMM tree.
         lambda_s (float, optional): Parameter that tolerance for building GMM tree.
         tf_init_params (dict, optional): Parameters to initialize transformation.
+
+    Returns:
+        MstepResult: Result of the registration (transformation, q)
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     gt = GMMTree(cv(source), **kwargs)

@@ -155,7 +155,7 @@ def registration_bcpd(
     tol: float = 0.001,
     callbacks: List[Callable] = [],
     **kwargs: Any,
-):
+) -> tf.Transformation:
     """BCPD Registraion.
 
     Args:
@@ -166,6 +166,9 @@ def registration_bcpd(
         tol (float, optional) : Tolerance for termination.
         callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
             `callback(probreg.Transformation)`
+
+    Returns:
+        probreg.Transformation: Estimated transformation.
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     bcpd = CombinedBCPD(cv(source), **kwargs)

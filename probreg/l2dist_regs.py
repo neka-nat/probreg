@@ -166,6 +166,9 @@ def registration_gmmreg(
         tf_type_name (str, optional): Transformation type('rigid', 'nonrigid')
         callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
             `callback(probreg.Transformation)`
+
+    Returns:
+        probreg.Transformation: Transformation from source to target.
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     if tf_type_name == "rigid":
@@ -201,6 +204,9 @@ def registration_svr(
         opt_tol (float, optional): Tolerance for termination of inner loop.
         callback (:obj:`list` of :obj:`function`, optional): Called after each iteration.
             `callback(probreg.Transformation)`
+
+    Returns:
+        probreg.Transformation: Transformation from source to target.
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     if tf_type_name == "rigid":

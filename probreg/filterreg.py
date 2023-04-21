@@ -292,6 +292,9 @@ def registration_filterreg(
 
     Keyword Args:
         tf_init_params (dict, optional): Parameters to initialize transformation (for rigid).
+
+    Returns:
+        MstepResult: Result of the registration (transformation, sigma2, q)
     """
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     frg = RigidFilterReg(cv(source), cv(target_normals), sigma2, update_sigma2, **kwargs)

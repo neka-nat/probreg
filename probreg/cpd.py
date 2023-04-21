@@ -402,7 +402,7 @@ def registration_cpd(
     callbacks: List[Callable] = [],
     use_cuda: bool = False,
     **kwargs: Any,
-):
+) -> MstepResult:
     """CPD Registraion.
 
     Args:
@@ -420,6 +420,9 @@ def registration_cpd(
         update_scale (bool, optional): If this flag is true and tf_type is rigid transformation,
             then the scale is treated. The default is true.
         tf_init_params (dict, optional): Parameters to initialize transformation (for rigid or affine).
+
+    Returns:
+        MstepResult: Result of the registration (transformation, sigma2, q)
     """
     xp = np
     if use_cuda:
