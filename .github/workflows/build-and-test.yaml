@@ -8,9 +8,10 @@ on:
     branches: [master]
 
 env:
-  WINDOWS_OS_NAME: windows-2019
+  WINDOWS_OS_NAME: windows-2022
   LINUX_OS_NAME: ubuntu-20.04
   POETRY_CACHE_DIR: ~/.cache/pypoetry
+  CONFIG_POETRY_PATH: ${USERPROFILE}\.local\venv\Scripts
 
 jobs:
   test:
@@ -19,10 +20,10 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
-        os: [ubuntu-20.04, windows-2019]
+        os: [ubuntu-20.04, windows-2022]
         openmp-on: [true, false]
         exclude:
-          - os: windows-2019
+          - os: windows-2022
             openmp-on: true
 
     steps:
@@ -39,15 +40,13 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1.3.3
         with:
-          version: 1.3.2
-          virtualenvs-create: true
-          virtualenvs-in-project: false
-          installer-parallel: true
+          version: 1.4.0
+          virtualenvs-in-project: true
 
       - name: Add Poetry to the PATH environment variable
         shell: bash
         run: |
-          echo "${{ env.config-poetry-path }}" >> $GITHUB_PATH
+          echo "${{ env.CONFIG_POETRY_PATH }}" >> $GITHUB_PATH
 
       - name: Set cache dir
         run: poetry config cache-dir ${{ env.POETRY_CACHE_DIR }}
@@ -60,7 +59,7 @@ jobs:
 
       - name: Cache venv
         id: cached-poetry-dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ${{ env.POETRY_CACHE_DIR }}
