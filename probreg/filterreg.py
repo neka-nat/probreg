@@ -26,6 +26,13 @@ except:
 
 EstepResult = namedtuple("EstepResult", ["m0", "m1", "m2", "nx"])
 MstepResult = namedtuple("MstepResult", ["transformation", "sigma2", "q"])
+MstepResult.__doc__ = """Result of Maximization step.
+
+    Attributes:
+        transformation (tf.Transformation): Transformation from source to target.
+        sigma2 (float): Variance of Gaussian distribution.
+        q (float): Result of likelihood.
+"""
 
 
 def dualquat_from_twist(tw):

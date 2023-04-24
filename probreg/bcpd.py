@@ -16,6 +16,15 @@ from .log import log
 
 EstepResult = namedtuple("EstepResult", ["nu_d", "nu", "n_p", "px", "x_hat"])
 MstepResult = namedtuple("MstepResult", ["transformation", "u_hat", "sigma_mat", "alpha", "sigma2"])
+MstepResult.__doc__ = """Result of Maximization step.
+
+    Attributes:
+        transformation (tf.Transformation): Transformation from source to target.
+        u_hat (numpy.ndarray): A parameter used in next Estep.
+        sigma_mat (numpy.ndarray): A parameter used in next Estep.
+        alpha (float): A parameter used in next Estep.
+        sigma2 (float): Variance of Gaussian distribution.
+"""
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -132,7 +141,7 @@ class CombinedBCPD(BayesianCoherentPointDrift):
         u_hm = u_hat - u_m
         s_xu = np.matmul(np.multiply(nu, (x_hat - x_m).T), u_hm) / n_p
         s_uu = np.matmul(np.multiply(nu, u_hm.T), u_hm) / n_p + sigma2_m * np.identity(dim)
-        phi, s_xu_d, psih = np.linalg.svd(s_xu, full_matrices=True)
+        phi, _, psih = np.linalg.svd(s_xu, full_matrices=True)
         c = np.ones(dim)
         c[-1] = np.linalg.det(np.dot(phi, psih))
         rot = np.matmul(phi * c, psih)

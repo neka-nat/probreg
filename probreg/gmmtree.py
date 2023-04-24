@@ -13,6 +13,12 @@ from .log import log
 
 EstepResult = namedtuple("EstepResult", ["moments"])
 MstepResult = namedtuple("MstepResult", ["transformation", "q"])
+MstepResult.__doc__ = """Result of Maximization step.
+
+    Attributes:
+        transformation (tf.Transformation): Transformation from source to target.
+        q (float): Result of likelihood.
+"""
 
 
 class GMMTree:

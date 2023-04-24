@@ -15,6 +15,13 @@ from .log import log
 
 EstepResult = namedtuple("EstepResult", ["pt1", "p1", "px", "n_p"])
 MstepResult = namedtuple("MstepResult", ["transformation", "sigma2", "q"])
+MstepResult.__doc__ = """Result of Maximization step.
+
+    Attributes:
+        transformation (tf.Transformation): Transformation from source to target.
+        sigma2 (float): Variance of Gaussian distribution.
+        q (float): Result of likelihood.
+"""
 
 
 @six.add_metaclass(abc.ABCMeta)
