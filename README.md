@@ -3,7 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/probreg.svg)](https://badge.fury.io/py/probreg)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 [![Documentation Status](https://readthedocs.org/projects/probreg/badge/?version=latest)](https://probreg.readthedocs.io/en/latest/?badge=latest)
-[![Downloads](https://pepy.tech/badge/probreg)](https://pepy.tech/project/probreg)
+[![Downloads](https://static.pepy.tech/badge/probreg)](https://pepy.tech/project/probreg)
 
 Probreg is a library that implements point cloud **reg**istration algorithms with **prob**ablistic model.
 
