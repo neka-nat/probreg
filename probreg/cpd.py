@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import numpy as np
 import open3d as o3
 import six
+from scipy.spatial import distance as scipy_distance
 
 from . import math_utils as mu
 from . import transformation as tf
@@ -44,14 +45,17 @@ class CoherentPointDrift:
         self._callbacks = []
         if use_cuda:
             import cupy as cp
+            from cupyx.scipy.spatial import distance as cupy_distance
 
             from . import cupy_utils
 
             self.xp = cp
+            self.distance_module = cupy_distance
             self.cupy_utils = cupy_utils
             self._squared_kernel_sum = cupy_utils.squared_kernel_sum
         else:
             self.xp = np
+            self.distance_module = scipy_distance
             self._squared_kernel_sum = mu.squared_kernel_sum
 
     def set_source(self, source: np.ndarray) -> None:
@@ -67,7 +71,8 @@ class CoherentPointDrift:
     def expectation_step(self, t_source: np.ndarray, target: np.ndarray, sigma2: float, w: float = 0.0) -> EstepResult:
         """Expectation step for CPD"""
         assert t_source.ndim == 2 and target.ndim == 2, "source and target must have 2 dimensions."
-        pmat = self.xp.stack([self.xp.sum(self.xp.square(target - ts), axis=1) for ts in t_source])
+        pmat = self.distance_module.cdist(t_source, target, "sqeuclidean")
+        # pmat = self.xp.stack([self.xp.sum(self.xp.square(target - ts), axis=1) for ts in t_source])
         pmat = self.xp.exp(-pmat / (2.0 * sigma2))
 
         c = (2.0 * np.pi * sigma2) ** (t_source.shape[1] * 0.5)
