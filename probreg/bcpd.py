@@ -182,4 +182,4 @@ def registration_bcpd(
     cv = lambda x: np.asarray(x.points if isinstance(x, o3.geometry.PointCloud) else x)
     bcpd = CombinedBCPD(cv(source), **kwargs)
     bcpd.set_callbacks(callbacks)
-    return bcpd.registration(cv(target), w, maxiter)
+    return bcpd.registration(cv(target), w, maxiter, tol)
