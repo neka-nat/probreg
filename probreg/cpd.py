@@ -370,7 +370,7 @@ class NonRigidCPD(CoherentPointDrift):
 class ConstrainedNonRigidCPD(CoherentPointDrift):
     """
        Extended Coherent Point Drift for nonrigid transformation.
-       Like CoherentPointDrift, but allows to add point correspondance constraints
+       Like CoherentPointDrift, but allows to add point correspondence constraints
        See: https://people.mpi-inf.mpg.de/~golyanik/04_DRAFTS/ECPD2016.pdf
 
     Args:
@@ -382,9 +382,9 @@ class ConstrainedNonRigidCPD(CoherentPointDrift):
         use_cuda (bool, optional): Use CUDA.
         use_color (bool, optional): Use color information (if available).
         idx_source (numpy.ndarray of ints, optional): Indices in source matrix
-            for which a correspondance is known
+            for which a correspondence is known
         idx_target (numpy.ndarray of ints, optional): Indices in target matrix
-            for which a correspondance is known
+            for which a correspondence is known
     """
 
     def __init__(
